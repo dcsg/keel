@@ -52,10 +52,13 @@ record_flow() {
     echo "  Setup:     $(basename "$setup_script")"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-    # Create temp project
+    # Use a fixed path so Claude's workspace trust persists across recordings.
+    # Run: claude /tmp/keel-demo-<flow> once to accept the trust dialog, then
+    # all subsequent recordings skip it automatically.
+    DEMO_DIR="/tmp/keel-demo-$1"
+    rm -rf "$DEMO_DIR"
     echo "  Setting up demo project..."
-    DEMO_DIR=$(bash "$setup_script")
-    trap "rm -rf $DEMO_DIR" RETURN
+    bash "$setup_script" "$DEMO_DIR"
 
     echo "  Project: $DEMO_DIR"
 
@@ -72,10 +75,8 @@ EOF
     echo "  Recording with VHS..."
     vhs "$tape"
 
-    # Clean up
+    # Keep DEMO_DIR so trust persists — only remove env.tape
     rm -f "$SCRIPT_DIR/env.tape"
-    rm -rf "$DEMO_DIR"
-    trap - RETURN
 
     echo "  Done: $OUTPUT_DIR/$1.gif"
 }

@@ -7,7 +7,8 @@
 set -e
 
 KEEL_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-DEMO_DIR=$(mktemp -d)
+DEMO_DIR="${1:-$(mktemp -d)}"
+mkdir -p "$DEMO_DIR"
 
 cd "$DEMO_DIR"
 git init -q
