@@ -11,6 +11,7 @@ Output docs/demo/keel-workflow.gif
 Output docs/demo/keel-workflow.mp4
 
 Set Shell "bash"
+Set FontFamily "JetBrainsMono Nerd Font"
 Set FontSize 15
 Set Width 1200
 Set Height 700
