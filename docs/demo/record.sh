@@ -1,107 +1,60 @@
 #!/bin/bash
-# Record a keel workflow demo
+# Automated keel demo recording
 #
 # Usage: ./docs/demo/record.sh
 #
-# Sets up a temp Go project, tells you what to do,
-# opens Claude Code inside asciinema, and converts to GIF when done.
+# 1. Creates a temp Go project
+# 2. Runs VHS with Wait-based automation (handles variable response times)
+# 3. Outputs GIF + MP4 to docs/demo/
 #
-# ~3-5 minutes of your time. Fully reproducible output.
+# Fully automated. No manual interaction. Re-run anytime.
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-CAST_FILE="$REPO_ROOT/docs/demo/keel-workflow.cast"
-GIF_FILE="$REPO_ROOT/docs/demo/keel-workflow.gif"
 
-for cmd in asciinema agg claude; do
+cd "$REPO_ROOT"
+
+for cmd in vhs claude git; do
   if ! command -v "$cmd" &>/dev/null; then
-    echo "Missing: $cmd — brew install $cmd"
+    echo "Missing: $cmd"
     exit 1
   fi
 done
 
-# Create temp project
-DEMO_DIR=$(mktemp -d)
+# Create temp demo project
+echo "Setting up demo project..."
+DEMO_DIR=$(bash docs/demo/setup-demo-project.sh)
 trap "rm -rf $DEMO_DIR" EXIT
 
-cd "$DEMO_DIR"
-git init -q
-mkdir -p internal/users internal/auth
+echo "Demo project: $DEMO_DIR"
 
-cat > go.mod << 'EOF'
-module github.com/demo/invoicer
-
-go 1.22
+# Write env.tape that VHS sources (sets working directory)
+cat > docs/demo/env.tape << EOF
+# Auto-generated — do not edit
+# Points VHS to the temp demo project
+Hide
+Type "cd $DEMO_DIR && unset CLAUDECODE && clear"
+Enter
+Sleep 1
+Show
 EOF
 
-cat > main.go << 'EOF'
-package main
-
-import "fmt"
-
-func main() {
-	fmt.Println("invoicer")
-}
-EOF
-
-cat > internal/users/user.go << 'EOF'
-package users
-
-type User struct {
-	ID    string
-	Email string
-}
-EOF
-
-git add -A && git commit -q -m "init: go project scaffold"
-
-clear
+echo "Recording with VHS (this takes a few minutes)..."
 echo ""
-echo "  ┌─────────────────────────────────────────────┐"
-echo "  │         Keel Demo — Recording Guide          │"
-echo "  ├─────────────────────────────────────────────┤"
-echo "  │                                             │"
-echo "  │  Project: temp Go backend (auto-cleaned)    │"
-echo "  │                                             │"
-echo "  │  Run these 3 commands inside Claude:        │"
-echo "  │                                             │"
-echo "  │  1. /keel:init                              │"
-echo "  │     → accept recommended rules              │"
-echo "  │                                             │"
-echo "  │  2. /keel:plan                              │"
-echo "  │     → \"JWT auth: register, login,           │"
-echo "  │        protected routes, 24h token expiry\"  │"
-echo "  │                                             │"
-echo "  │  3. /keel:status                            │"
-echo "  │     → show the dashboard                    │"
-echo "  │                                             │"
-echo "  │  4. /exit to quit Claude and stop recording │"
-echo "  │                                             │"
-echo "  └─────────────────────────────────────────────┘"
-echo ""
-echo "  Press ENTER to start recording..."
-read -r
 
-# Allow nested if run from inside claude
-unset CLAUDECODE
+vhs docs/demo/demo.tape
 
-asciinema rec -c "claude" "$CAST_FILE" --overwrite
-
-# Post-recording conversion
-echo ""
-echo "  Converting to GIF..."
-agg "$CAST_FILE" "$GIF_FILE"
+# Clean up generated env.tape
+rm -f docs/demo/env.tape
 
 echo ""
-echo "  ┌─────────────────────────────────────────────┐"
-echo "  │  Done!                                       │"
-echo "  ├─────────────────────────────────────────────┤"
-echo "  │  $CAST_FILE"
-echo "  │  $GIF_FILE"
-echo "  │                                             │"
-echo "  │  Replay:  asciinema play docs/demo/keel-workflow.cast"
-echo "  │  Re-do:   ./docs/demo/record.sh             │"
-echo "  └─────────────────────────────────────────────┘"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  Done!"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+ls -lh docs/demo/keel-workflow.* 2>/dev/null
+echo ""
+echo "  Re-record: ./docs/demo/record.sh"
 echo ""
