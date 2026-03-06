@@ -258,22 +258,15 @@ Plans live in `docs/product/plans/` as plain markdown.
 
 ## See It in Action
 
-Watch the complete workflow in action — PRD → Plan → Execute with real-time rule compliance verification:
+![Keel workflow demo](./docs/demo/keel-workflow.gif)
 
-![Keel e2e workflow recording](./test/workflow-e2e.mp4)
+The demo shows the real user workflow:
+1. `/keel:init` — detect project, recommend rules, generate everything
+2. `/keel:plan` — interview + phased execution plan
+3. **Phase execution** — Claude writes code with rules enforced (named constants, structured errors)
+4. `/keel:status` — dashboard with progress, rules, and governance health
 
-The recording shows:
-1. **Full test suite** — all 4 test suites running (registry, structure, templates, e2e workflow)
-2. **Real output** — actual CLI results displayed with colored output
-3. **Phase execution** — PRD creation → Plan generation → Phase 1 & 2 execution
-4. **Rule compliance** — automated verification of no magic numbers, proper error handling, structured error types
-5. **Progress tracking** — plan progress table updates and verification
-
-For details, see [Video Generation Guide](./docs/guides/video-generation.md) or run the test locally:
-
-```bash
-./test/run.sh
-```
+Reproduce anytime: `vhs docs/demo/demo.tape`
 
 ---
 

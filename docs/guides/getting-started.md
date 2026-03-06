@@ -4,16 +4,13 @@ Keel is a context engine and guardrail installer for Claude Code. It gives Claud
 
 ## Watch the Workflow in Action
 
-See how keel orchestrates a complete PRD → Plan → Execute workflow with automatic rule compliance verification:
+![Keel workflow demo](../demo/keel-workflow.gif)
 
-![Keel workflow demo](../../test/workflow-e2e.mp4)
-
-The recording shows the test suite validating:
-- PRD and plan generation
-- Multi-phase execution with named constants (no magic numbers)
-- Proper error handling with context wrapping
-- Structured error types (not strings)
-- Real-time rule compliance checks
+The demo walks through the real user experience:
+- `/keel:init` — project detection, rule selection, file generation
+- `/keel:plan` — feature planning with phased execution
+- Code generation with rules enforced (named constants, structured errors, error wrapping)
+- `/keel:status` — project dashboard with progress tracking
 
 ## Install
 
