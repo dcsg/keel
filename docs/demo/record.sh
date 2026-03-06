@@ -1,21 +1,15 @@
 #!/bin/bash
-# Record a real keel workflow demo in Claude Code
+# Automated keel workflow demo recording
 #
 # Usage: ./docs/demo/record.sh
 #
-# This creates a temp project, opens Claude Code, and records everything.
-# You manually walk through the workflow — the script handles setup and conversion.
-#
-# Workflow to demo:
-#   1. /keel:init        → detect project, pick rules, generate files
-#   2. /keel:plan        → plan a small feature (e.g. "JWT auth for an API")
-#   3. /keel:status      → show dashboard
-#   4. exit              → end recording
+# Creates a temp Go project, runs keel commands via claude -p,
+# records everything with asciinema, converts to GIF + MP4.
+# Fully automated — no manual interaction needed.
 #
 # Outputs:
 #   docs/demo/keel-workflow.cast  (asciinema source)
 #   docs/demo/keel-workflow.gif   (for README/docs)
-#   docs/demo/keel-workflow.mp4   (alternative format)
 
 set -e
 
@@ -23,13 +17,11 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 CAST_FILE="$REPO_ROOT/docs/demo/keel-workflow.cast"
 GIF_FILE="$REPO_ROOT/docs/demo/keel-workflow.gif"
-MP4_FILE="$REPO_ROOT/docs/demo/keel-workflow.mp4"
 
 # Check dependencies
-for cmd in asciinema agg; do
+for cmd in asciinema agg claude; do
   if ! command -v "$cmd" &>/dev/null; then
     echo "Missing: $cmd"
-    echo "Install: brew install $cmd"
     exit 1
   fi
 done
@@ -41,11 +33,14 @@ trap "rm -rf $DEMO_DIR" EXIT
 cd "$DEMO_DIR"
 git init -q
 mkdir -p internal/users internal/auth
-echo "module github.com/demo/invoicer" > go.mod
-echo "go 1.22" >> go.mod
 
-# Seed a couple files so keel detects Go
-cat > main.go << 'GOEOF'
+cat > go.mod << 'EOF'
+module github.com/demo/invoicer
+
+go 1.22
+EOF
+
+cat > main.go << 'EOF'
 package main
 
 import "fmt"
@@ -53,73 +48,110 @@ import "fmt"
 func main() {
 	fmt.Println("invoicer")
 }
-GOEOF
+EOF
 
-cat > internal/users/user.go << 'GOEOF'
+cat > internal/users/user.go << 'EOF'
 package users
 
 type User struct {
 	ID    string
 	Email string
 }
-GOEOF
+EOF
 
-git add -A && git commit -q -m "init"
+git add -A && git commit -q -m "init: go project scaffold"
 
+# ── The demo script that asciinema will record ──
+cat > "$DEMO_DIR/_run_demo.sh" << 'DEMO'
+#!/bin/bash
+GREEN='\033[0;32m'
+CYAN='\033[0;36m'
+BOLD='\033[1m'
+DIM='\033[2m'
+RESET='\033[0m'
+
+section() {
+  echo ""
+  echo -e "${BOLD}${CYAN}━━━ $1 ━━━${RESET}"
+  echo ""
+  sleep 1
+}
+
+# Show project context
+echo -e "${DIM}~/projects/invoicer${RESET}"
+echo -e "${DIM}Go backend · greenfield · 1 commit${RESET}"
+sleep 1
+
+# ── Step 1: keel:init ──
+section "Step 1: /keel:init"
+echo -e "${DIM}Initializing keel — detecting project, installing rules...${RESET}"
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  Keel Demo Recording"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+claude -p "Run /keel:init for this project. It's a Go backend for a SaaS invoicing tool. Accept all recommended rules and generate everything. Be concise in your output — show what was detected and what was generated." \
+  --dangerously-skip-permissions 2>/dev/null
+
+sleep 2
+
+# ── Step 2: keel:plan ──
+section "Step 2: /keel:plan"
+echo -e "${DIM}Planning a feature — JWT authentication...${RESET}"
 echo ""
-echo "  Project: $DEMO_DIR"
-echo "  Stack:   Go (pre-seeded)"
+
+claude -p "Run /keel:plan to plan JWT authentication for this API. Requirements: user registration (POST /auth/register), login (POST /auth/login returns JWT), protected routes (all /api/* need Authorization header), token expiry after 24 hours. Create a 2-phase plan. Be concise." \
+  --dangerously-skip-permissions \
+  -c 2>/dev/null
+
+sleep 2
+
+# ── Step 3: keel:status ──
+section "Step 3: /keel:status"
+echo -e "${DIM}Checking project status...${RESET}"
 echo ""
-echo "  Walk through this workflow:"
+
+claude -p "Run /keel:status to show the project dashboard — installed rules, plan progress, governance health. Be concise." \
+  --dangerously-skip-permissions \
+  -c 2>/dev/null
+
+sleep 2
+
+# ── Done ──
 echo ""
-echo "    1. /keel:init"
-echo "       → accept recommended rules"
+echo -e "${BOLD}${GREEN}That's keel.${RESET}"
+echo -e "${DIM}Context loaded. Rules enforced. Every session.${RESET}"
 echo ""
-echo "    2. /keel:plan"
-echo "       → \"JWT authentication — register, login, protected routes\""
-echo ""
-echo "    3. /keel:status"
-echo "       → show the dashboard"
-echo ""
-echo "    4. Type 'exit' to end"
-echo ""
-echo "  Recording starts in 3 seconds..."
+echo -e "${DIM}Install:  curl -fsSL https://raw.githubusercontent.com/dcsg/keel/main/install.sh | bash${RESET}"
+echo -e "${DIM}Start:    /keel:init${RESET}"
 echo ""
 sleep 3
+DEMO
 
-# Record the session
-asciinema rec -c "claude" "$CAST_FILE" --overwrite
-
-# Convert to GIF and MP4
-echo ""
-echo "Converting recording..."
-
-echo "  → GIF..."
-agg "$CAST_FILE" "$GIF_FILE"
-
-if command -v ffmpeg &>/dev/null; then
-  echo "  → MP4..."
-  agg "$CAST_FILE" /tmp/keel-demo-frames.gif
-  ffmpeg -y -i /tmp/keel-demo-frames.gif -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" "$MP4_FILE" 2>/dev/null
-  rm -f /tmp/keel-demo-frames.gif
-else
-  echo "  → MP4 skipped (install ffmpeg for MP4 output)"
-fi
+chmod +x "$DEMO_DIR/_run_demo.sh"
 
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  Recording complete!"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  Recording keel demo (automated)..."
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
-echo "  Files:"
-echo "    $CAST_FILE"
-echo "    $GIF_FILE"
-[ -f "$MP4_FILE" ] && echo "    $MP4_FILE"
+
+# Record the automated demo
+asciinema rec \
+  -c "bash $DEMO_DIR/_run_demo.sh" \
+  "$CAST_FILE" \
+  --overwrite
+
+# Convert to GIF
 echo ""
-echo "  Replay: asciinema play $CAST_FILE"
+echo "Converting to GIF..."
+agg --theme mocha "$CAST_FILE" "$GIF_FILE" 2>/dev/null || agg "$CAST_FILE" "$GIF_FILE"
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  Done!"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+echo "  $CAST_FILE"
+echo "  $GIF_FILE"
+echo ""
+echo "  Replay:    asciinema play $CAST_FILE"
 echo "  Re-record: ./docs/demo/record.sh"
 echo ""
