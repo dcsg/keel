@@ -15,7 +15,7 @@ export default defineConfig({
     siteTitle: 'Keel',
 
     nav: [
-      { text: 'Docs', link: '/getting-started' },
+      { text: 'Guides', link: '/getting-started' },
       { text: 'Commands', link: '/commands/' },
       { text: 'Rules', link: '/rules/' },
       {
