@@ -38,9 +38,8 @@ assert_file_not_contains "$PROJECT_ROOT/README.md" "\.dof/config" "README.md has
 assert_file_not_exists "$PROJECT_ROOT/.conductor/config.yaml" "No .conductor/ directory"
 assert_file_not_exists "$PROJECT_ROOT/.dof/config.yaml" "No .dof/ directory"
 
-# dof commands exist in repo
-assert_dir_exists "$PROJECT_ROOT/commands/dof" "commands/dof/ exists"
-assert_file_exists "$PROJECT_ROOT/commands/dof/migrate.md" "commands/dof/migrate.md exists"
+# Note: dof:migrate moved to global skills (~/.claude/skills/dof/migrate.md)
+# No longer needed in keel repo
 
 # settings template has both hooks
 assert_file_contains "$PROJECT_ROOT/templates/settings.json.tmpl" "PreToolUse" "settings.json.tmpl has PreToolUse hook"
