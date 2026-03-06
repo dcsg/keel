@@ -3,6 +3,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: 'Keel',
   description: 'The context engine for Claude Code',
+  base: '/keel/',
   cleanUrls: true,
 
   head: [
