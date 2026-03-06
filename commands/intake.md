@@ -68,6 +68,9 @@ Found {n} documentation files:
     docs/adr/001-use-postgres.md     → docs/decisions/001-use-postgres.md
     .dof/architecture/decisions/*.md → docs/decisions/
 
+  Invariants:
+    .dof/architecture/invariants/*.md → docs/invariants/
+
   Product / Requirements:
     docs/product-spec.md             → docs/product/spec.md
     docs/requirements/feature-x.md   → docs/product/prds/feature-x.md
@@ -115,7 +118,7 @@ If `.dof/` or `.conductor/` content was found:
 
 - **Soul files**: merge into `docs/soul.md`
 - **ADRs/decisions**: copy to `docs/decisions/`
-- **Invariants**: offer to convert into `.claude/rules/` custom topics
+- **Invariants**: copy to `docs/invariants/` (or `{base}/invariants/` from config). If an invariant directly constrains code behavior, add a one-line reference in the relevant `.claude/rules/` file pointing to it.
 - **Component contracts**: copy to `docs/reference/`
 - **Config**: note differences from current `.keel/config.yaml`
 
@@ -127,6 +130,7 @@ Intake complete!
   Organized: {n} files
   Copied to:
     docs/decisions/     — {count} decision records
+    docs/invariants/    — {count} invariants
     docs/product/prds/  — {count} product requirements
     docs/reference/     — {count} reference docs
 
