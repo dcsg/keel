@@ -1,6 +1,6 @@
 ---
 name: keel:migrate
-description: "Migrate from dof/conductor to keel"
+description: "Migrate a project set up with dof:init (has .dof/ directory) to keel — moves soul, config, decisions, and invariants into keel's structure"
 allowed-tools:
   - Read
   - Write
@@ -13,7 +13,9 @@ allowed-tools:
 
 # keel:migrate
 
-Migrate an existing dof or conductor project to keel.
+Migrate a project that was set up with `dof:*` commands to keel.
+
+If you've been using `dof:init` on your projects, they have a `.dof/` directory with soul, config, architecture decisions, and invariants. This command moves all of that into keel's structure and generates the missing pieces (rules, CLAUDE.md, hooks).
 
 ## Instructions
 
