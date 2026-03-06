@@ -69,14 +69,25 @@ Keel generates:
 | File | Purpose |
 |------|---------|
 | `.keel/config.yaml` | Source of truth for rules and config |
-| `.claude/rules/*.md` | Installed guardrails |
-| `.claude/CLAUDE.md` | Context loader with project summary |
-| `.claude/settings.json` | Hooks (PreCompact recovery) |
+| `.claude/rules/*.md` | Installed guardrails (tagged `<!-- keel:generated -->`) |
+| `.claude/settings.json` | Hooks: PreToolUse context gate + PreCompact recovery |
+| `CLAUDE.md` | Project summary block (safe merge — never overwrites existing content) |
 | `.claude/agents/reviewer.md` | Code review agent |
 | `.claude/agents/debugger.md` | Root cause analysis agent |
 | `docs/soul.md` | Project identity |
+| `docs/product/spec.md` | Product spec stub |
+| `docs/decisions/` | Architecture decisions directory |
+| `docs/invariants/` | Hard constraints directory |
 | `.github/pull_request_template.md` | PR template (if opted in) |
+
+### Hooks installed
+
+Two hooks protect every session:
+
+**PreToolUse (Write/Edit)** — Before Claude writes any code for the first time in a session, it's reminded to load project context: soul, decisions, invariants, and active plan. Fires once per session via a temp file sentinel.
+
+**PreCompact** — Before context compaction, Claude is reminded to update the active plan's progress table so nothing is lost.
 
 ## Re-running
 
-Running `/keel:init` again on an existing keel project updates rules from config. It won't overwrite files you've manually edited (tracked via checksum).
+Running `/keel:init` again on an existing keel project updates rules from config. Rule files tagged `<!-- keel:generated -->` are updated from templates. Files where that tag is missing were manually edited — keel leaves them untouched and warns you.

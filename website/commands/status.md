@@ -44,14 +44,20 @@ Claude runs `/keel:status` automatically.
 
  GOVERNANCE
  ──────────
- Soul:       present
- Decisions:  3 records
- Product:    spec + 2 PRDs
+ Soul:        present
+ Decisions:   3 records
+ Invariants:  2 constraints
+ Product:     spec + 2 PRDs
+ Tickets:     Linear (team: eng)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 **WHAT'S NEXT** is the most important part — it tells you the concrete next tasks, not just a phase name.
+
+## Persisted to disk
+
+After displaying the dashboard, `/keel:status` writes the same output to `docs/STATUS.md`. Commit it so your team can see project health without running the command. Keel uses sentinel markers so re-runs only update the keel block — any notes you add above it are preserved.
 
 ## No active plan?
 

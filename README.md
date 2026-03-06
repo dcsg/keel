@@ -74,8 +74,12 @@ You get a toggleable selection of rules. Turn on what you want, turn off what yo
 .claude/rules/error-handling.md
 .claude/rules/go.md
 .claude/rules/chi.md
+.claude/settings.json        ← PreToolUse + PreCompact hooks
 .keel/config.yaml
 docs/soul.md
+docs/product/spec.md
+docs/decisions/
+docs/invariants/
 CLAUDE.md
 ```
 
@@ -90,7 +94,7 @@ CLAUDE.md
 | `/keel:plan` | Interview + phased execution plan with dependency tracking |
 | `/keel:status` | Dashboard — plan progress, installed rules, governance health |
 | `/keel:intake` | Scan for scattered docs and organize into keel structure |
-| `/keel:migrate` | Convert dof/conductor projects to keel |
+| `/dof:migrate` | Convert `.dof/` projects to keel (global skill) |
 
 ## You don't need to remember commands
 
@@ -155,6 +159,8 @@ After `/keel:init`, your project looks like this:
 your-project/
 ├── docs/
 │   ├── soul.md                  # project identity and non-negotiables
+│   ├── decisions/               # architecture decision records
+│   ├── invariants/              # hard constraints — never violate these
 │   └── product/
 │       ├── spec.md              # product spec / roadmap
 │       ├── prds/                # feature requirements
@@ -168,12 +174,11 @@ your-project/
     │   ├── security.md
     │   ├── error-handling.md
     │   └── go.md                # language-specific
-    ├── commands/                 # keel commands (global)
     ├── agents/
     │   ├── reviewer.md          # code review agent
     │   └── debugger.md          # root cause analysis agent
-    ├── settings.json            # hooks (compaction recovery)
-    └── CLAUDE.md                # generated context loader
+    ├── settings.json            # PreToolUse context gate + PreCompact recovery
+    └── CLAUDE.md                # project context block (safe merge)
 ```
 
 ---
@@ -230,9 +235,11 @@ description: "Billing domain rules"
 - **Active plan** — current phase, progress, what's next
 - **Product docs** — specs, PRDs, feature requirements
 - **Architecture decisions** — ADRs that inform code choices
-- **Installed rules** — summary of what's enforced
+- **Invariants** — hard constraints Claude must never violate
+- **Installed rules** — which packs are active, which were manually edited
+- **Ticket system** — Linear/Jira config for referencing issues in plans
 
-This means Claude starts every session knowing *who the project is*, not just what the code looks like.
+You don't need to run it manually at session start. The `PreToolUse` hook fires before Claude's first code write and reminds it to load context if it hasn't already.
 
 ---
 
