@@ -15,7 +15,7 @@ Source docs/demo/env.tape
 # Launch Claude Code
 Type "claude --dangerously-skip-permissions"
 Enter
-Wait+Screen@30s />/
+Wait+Screen@30s /Type to talk/
 
 Sleep 1
 
@@ -23,7 +23,7 @@ Sleep 1
 Type "/keel:doctor"
 Enter
 Wait+Screen@60s /keel:doctor/
-Wait+Screen@120s />/
+Wait+Screen@120s /Type to talk/
 
 Sleep 5
 

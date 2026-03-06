@@ -20,7 +20,7 @@ Sleep 2
 # Launch Claude Code
 Type "claude --dangerously-skip-permissions"
 Enter
-Wait+Screen@30s />/
+Wait+Screen@30s /Type to talk/
 
 Sleep 1
 
@@ -28,7 +28,7 @@ Sleep 1
 Type "/keel:context"
 Enter
 Wait+Screen@120s /keel:context/
-Wait+Screen@180s />/
+Wait+Screen@180s /Type to talk/
 
 Sleep 4
 
@@ -36,7 +36,7 @@ Sleep 4
 Type "/keel:context --depth=focused"
 Enter
 Wait+Screen@120s /depth: focused/
-Wait+Screen@180s />/
+Wait+Screen@180s /Type to talk/
 
 Sleep 4
 
@@ -44,7 +44,7 @@ Sleep 4
 Type "/keel:context --depth=minimal"
 Enter
 Wait+Screen@120s /depth: minimal/
-Wait+Screen@180s />/
+Wait+Screen@180s /Type to talk/
 
 Sleep 3
 

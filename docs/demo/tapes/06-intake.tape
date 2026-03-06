@@ -20,7 +20,7 @@ Sleep 2
 # Launch Claude Code
 Type "claude --dangerously-skip-permissions"
 Enter
-Wait+Screen@30s />/
+Wait+Screen@30s /Type to talk/
 
 Sleep 1
 

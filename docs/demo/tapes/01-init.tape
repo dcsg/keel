@@ -24,7 +24,7 @@ Sleep 2
 # Launch Claude Code
 Type "claude --dangerously-skip-permissions"
 Enter
-Wait+Screen@30s />/
+Wait+Screen@30s /Type to talk/
 
 Sleep 1
 
@@ -34,7 +34,7 @@ Enter
 Wait+Screen@120s /keel:init/
 
 # Wait for init to complete (creates config, soul, rules, hooks)
-Wait+Screen@180s />/
+Wait+Screen@180s /Type to talk/
 
 Sleep 3
 
