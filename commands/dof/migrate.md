@@ -54,7 +54,7 @@ Migration: {.dof/ or .conductor/} → keel
     {legacy}/config.yaml                → .keel/config.yaml (rewritten)
     {legacy}/agent-instructions.md      → .claude/rules/ (converted to rule packs)
     {legacy}/architecture/decisions/*   → docs/decisions/
-    {legacy}/architecture/invariants/*  → .claude/rules/ (as custom topics)
+    {legacy}/architecture/invariants/*  → docs/decisions/ (reference docs, not rules)
     {legacy}/design/components/*        → docs/reference/components/
     {legacy}/product/prds/*             → docs/product/prds/
 
@@ -107,11 +107,12 @@ Read legacy config and generate new `.keel/config.yaml`:
 cp {legacy}/architecture/decisions/*.md docs/decisions/ 2>/dev/null
 ```
 
-#### 4.5 — Convert invariants to rules
-For each invariant file in `{legacy}/architecture/invariants/`:
-1. Read the invariant
-2. Create a custom rule file in `.claude/rules/` with the invariant content
-3. Add it to `.keel/config.yaml` under `rules:` as a custom topic
+#### 4.5 — Migrate invariants
+Invariants are architectural constraints, not coding guardrails — they belong alongside decisions as reference docs, not in `.claude/rules/`.
+
+```bash
+cp {legacy}/architecture/invariants/*.md docs/decisions/ 2>/dev/null
+```
 
 #### 4.6 — Migrate product docs
 ```bash
@@ -153,7 +154,7 @@ Migration complete!
     Soul:          docs/soul.md
     Config:        .keel/config.yaml
     Decisions:     {count} records → docs/decisions/
-    Invariants:    {count} → .claude/rules/ (custom topics)
+    Invariants:    {count} → docs/decisions/ (architectural constraints)
     PRDs:          {count} → docs/product/prds/
     Components:    {count} → docs/reference/components/
 
