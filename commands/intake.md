@@ -89,7 +89,59 @@ Found {n} documentation files:
 Proceed with this organization? (y/n/edit)
 ```
 
-### 4. Execute Moves
+### 4. Consolidate Execution Plans
+
+After categorization, check if any files look like execution plans — files containing phases, milestones, roadmaps, checklists, progress tracking, build order, or prioritization.
+
+If plan-related files are found:
+
+```
+EXECUTION PLANS DETECTED
+────────────────────────
+Found {n} plan-related docs:
+  - build-order.md (build sequence with phases)
+  - progress.md (status tracking)
+  - refactor-checklist.md (task list with milestones)
+
+These could consolidate into a single PLAN-001-{slug}.md with a phases table.
+
+Options:
+  [c] Consolidate into PLAN-001-{slug}.md (preserves all content as phases)
+  [s] Keep separate — copy as-is to {base}/plans/
+  [k] Skip — don't move plan files
+```
+
+**If consolidating:**
+1. Read all plan-related files to extract phases, tasks, and milestones
+2. Generate a `PLAN-001-{slug}.md` following keel's plan format:
+   ```markdown
+   # Plan: {Title derived from content}
+
+   ## Overview
+   **Total Phases:** {n}
+   **Approach:** {derived from source docs}
+
+   ## Progress
+
+   | Phase | Status | Updated |
+   |-------|--------|---------|
+   | 1     | -      | -       |
+
+   ## Phase 1: {Title}
+
+   **Objective:** {extracted from source docs}
+
+   **Tasks:**
+   {consolidated task list}
+
+   **Completion promise:** `{PHASE TITLE DONE}`
+   ```
+3. Save to `{base}/plans/PLAN-001-{slug}.md`
+4. Track original plan files for the archive step
+
+**If keeping separate:** copy files as-is to `{base}/plans/`.
+
+### 5. Execute Moves
 
 For each confirmed move:
 
@@ -99,7 +151,7 @@ For each confirmed move:
 
 **Important:** COPY, don't move. The user can delete originals after verifying. Never delete files without explicit confirmation.
 
-### 5. Update Soul
+### 6. Update Soul
 
 If existing docs reveal project context not captured in `soul.md`, offer to update it:
 
@@ -112,7 +164,7 @@ Found additional context from existing docs:
 Update soul.md with this information? (y/n)
 ```
 
-### 6. Convert Legacy Content
+### 7. Convert Legacy Content
 
 If `.dof/` or `.conductor/` content was found:
 
@@ -122,7 +174,7 @@ If `.dof/` or `.conductor/` content was found:
 - **Component contracts**: copy to `{base}/reference/`
 - **Config**: note differences from current `.keel/config.yaml`
 
-### 7. Output Summary
+### 8. Output Summary
 
 ```
 Intake complete!
@@ -131,14 +183,42 @@ Intake complete!
   Copied to:
     {base}/decisions/     — {count} decision records
     {base}/invariants/    — {count} invariants
+    {base}/plans/         — {count} plans {(consolidated) if applicable}
     {base}/product/prds/  — {count} product requirements
     {base}/reference/     — {count} reference docs
 
   Soul updated: {yes/no}
+```
 
-  Original files preserved — delete them manually when satisfied:
-    {list of original paths that were copied}
+### 9. Archive Originals
 
+After displaying the summary, offer cleanup for all copied files:
+
+```
+CLEANUP
+───────
+{n} original files were copied to new locations.
+
+Options:
+  [a] Archive originals to {base}/archive/ (removes from active, preserves history)
+  [d] Delete originals (destructive — will confirm each file)
+  [k] Keep both (default — safe, creates duplication)
+```
+
+**If archiving:**
+1. `mkdir -p {base}/archive/`
+2. Move each original to `{base}/archive/`, preserving relative paths
+3. If legacy directories (`.dof/`, `.conductor/`) are now empty after archiving, note them for removal
+
+**If deleting:**
+1. List each file and ask for confirmation: `Delete {path}? (y/n)`
+2. Only delete files the user confirms
+
+**If keeping:** no action needed.
+
+After cleanup:
+
+```
   Legacy directories found:
     {.dof/ or .conductor/ — can be removed after verifying migration}
 

@@ -14,7 +14,7 @@ missing plan consolidation, and no health-check command. Defer nice-to-haves
 |-------|------|--------|--------|
 | 1 | Fix invariant placement in intake | Done | Low |
 | 2 | Config-aware paths in status + context | Done | Low |
-| 3 | Intake improvements — PLAN consolidation + archive | Not started | Medium |
+| 3 | Intake improvements — PLAN consolidation + archive | Done | Medium |
 | 4 | keel:doctor command | Not started | Medium |
 
 ---
