@@ -136,7 +136,27 @@ The video shows:
 4. Claude executing with guardrails enforced
 ```
 
-## Requirements
+## Recording the E2E Workflow Test
+
+To capture and reproduce the complete keel workflow (PRD → Plan → Execute with rule compliance):
+
+```bash
+./test/record-workflow.sh
+```
+
+This generates:
+- `test/workflow-e2e.cast` — Asciinema source (reproducible, 18KB)
+- `test/workflow-e2e.mp4` — Animated GIF (for docs, 669KB)
+
+Re-record anytime to capture updated test output:
+
+```bash
+./test/record-workflow.sh  # Both .cast and GIF regenerate automatically
+```
+
+---
+
+## Requirements (Remotion Video)
 
 - **Node.js** 16+ (check with `node --version`)
 - **npm** 7+ (check with `npm --version`)
