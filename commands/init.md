@@ -259,8 +259,8 @@ Create a product spec stub from the template. If `docs/product/spec.md` already 
 For each enabled rule pack:
 
 1. Read the template from keel's templates directory (either `~/.keel/templates/rules/` for global install, or check the keel repo location)
-2. Copy the template content to `.claude/rules/{name}.md`
-3. The template already has the correct `paths:` frontmatter
+2. Copy the full template content to `.claude/rules/{name}.md` — this preserves `paths:` and `version:` frontmatter from the source template
+3. Do not strip or modify the frontmatter — the `version:` field enables `keel:doctor` to detect stale packs
 
 If keel templates are not found locally, output:
 

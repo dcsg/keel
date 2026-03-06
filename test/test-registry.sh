@@ -78,6 +78,49 @@ else
     fail "Invalid tier values" "$invalid_tiers"
 fi
 
+# All entries have version field
+missing_version=$(python3 -c "
+import yaml
+with open('$REGISTRY') as f:
+    data = yaml.safe_load(f)
+for name, info in data.items():
+    if 'version' not in info:
+        print(f'{name}: missing version')
+" 2>/dev/null)
+
+if [ -z "$missing_version" ]; then
+    pass "All registry entries have version field"
+else
+    fail "Registry entries missing version" "$missing_version"
+fi
+
+# Registry version matches template frontmatter version
+version_mismatch=$(python3 -c "
+import yaml, re
+with open('$REGISTRY') as f:
+    data = yaml.safe_load(f)
+for name, info in data.items():
+    reg_ver = info.get('version', '')
+    tmpl_path = '$PROJECT_ROOT/templates/rules/' + info['template']
+    with open(tmpl_path) as t:
+        content = t.read()
+    # Extract version from YAML frontmatter
+    fm = re.search(r'^---\n(.*?)\n---', content, re.DOTALL)
+    if fm:
+        tmpl_meta = yaml.safe_load(fm.group(1))
+        tmpl_ver = tmpl_meta.get('version', '')
+        if reg_ver != tmpl_ver:
+            print(f'{name}: registry={reg_ver} template={tmpl_ver}')
+    else:
+        print(f'{name}: no frontmatter found')
+" 2>/dev/null)
+
+if [ -z "$version_mismatch" ]; then
+    pass "Registry versions match template frontmatter versions"
+else
+    fail "Version mismatch between registry and templates" "$version_mismatch"
+fi
+
 # Framework entries have parent field
 missing_parents=$(python3 -c "
 import yaml

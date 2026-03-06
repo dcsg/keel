@@ -13,7 +13,7 @@ depth control to keel:context.
 | Phase | Task | Status | Effort |
 |-------|------|--------|--------|
 | 1 | Add version frontmatter to all rule templates | Done | Low |
-| 2 | Add version to registry + keel:init stamps version on install | Not started | Low |
+| 2 | Add version to registry + keel:init stamps version on install | Done | Low |
 | 3 | keel:doctor warns on stale packs + keel:rules-update command | Not started | Medium |
 | 4 | keel:context depth control | Not started | Medium |
 

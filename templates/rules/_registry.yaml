@@ -1,30 +1,35 @@
 # Keel Rule Registry
 # Maps rule names to their template, tier, and paths: glob for .claude/rules/ frontmatter.
 # Parent field indicates a framework depends on a language pack.
+# Version must match the version: frontmatter in the corresponding template.
 
 # Base (language-agnostic)
 code-quality:
   tier: base
   template: base/code-quality.md
   paths: "**/*"
+  version: "1.0.0"
   default: true
 
 testing:
   tier: base
   template: base/testing.md
   paths: "**/*"
+  version: "1.0.0"
   default: true
 
 security:
   tier: base
   template: base/security.md
   paths: "**/*"
+  version: "1.0.0"
   default: true
 
 error-handling:
   tier: base
   template: base/error-handling.md
   paths: "**/*"
+  version: "1.0.0"
   default: true
 
 # Base (opt-in)
@@ -32,12 +37,14 @@ frontend:
   tier: base
   template: base/frontend.md
   paths: "**/*.{ts,tsx,js,jsx,vue,svelte,css,scss}"
+  version: "1.0.0"
   default: false
 
 architecture:
   tier: base
   template: base/architecture.md
   paths: "**/*"
+  version: "1.0.0"
   default: false
 
 # Language packs
@@ -45,24 +52,28 @@ go:
   tier: lang
   template: lang/go.md
   paths: "**/*.go"
+  version: "1.0.0"
   default: false
 
 typescript:
   tier: lang
   template: lang/typescript.md
   paths: "**/*.{ts,tsx}"
+  version: "1.0.0"
   default: false
 
 python:
   tier: lang
   template: lang/python.md
   paths: "**/*.py"
+  version: "1.0.0"
   default: false
 
 php:
   tier: lang
   template: lang/php.md
   paths: "**/*.php"
+  version: "1.0.0"
   default: false
 
 # Framework packs
@@ -71,6 +82,7 @@ chi:
   parent: go
   template: framework/chi.md
   paths: "**/*.go"
+  version: "1.0.0"
   default: false
 
 nextjs:
@@ -78,6 +90,7 @@ nextjs:
   parent: typescript
   template: framework/nextjs.md
   paths: "**/*.{ts,tsx,js,jsx}"
+  version: "1.0.0"
   default: false
 
 laravel:
@@ -85,6 +98,7 @@ laravel:
   parent: php
   template: framework/laravel.md
   paths: "**/*.php"
+  version: "1.0.0"
   default: false
 
 symfony:
@@ -92,6 +106,7 @@ symfony:
   parent: php
   template: framework/symfony.md
   paths: "**/*.php"
+  version: "1.0.0"
   default: false
 
 rails:
@@ -99,6 +114,7 @@ rails:
   parent: ruby
   template: framework/rails.md
   paths: "**/*.rb"
+  version: "1.0.0"
   default: false
 
 django:
@@ -106,4 +122,5 @@ django:
   parent: python
   template: framework/django.md
   paths: "**/*.py"
+  version: "1.0.0"
   default: false
