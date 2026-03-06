@@ -256,6 +256,27 @@ Plans live in `docs/product/plans/` as plain markdown.
 
 ---
 
+## See It in Action
+
+Watch the complete workflow in action — PRD → Plan → Execute with real-time rule compliance verification:
+
+![Keel e2e workflow recording](./test/workflow-e2e.mp4)
+
+The recording shows:
+1. **Full test suite** — all 4 test suites running (registry, structure, templates, e2e workflow)
+2. **Real output** — actual CLI results displayed with colored output
+3. **Phase execution** — PRD creation → Plan generation → Phase 1 & 2 execution
+4. **Rule compliance** — automated verification of no magic numbers, proper error handling, structured error types
+5. **Progress tracking** — plan progress table updates and verification
+
+For details, see [Video Generation Guide](./docs/guides/video-generation.md) or run the test locally:
+
+```bash
+./test/run.sh
+```
+
+---
+
 ## Claude Code Only
 
 Keel targets Claude Code exclusively. Other AI coding tools lack the features keel depends on:
