@@ -42,7 +42,6 @@ export default defineConfig({
           { text: '/keel:plan', link: '/commands/plan' },
           { text: '/keel:status', link: '/commands/status' },
           { text: '/keel:intake', link: '/commands/intake' },
-          { text: '/keel:migrate', link: '/commands/migrate' },
         ],
       },
       {

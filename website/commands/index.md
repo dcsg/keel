@@ -11,7 +11,6 @@ Keel has six commands. Each does exactly one thing. You rarely need to remember 
 | [`/keel:plan`](/commands/plan) | Interview + phased execution plan with dependency tracking |
 | [`/keel:status`](/commands/status) | Dashboard — plan progress, rules, what's next |
 | [`/keel:intake`](/commands/intake) | Scan scattered docs and organize into keel structure |
-| [`/keel:migrate`](/commands/migrate) | Convert dof/conductor projects to keel |
 
 ## You don't need to remember them
 
