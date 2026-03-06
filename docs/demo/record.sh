@@ -59,11 +59,6 @@ record_flow() {
 
     echo "  Project: $DEMO_DIR"
 
-    # Pre-trust the directory so the interactive trust dialog doesn't appear.
-    # claude -p skips the trust prompt and registers the workspace as trusted.
-    echo "  Pre-trusting workspace..."
-    (cd "$DEMO_DIR" && claude -p "exit" --output-format text 2>/dev/null || true)
-
     # Write env.tape for VHS
     cat > "$SCRIPT_DIR/env.tape" << EOF
 # Auto-generated — do not edit

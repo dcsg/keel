@@ -15,6 +15,8 @@ Source docs/demo/env.tape
 # Launch Claude Code
 Type "claude --dangerously-skip-permissions"
 Enter
+Wait+Screen@30s /trust this folder/
+Enter
 Wait+Screen@30s /Type to talk/
 
 Sleep 1
