@@ -1,5 +1,6 @@
 ---
 paths: "**/*.rb"
+version: "1.0.0"
 ---
 <!-- keel:generated -->
 

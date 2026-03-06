@@ -32,6 +32,9 @@ for tmpl in $templates; do
     # Must have paths: in frontmatter
     assert_frontmatter_has "$tmpl" "paths" "Has paths: frontmatter: $name"
 
+    # Must have version: in frontmatter
+    assert_frontmatter_has "$tmpl" "version" "Has version: frontmatter: $name"
+
     # Must have a top-level heading
     assert_file_contains "$tmpl" "^# " "Has top-level heading: $name"
 

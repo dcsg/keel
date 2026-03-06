@@ -1,5 +1,6 @@
 ---
 paths: "**/*.{ts,tsx,js,jsx,vue,svelte,css,scss}"
+version: "1.0.0"
 ---
 <!-- keel:generated -->
 

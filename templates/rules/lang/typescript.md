@@ -1,5 +1,6 @@
 ---
 paths: "**/*.{ts,tsx}"
+version: "1.0.0"
 ---
 <!-- keel:generated -->
 
