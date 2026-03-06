@@ -1,39 +1,67 @@
 #!/bin/bash
-# Automated keel demo recording
+# Keel demo recorder — records individual flows or all at once
 #
-# Usage: ./docs/demo/record.sh
+# Usage:
+#   ./docs/demo/record.sh              # list available flows
+#   ./docs/demo/record.sh 01-init      # record one flow
+#   ./docs/demo/record.sh all          # record all flows
 #
-# 1. Creates a temp Go project
-# 2. Runs VHS with Wait-based automation (handles variable response times)
-# 3. Outputs GIF + MP4 to docs/demo/
-#
-# Fully automated. No manual interaction. Re-run anytime.
+# Prereqs: vhs, claude, git, tree
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+TAPES_DIR="$SCRIPT_DIR/tapes"
+OUTPUT_DIR="$SCRIPT_DIR/output"
 
 cd "$REPO_ROOT"
 
+# Check dependencies
 for cmd in vhs claude git; do
-  if ! command -v "$cmd" &>/dev/null; then
-    echo "Missing: $cmd"
-    exit 1
-  fi
+    if ! command -v "$cmd" &>/dev/null; then
+        echo "Missing: $cmd"
+        exit 1
+    fi
 done
 
-# Create temp demo project
-echo "Setting up demo project..."
-DEMO_DIR=$(bash docs/demo/setup-demo-project.sh)
-trap "rm -rf $DEMO_DIR" EXIT
+mkdir -p "$OUTPUT_DIR"
 
-echo "Demo project: $DEMO_DIR"
+# Map flows to their setup scripts
+setup_for() {
+    case "$1" in
+        01-init|07-workflow)  echo "setup-demo-project.sh" ;;
+        06-intake)            echo "setup-messy-project.sh" ;;
+        *)                    echo "setup-established-project.sh" ;;
+    esac
+}
 
-# Write env.tape that VHS sources (sets working directory)
-cat > docs/demo/env.tape << EOF
+# Record a single flow
+record_flow() {
+    local tape="$TAPES_DIR/$1.tape"
+    if [ ! -f "$tape" ]; then
+        echo "Tape not found: $tape"
+        return 1
+    fi
+
+    local setup_script="$SCRIPT_DIR/$(setup_for "$1")"
+
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "  Recording: $1"
+    echo "  Setup:     $(basename "$setup_script")"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+    # Create temp project
+    echo "  Setting up demo project..."
+    DEMO_DIR=$(bash "$setup_script")
+    trap "rm -rf $DEMO_DIR" RETURN
+
+    echo "  Project: $DEMO_DIR"
+
+    # Write env.tape for VHS
+    cat > "$SCRIPT_DIR/env.tape" << EOF
 # Auto-generated — do not edit
-# Points VHS to the temp demo project
 Hide
 Type "cd $DEMO_DIR && unset CLAUDECODE && clear"
 Enter
@@ -41,20 +69,51 @@ Sleep 1
 Show
 EOF
 
-echo "Recording with VHS (this takes a few minutes)..."
-echo ""
+    echo "  Recording with VHS..."
+    vhs "$tape"
 
-vhs docs/demo/demo.tape
+    # Clean up
+    rm -f "$SCRIPT_DIR/env.tape"
+    rm -rf "$DEMO_DIR"
+    trap - RETURN
 
-# Clean up generated env.tape
-rm -f docs/demo/env.tape
+    echo "  Done: $OUTPUT_DIR/$1.gif"
+}
+
+# No args — list available flows
+if [ -z "${1:-}" ]; then
+    echo ""
+    echo "Keel Demo Recorder"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "Available flows:"
+    for tape in "$TAPES_DIR"/*.tape; do
+        name=$(basename "$tape" .tape)
+        desc=$(grep '^# Flow' "$tape" | head -1 | sed 's/^# Flow [0-9]*: //')
+        printf "  %-16s %s\n" "$name" "$desc"
+    done
+    echo ""
+    echo "Usage:"
+    echo "  ./docs/demo/record.sh 01-init    # record one flow"
+    echo "  ./docs/demo/record.sh all        # record all flows"
+    echo ""
+    exit 0
+fi
+
+# Record all or a specific flow
+if [ "$1" = "all" ]; then
+    for tape in "$TAPES_DIR"/*.tape; do
+        name=$(basename "$tape" .tape)
+        record_flow "$name"
+    done
+else
+    record_flow "$1"
+fi
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  Done!"
+echo "  All recordings complete!"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
-ls -lh docs/demo/keel-workflow.* 2>/dev/null
-echo ""
-echo "  Re-record: ./docs/demo/record.sh"
+ls -lh "$OUTPUT_DIR"/*.gif 2>/dev/null
 echo ""
