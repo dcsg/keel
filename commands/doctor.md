@@ -65,6 +65,17 @@ ls .claude/rules/*.md 2>/dev/null | wc -l
 - `[!!]` if empty — suggest `/keel:init` to install rule packs
 - For each rule file, check for `<!-- keel:generated -->` marker. If missing, note as manually edited (informational, not a warning).
 
+**Rule pack freshness:**
+
+For each `.claude/rules/*.md` file that has the `keel:generated` marker:
+1. Read its `version:` from YAML frontmatter
+2. Look up the pack name (filename without `.md`) in the registry
+3. Compare versions:
+   - Installed version == registry version: no output (already covered by Rules check)
+   - Installed version < registry version: `[!!] {name} outdated (installed: {old}, available: {new}) — run /keel:rules-update`
+   - No `version:` in installed file: `[!!] {name} has no version — may predate versioning`
+   - Pack not in registry (custom rule): skip silently
+
 **CLAUDE.md sentinel:**
 ```bash
 grep -q 'keel:' CLAUDE.md 2>/dev/null
