@@ -1,6 +1,7 @@
 ---
 name: keel:context
 description: "Load all project context into session"
+argument-hint: "[--depth=full|focused|minimal]"
 allowed-tools:
   - Read
   - Glob
@@ -10,7 +11,27 @@ allowed-tools:
 
 # keel:context
 
-Load all project context into the current session. Shows what was loaded for transparency.
+Load project context into the current session. Shows what was loaded for transparency.
+
+## Arguments
+
+- `$ARGUMENTS` — Optional depth flag: `--depth=full`, `--depth=focused`, or `--depth=minimal`
+
+## Depth Levels
+
+| Depth | Loads | Best for |
+|-------|-------|----------|
+| `full` | Everything: soul, all decisions, all invariants, product, PRDs, plans, rules | Small/medium projects, first time on a project |
+| `focused` | Soul, current plan phase, relevant decisions, all invariants, rule names | Day-to-day work on large projects |
+| `minimal` | Soul, current plan phase title + tasks, all invariants | Quick tasks, tight context windows |
+
+Default is `full`. If no `--depth` flag is provided and the project has more than 15 ADRs or more than 5 PRDs, suggest focused mode before proceeding:
+
+```
+Note: This project has {n} ADRs and {m} PRDs (~{est}k tokens).
+  Consider --depth=focused to reduce context size.
+  Proceeding with --depth=full (default).
+```
 
 ## Instructions
 
@@ -24,24 +45,29 @@ No keel config found. Run /keel:init to set up this project.
 
 Read the config to determine `base:` directory (default: `docs`).
 
-### 2. Load Soul
+Parse `$ARGUMENTS` for `--depth=` flag. Default to `full` if not provided.
 
-Read `{base}/soul.md` (or `docs/soul.md`). If it exists, summarize the key points. If not, note it's missing.
+### 2. Load Soul (all depths)
+
+Read `{base}/soul.md`. If it exists, summarize the key points. If not, note it's missing.
 
 ### 3. Load Active Plan
 
-Search for plan files in the plans directory:
+Search for plan files:
 
 ```bash
 ls -t {base}/product/plans/*.md {base}/plans/*.md 2>/dev/null | head -5
 ```
 
-If plans exist:
-- Read the most recent plan (or the one marked active)
-- Look for a progress table — this is the persistent state
-- Summarize: plan name, current phase, what's done, what's next
+**full:** Read the most recent plan. Summarize: plan name, progress table, current phase, what's next.
 
-### 4. Load Product Context
+**focused:** Read the most recent plan. Show only the current in-progress phase (objective + tasks). Skip completed and future phases.
+
+**minimal:** Show only the current phase title and task list. No progress table, no other phases.
+
+### 4. Load Product Context (full only)
+
+Skip this step for `focused` and `minimal` depths.
 
 If `{base}/product/spec.md` exists, read and summarize:
 - Product vision
@@ -56,9 +82,18 @@ If PRDs exist in `{base}/product/prds/`, list them with titles.
 ls {base}/decisions/*.md 2>/dev/null
 ```
 
-If decision records exist, read and summarize each (title, status, key decision). These inform implementation choices.
+**full:** Read and summarize every decision record (title, status, key decision).
 
-### 6. Load Invariants
+**focused:** Load only relevant decisions. Determine relevance by:
+1. Get the current git branch name: `git branch --show-current 2>/dev/null`
+2. Get the active plan's current phase title and keywords
+3. For each ADR, check if its filename or title contains keywords from the branch name or phase title (e.g., branch `feat/auth` matches ADR `003-authentication-strategy.md`)
+4. If no matches found, load the 5 most recently modified ADRs as fallback
+5. Note which decisions were loaded and why: `Loaded 3/{total} decisions (matched branch: feat/auth)`
+
+**minimal:** Skip entirely.
+
+### 6. Load Invariants (all depths)
 
 ```bash
 ls {base}/invariants/*.md 2>/dev/null
@@ -66,32 +101,43 @@ ls {base}/invariants/*.md 2>/dev/null
 
 Invariants are hard architectural constraints — non-negotiables that must never be violated. Read each one and keep them in mind for the session. If none exist, skip silently.
 
+Invariants are always loaded regardless of depth — they are safety constraints.
+
 ### 7. Check Rules Status
+
+**full:** List installed rule packs. For each, check for `<!-- keel:generated -->` marker. Flag manually edited ones.
 
 ```bash
 ls .claude/rules/*.md 2>/dev/null
 ```
 
-List installed rule packs. For each, check if the file contains `<!-- keel:generated -->` — if that marker is missing, the file was manually edited. Note it as a warning so the user knows their customizations won't be overwritten if they re-run init.
+**focused / minimal:** List rule pack names only (no content check — rules are already active via `.claude/rules/`).
 
-### 8. Check Ticket Config
+### 8. Check Ticket Config (full and focused)
 
-Read `.keel/config.yaml` for a `ticket:` section. If configured, note the system and team — this context is useful for plan creation and referencing issues.
+Skip for `minimal`.
+
+Read `.keel/config.yaml` for a `ticket:` section. If configured, note the system and team.
 
 ### 9. Output Summary
 
 ```
-Context loaded for: {project name from soul.md}
+Context loaded for: {project name from soul.md} (depth: {depth})
 
   Soul:        {one-line summary}
   Plan:        {active plan name and current phase, or "None active"}
   Product:     {spec status, or "No product spec"}
-  Decisions:   {count} decision records
+  Decisions:   {count loaded}/{count total} decision records
   Invariants:  {count} invariants
   PRDs:        {count} product requirements
   Rules:       {count} rule packs installed
   Tickets:     {system name, or "Not configured"}
+```
 
+Then output each section based on depth:
+
+**full:**
+```
   ─────────────────────────────────────────
   SOUL
   ─────────────────────────────────────────
@@ -116,6 +162,48 @@ Context loaded for: {project name from soul.md}
   RULES
   ─────────────────────────────────────────
   {list of installed rule packs, flagging any manually edited ones}
+```
+
+**focused:**
+```
+  ─────────────────────────────────────────
+  SOUL
+  ─────────────────────────────────────────
+  {soul.md summary}
+
+  ─────────────────────────────────────────
+  CURRENT PHASE
+  ─────────────────────────────────────────
+  {current phase objective + tasks only}
+
+  ─────────────────────────────────────────
+  RELEVANT DECISIONS
+  ─────────────────────────────────────────
+  {matched decisions with reason, or "No relevant decisions for current branch/phase."}
+  (Use --depth=full to load all {n} decisions)
+
+  ─────────────────────────────────────────
+  INVARIANTS
+  ─────────────────────────────────────────
+  {list of invariants}
+```
+
+**minimal:**
+```
+  ─────────────────────────────────────────
+  SOUL
+  ─────────────────────────────────────────
+  {soul.md summary}
+
+  ─────────────────────────────────────────
+  CURRENT PHASE
+  ─────────────────────────────────────────
+  {phase title + task list only}
+
+  ─────────────────────────────────────────
+  INVARIANTS
+  ─────────────────────────────────────────
+  {list of invariants}
 ```
 
 ### 10. Warnings
