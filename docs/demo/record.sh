@@ -61,6 +61,9 @@ EOF
 
 git add -A && git commit -q -m "init: go project scaffold"
 
+# Allow running claude -p even if invoked from within a Claude Code session
+unset CLAUDECODE
+
 # ── The demo script that asciinema will record ──
 cat > "$DEMO_DIR/_run_demo.sh" << 'DEMO'
 #!/bin/bash
@@ -88,7 +91,8 @@ echo -e "${DIM}Initializing keel — detecting project, installing rules...${RES
 echo ""
 
 claude -p "Run /keel:init for this project. It's a Go backend for a SaaS invoicing tool. Accept all recommended rules and generate everything. Be concise in your output — show what was detected and what was generated." \
-  --dangerously-skip-permissions 2>/dev/null
+  --dangerously-skip-permissions \
+  --allow-dangerously-skip-permissions
 
 sleep 2
 
@@ -99,6 +103,7 @@ echo ""
 
 claude -p "Run /keel:plan to plan JWT authentication for this API. Requirements: user registration (POST /auth/register), login (POST /auth/login returns JWT), protected routes (all /api/* need Authorization header), token expiry after 24 hours. Create a 2-phase plan. Be concise." \
   --dangerously-skip-permissions \
+  --allow-dangerously-skip-permissions \
   -c 2>/dev/null
 
 sleep 2
@@ -110,6 +115,7 @@ echo ""
 
 claude -p "Run /keel:status to show the project dashboard — installed rules, plan progress, governance health. Be concise." \
   --dangerously-skip-permissions \
+  --allow-dangerously-skip-permissions \
   -c 2>/dev/null
 
 sleep 2
