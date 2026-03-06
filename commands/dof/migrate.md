@@ -54,7 +54,7 @@ Migration: {.dof/ or .conductor/} → keel
     {legacy}/config.yaml                → .keel/config.yaml (rewritten)
     {legacy}/agent-instructions.md      → .claude/rules/ (converted to rule packs)
     {legacy}/architecture/decisions/*   → docs/decisions/
-    {legacy}/architecture/invariants/*  → docs/decisions/ (reference docs, not rules)
+    {legacy}/architecture/invariants/*  → docs/invariants/ (hard constraints, separate from decisions)
     {legacy}/design/components/*        → docs/reference/components/
     {legacy}/product/prds/*             → docs/product/prds/
 
@@ -83,6 +83,7 @@ mkdir -p .keel
 mkdir -p docs/product/prds
 mkdir -p docs/product/plans
 mkdir -p docs/decisions
+mkdir -p docs/invariants
 mkdir -p docs/reference
 mkdir -p .claude/rules
 ```
@@ -108,10 +109,12 @@ cp {legacy}/architecture/decisions/*.md docs/decisions/ 2>/dev/null
 ```
 
 #### 4.5 — Migrate invariants
-Invariants are architectural constraints, not coding guardrails — they belong alongside decisions as reference docs, not in `.claude/rules/`.
+
+Invariants are hard constraints — non-negotiables the system must never violate. They live in their own directory, separate from decisions.
 
 ```bash
-cp {legacy}/architecture/invariants/*.md docs/decisions/ 2>/dev/null
+mkdir -p docs/invariants
+cp {legacy}/architecture/invariants/*.md docs/invariants/ 2>/dev/null
 ```
 
 #### 4.6 — Migrate product docs
@@ -154,7 +157,7 @@ Migration complete!
     Soul:          docs/soul.md
     Config:        .keel/config.yaml
     Decisions:     {count} records → docs/decisions/
-    Invariants:    {count} → docs/decisions/ (architectural constraints)
+    Invariants:    {count} → docs/invariants/
     PRDs:          {count} → docs/product/prds/
     Components:    {count} → docs/reference/components/
 

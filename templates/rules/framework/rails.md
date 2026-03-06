@@ -1,6 +1,7 @@
 ---
 paths: "**/*.rb"
 ---
+<!-- keel:generated -->
 
 # Ruby on Rails
 

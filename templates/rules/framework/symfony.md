@@ -1,6 +1,7 @@
 ---
 paths: "**/*.php"
 ---
+<!-- keel:generated -->
 
 # Symfony
 

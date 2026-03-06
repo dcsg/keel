@@ -220,7 +220,41 @@ Seed from the user's description (greenfield) or from codebase analysis (establi
 *Initialized by keel: {date}*
 ```
 
-#### 5.3 — `.claude/rules/`
+#### 5.3 — `docs/product/spec.md`
+
+Create a product spec stub from the template. If `docs/product/spec.md` already exists, skip — do not overwrite.
+
+```markdown
+# {Project Name} — Product Spec
+
+## Identity
+
+{One-line product description}
+
+## Users
+
+{Who this is for, from description or "TBD"}
+
+## Problems We Solve
+
+-
+
+## Features (Roadmap)
+
+| Feature | Status | PRD |
+|---------|--------|-----|
+|         | planned |    |
+
+## Market Context
+
+{Competitors, alternatives, positioning — or "TBD"}
+
+---
+
+*Initialized by keel: {date}*
+```
+
+#### 5.4 — `.claude/rules/` — rule packs
 
 For each enabled rule pack:
 
@@ -237,7 +271,7 @@ Templates not found. To generate rules, install keel globally:
 Or manually copy rule templates from the keel repo to .claude/rules/
 ```
 
-#### 5.4 — `CLAUDE.md` (root) — safe merge
+#### 5.5 — `CLAUDE.md` (root) — safe merge
 
 **Never overwrite an existing CLAUDE.md.** Use sentinel comments to manage the keel section safely.
 
@@ -292,11 +326,22 @@ Use a Read + Edit approach — never Write the whole file. Find the markers with
 
 #### 5.5 — `.claude/settings.json` (hooks)
 
-Generate hooks for compaction recovery:
+Generate two hooks:
+
+**PreToolUse** — fires before the first Write or Edit in a session. If a keel project is detected and context hasn't been loaded yet this session, reminds Claude to load context before writing code. Uses a temp file sentinel so it only fires once per session per project.
+
+**PreCompact** — fires before context compaction. Reminds Claude to update the active plan's progress table before context is lost.
 
 ```json
 {
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "type": "command",
+        "command": "if [ -f 'docs/soul.md' ] && [ -f '.keel/config.yaml' ]; then SENTINEL=\"/tmp/keel-$(echo \"$PWD\" | md5sum 2>/dev/null | cut -c1-8 || echo \"$PWD\" | md5 2>/dev/null | cut -c1-8)\"; if [ ! -f \"$SENTINEL\" ]; then touch \"$SENTINEL\"; echo '📋 Keel: context not loaded this session. Read docs/soul.md, docs/decisions/, docs/invariants/, and check docs/product/plans/ for active plan before writing code.'; fi; fi"
+      }
+    ],
     "PreCompact": [
       {
         "type": "command",
@@ -307,7 +352,7 @@ Generate hooks for compaction recovery:
 }
 ```
 
-**Important:** If `.claude/settings.json` already exists, merge the hooks — don't overwrite existing settings.
+**Important:** If `.claude/settings.json` already exists, merge both hooks — don't overwrite existing settings.
 
 #### 5.6 — SDLC Files
 
@@ -339,6 +384,7 @@ If PR template enabled:
 mkdir -p docs/product/prds
 mkdir -p docs/product/plans
 mkdir -p docs/decisions
+mkdir -p docs/invariants
 mkdir -p docs/reference
 ```
 

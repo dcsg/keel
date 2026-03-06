@@ -1,6 +1,7 @@
 ---
 paths: "**/*.go"
 ---
+<!-- keel:generated -->
 
 # Chi (Go HTTP Router)
 

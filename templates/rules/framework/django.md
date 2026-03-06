@@ -1,6 +1,7 @@
 ---
 paths: "**/*.py"
 ---
+<!-- keel:generated -->
 
 # Django
 

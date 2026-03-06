@@ -88,9 +88,11 @@ For each plan file, read the Progress table:
 
  GOVERNANCE
  ──────────
- Soul:       {exists/missing}
- Decisions:  {count} records
- Product:    {spec exists + PRD count, or "No product spec"}
+ Soul:        {exists/missing}
+ Decisions:   {count} records
+ Invariants:  {count} constraints
+ Product:     {spec exists + PRD count, or "No product spec"}
+ Tickets:     {system name, or "Not configured"}
 
  WARNINGS
  ────────
@@ -108,3 +110,18 @@ If no active plan:
 ```
 
 If no keel setup at all, show a minimal status with just what exists and suggest init.
+
+### 5. Write STATUS.md
+
+After displaying the dashboard, write the same content to `docs/STATUS.md` so it persists between sessions and can be committed to git. This gives the team a snapshot of project health without needing to run the command.
+
+Use a sentinel block so the file can contain user-written sections above the keel block:
+
+```
+<!-- keel:status:start — updated by /keel:status, do not edit manually -->
+{dashboard content}
+<!-- keel:status:end -->
+```
+
+If `docs/STATUS.md` exists: replace only between the sentinels.
+If it doesn't exist: create it with the keel block only.

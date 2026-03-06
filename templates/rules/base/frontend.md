@@ -1,6 +1,7 @@
 ---
 paths: "**/*.{ts,tsx,js,jsx,vue,svelte,css,scss}"
 ---
+<!-- keel:generated -->
 
 # Frontend
 

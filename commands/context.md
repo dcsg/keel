@@ -58,25 +58,39 @@ ls docs/decisions/*.md 2>/dev/null
 
 If decision records exist, read and summarize each (title, status, key decision). These inform implementation choices.
 
-### 6. Check Rules Status
+### 6. Load Invariants
+
+```bash
+ls docs/invariants/*.md 2>/dev/null
+```
+
+Invariants are hard architectural constraints — non-negotiables that must never be violated. Read each one and keep them in mind for the session. If none exist, skip silently.
+
+### 7. Check Rules Status
 
 ```bash
 ls .claude/rules/*.md 2>/dev/null
 ```
 
-List installed rule packs. Check if any have been manually edited (if checksums are implemented).
+List installed rule packs. For each, check if the file contains `<!-- keel:generated -->` — if that marker is missing, the file was manually edited. Note it as a warning so the user knows their customizations won't be overwritten if they re-run init.
 
-### 7. Output Summary
+### 8. Check Ticket Config
+
+Read `.keel/config.yaml` for a `ticket:` section. If configured, note the system and team — this context is useful for plan creation and referencing issues.
+
+### 9. Output Summary
 
 ```
 Context loaded for: {project name from soul.md}
 
-  Soul:       {one-line summary}
-  Plan:       {active plan name and current phase, or "None active"}
-  Product:    {spec status, or "No product spec"}
-  Decisions:  {count} decision records
-  PRDs:       {count} product requirements
-  Rules:      {count} rule packs installed
+  Soul:        {one-line summary}
+  Plan:        {active plan name and current phase, or "None active"}
+  Product:     {spec status, or "No product spec"}
+  Decisions:   {count} decision records
+  Invariants:  {count} invariants
+  PRDs:        {count} product requirements
+  Rules:       {count} rule packs installed
+  Tickets:     {system name, or "Not configured"}
 
   ─────────────────────────────────────────
   SOUL
@@ -94,12 +108,17 @@ Context loaded for: {project name from soul.md}
   {list of decisions with status, or "No decisions recorded yet."}
 
   ─────────────────────────────────────────
+  INVARIANTS
+  ─────────────────────────────────────────
+  {list of invariants — hard constraints to never violate, or "None defined."}
+
+  ─────────────────────────────────────────
   RULES
   ─────────────────────────────────────────
-  {list of installed rule packs}
+  {list of installed rule packs, flagging any manually edited ones}
 ```
 
-### 8. Warnings
+### 10. Warnings
 
 If anything is missing or stale, note it:
 
@@ -107,5 +126,5 @@ If anything is missing or stale, note it:
   Warnings:
   - No soul.md found — run /keel:init
   - Plan "PLAN-xyz.md" has no progress updates in 7+ days
-  - Rule pack "go.md" was manually edited (checksum mismatch)
+  - Rule pack "go.md" was manually edited (no keel:generated marker) — customizations preserved
 ```

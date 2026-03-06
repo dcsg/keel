@@ -1,6 +1,7 @@
 ---
 paths: "**/*.{ts,tsx,js,jsx}"
 ---
+<!-- keel:generated -->
 
 # Next.js
 

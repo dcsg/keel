@@ -1,6 +1,7 @@
 ---
 paths: "**/*.go"
 ---
+<!-- keel:generated -->
 
 # Go
 
