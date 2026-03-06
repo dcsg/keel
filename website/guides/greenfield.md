@@ -35,12 +35,18 @@ A project structure ready for serious development:
 ```
 your-project/
 ├── docs/
-│   └── soul.md              # seeded from your description
+│   ├── soul.md              # seeded from your description
+│   ├── decisions/           # architecture decision records
+│   ├── invariants/          # hard constraints — never violate these
+│   └── product/
+│       ├── spec.md          # product spec stub
+│       ├── prds/
+│       └── plans/
 ├── .keel/config.yaml
 └── .claude/
     ├── rules/               # 7 rule files installed
     ├── agents/              # reviewer + debugger
-    ├── settings.json
+    ├── settings.json        # PreToolUse context gate + PreCompact recovery
     └── CLAUDE.md
 ```
 

@@ -19,7 +19,9 @@ Loads your project's memory into the current session.
 | `docs/product/prds/` | Active feature requirements |
 | `docs/product/plans/` | Current plan + phase progress |
 | `docs/decisions/` | Architecture decisions and their reasoning |
-| `.claude/rules/` | Summary of what standards are enforced |
+| `docs/invariants/` | Hard constraints — non-negotiables Claude must never violate |
+| `.keel/config.yaml` | Ticket system config (Linear/Jira/GitHub) |
+| `.claude/rules/` | Which packs are active; flags manually edited files |
 
 ## What it looks like
 
@@ -49,6 +51,10 @@ Loads your project's memory into the current session.
 >
 > Ready. What are we working on?
 > ```
+
+## You usually don't need to run this manually
+
+The `PreToolUse` hook installed by `/keel:init` fires before Claude's first Write or Edit in a session. If context hasn't been loaded yet, it reminds Claude to load it before writing any code. Running `/keel:context` explicitly gives you the full visible output — useful when onboarding a teammate or starting a complex session.
 
 ## Natural language triggers
 

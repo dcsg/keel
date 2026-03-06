@@ -18,6 +18,19 @@ Keel audits your codebase and recommends rules based on what it actually finds.
 - Existing linting config (`.golangci-lint.yaml`, `.eslintrc`, etc.)
 - Git history depth
 
+## What gets created
+
+```
+docs/
+├── soul.md           # seeded from codebase audit
+├── decisions/        # for architecture decisions going forward
+├── invariants/       # hard constraints on the system
+└── product/
+    ├── spec.md       # product spec stub
+    ├── prds/
+    └── plans/
+```
+
 ## Scattered Docs
 
 If your project has docs spread across READMEs, wikis, or old ADR folders, run `/keel:intake` after init to organize everything into keel's structure.

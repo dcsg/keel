@@ -42,6 +42,9 @@ for tmpl in $templates; do
     assert_file_not_contains "$tmpl" "^TODO:" "No TODO: markers: $name"
     assert_file_not_contains "$tmpl" "PLACEHOLDER" "No PLACEHOLDERs: $name"
     assert_file_not_contains "$tmpl" "^FIXME:" "No FIXME: markers: $name"
+
+    # Must have keel:generated marker
+    assert_file_contains "$tmpl" "keel:generated" "Has keel:generated marker: $name"
 done
 
 test_summary

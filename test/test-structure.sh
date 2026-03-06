@@ -32,10 +32,19 @@ assert_file_not_contains "$PROJECT_ROOT/CLAUDE.md" "\.dof" "CLAUDE.md has no .do
 # Note: can't grep for "conductor" because the repo might be in a path containing it
 # Instead check for specific old branding
 assert_file_not_contains "$PROJECT_ROOT/README.md" "conductor:context" "README.md has no conductor: command references"
-assert_file_not_contains "$PROJECT_ROOT/README.md" "\.dof" "README.md has no .dof references"
+assert_file_not_contains "$PROJECT_ROOT/README.md" "\.dof/config" "README.md has no .dof/config references"
 
 # No old directories
 assert_file_not_exists "$PROJECT_ROOT/.conductor/config.yaml" "No .conductor/ directory"
 assert_file_not_exists "$PROJECT_ROOT/.dof/config.yaml" "No .dof/ directory"
+
+# dof commands exist in repo
+assert_dir_exists "$PROJECT_ROOT/commands/dof" "commands/dof/ exists"
+assert_file_exists "$PROJECT_ROOT/commands/dof/migrate.md" "commands/dof/migrate.md exists"
+
+# settings template has both hooks
+assert_file_contains "$PROJECT_ROOT/templates/settings.json.tmpl" "PreToolUse" "settings.json.tmpl has PreToolUse hook"
+assert_file_contains "$PROJECT_ROOT/templates/settings.json.tmpl" "PreCompact" "settings.json.tmpl has PreCompact hook"
+assert_file_contains "$PROJECT_ROOT/templates/settings.json.tmpl" "Write|Edit" "PreToolUse hook targets Write|Edit"
 
 test_summary
