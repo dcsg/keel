@@ -1,0 +1,15 @@
+# Keel configuration
+# This file configures keel for the keel project itself (dogfooding).
+
+base: docs
+
+stack: []  # keel is pure markdown, no language stack
+
+rules: {}  # no rules needed for a markdown-only project
+
+sdlc:
+  commit-convention: conventional
+  pr-template: false
+
+plans:
+  dir: docs/plans

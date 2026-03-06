@@ -1,0 +1,110 @@
+---
+name: keel:status
+description: "Dashboard — plans, rules, governance health"
+allowed-tools:
+  - Read
+  - Glob
+  - Grep
+  - Bash
+---
+
+# keel:status
+
+Show project dashboard: active plans, rule packs, and governance health.
+
+## Instructions
+
+### 1. Load Config
+
+Read `.keel/config.yaml`. If not found:
+```
+No keel config found. Run /keel:init to set up this project.
+```
+
+### 2. Gather Status
+
+Collect information in parallel where possible:
+
+**Plans:**
+```bash
+ls -t docs/product/plans/PLAN-*.md docs/plans/PLAN-*.md 2>/dev/null
+```
+For each plan, read the Progress table to determine status.
+
+**Rules:**
+```bash
+ls .claude/rules/*.md 2>/dev/null
+```
+Count installed packs. Optionally check if they match templates (checksum).
+
+**Soul:**
+Check if `docs/soul.md` exists.
+
+**Product:**
+Check if `docs/product/spec.md` exists. Check for PRDs.
+
+**Decisions:**
+```bash
+ls docs/decisions/*.md 2>/dev/null | wc -l
+```
+
+### 3. Determine Plan Status
+
+For each plan file, read the Progress table:
+- Count phases with status `done` or `complete`
+- Count phases with status `in-progress`
+- Count phases with status `-` (not started)
+- Calculate percentage complete
+
+### 4. Output Dashboard
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ KEEL STATUS — {project name from soul.md}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ ACTIVE PLAN
+ ───────────
+ {plan name}
+ Progress: {done}/{total} phases ({percentage}%)
+
+ | Phase | Title              | Status      |
+ |-------|--------------------|-------------|
+ | 1     | {title}            | done        |
+ | 2     | {title}            | in-progress |
+ | 3     | {title}            | -           |
+
+ WHAT'S NEXT
+ ───────────
+ Phase {n} — {title}
+   {1-3 bullet points summarising the concrete tasks in that phase}
+   Run: /keel:plan to start or /keel:context to load context first
+
+ RULES
+ ─────
+ {count} packs installed:
+   code-quality.md    testing.md    security.md
+   error-handling.md  go.md         chi.md
+
+ GOVERNANCE
+ ──────────
+ Soul:       {exists/missing}
+ Decisions:  {count} records
+ Product:    {spec exists + PRD count, or "No product spec"}
+
+ WARNINGS
+ ────────
+ {any issues: missing soul, stale plan, manually edited rules, etc.}
+ {or: "All clear — governance is healthy."}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+If no active plan:
+```
+ ACTIVE PLAN
+ ───────────
+ No active plan. Run /keel:plan to create one.
+```
+
+If no keel setup at all, show a minimal status with just what exists and suggest init.

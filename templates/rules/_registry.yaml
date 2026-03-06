@@ -1,0 +1,109 @@
+# Keel Rule Registry
+# Maps rule names to their template, tier, and paths: glob for .claude/rules/ frontmatter.
+# Parent field indicates a framework depends on a language pack.
+
+# Base (language-agnostic)
+code-quality:
+  tier: base
+  template: base/code-quality.md
+  paths: "**/*"
+  default: true
+
+testing:
+  tier: base
+  template: base/testing.md
+  paths: "**/*"
+  default: true
+
+security:
+  tier: base
+  template: base/security.md
+  paths: "**/*"
+  default: true
+
+error-handling:
+  tier: base
+  template: base/error-handling.md
+  paths: "**/*"
+  default: true
+
+# Base (opt-in)
+frontend:
+  tier: base
+  template: base/frontend.md
+  paths: "**/*.{ts,tsx,js,jsx,vue,svelte,css,scss}"
+  default: false
+
+architecture:
+  tier: base
+  template: base/architecture.md
+  paths: "**/*"
+  default: false
+
+# Language packs
+go:
+  tier: lang
+  template: lang/go.md
+  paths: "**/*.go"
+  default: false
+
+typescript:
+  tier: lang
+  template: lang/typescript.md
+  paths: "**/*.{ts,tsx}"
+  default: false
+
+python:
+  tier: lang
+  template: lang/python.md
+  paths: "**/*.py"
+  default: false
+
+php:
+  tier: lang
+  template: lang/php.md
+  paths: "**/*.php"
+  default: false
+
+# Framework packs
+chi:
+  tier: framework
+  parent: go
+  template: framework/chi.md
+  paths: "**/*.go"
+  default: false
+
+nextjs:
+  tier: framework
+  parent: typescript
+  template: framework/nextjs.md
+  paths: "**/*.{ts,tsx,js,jsx}"
+  default: false
+
+laravel:
+  tier: framework
+  parent: php
+  template: framework/laravel.md
+  paths: "**/*.php"
+  default: false
+
+symfony:
+  tier: framework
+  parent: php
+  template: framework/symfony.md
+  paths: "**/*.php"
+  default: false
+
+rails:
+  tier: framework
+  parent: ruby
+  template: framework/rails.md
+  paths: "**/*.rb"
+  default: false
+
+django:
+  tier: framework
+  parent: python
+  template: framework/django.md
+  paths: "**/*.py"
+  default: false

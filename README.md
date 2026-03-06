@@ -1,0 +1,256 @@
+# Keel
+
+**Stop hoping Claude remembers your standards. Install them.**
+
+Keel is a context engine for Claude Code. It installs coding standards as `.claude/rules/` files, loads project context at session start, and keeps every session consistent — whether it's you, a teammate, or a fresh conversation.
+
+```
+/keel:init
+```
+
+That's it. Describe your project, keel figures out the rest.
+
+---
+
+## Before Keel vs After Keel
+
+**Before:** Every Claude session starts from zero. You re-explain your architecture. You remind it about error handling patterns. It writes Go code with `panic` instead of returning errors. It ignores your ADRs. Quality varies wildly between sessions.
+
+**After:** Claude reads your rules automatically. It knows your project identity, your architecture decisions, your coding standards. Every session. Every time. Without you saying a word.
+
+```
+Before                              After
+────────────────────────            ────────────────────────
+"Use error wrapping"        →       .claude/rules/go.md
+"Follow clean arch"         →       .claude/rules/architecture.md
+"No any types in TS"        →       .claude/rules/typescript.md
+"Check auth before access"  →       .claude/rules/security.md
+"Read the ADRs first"       →       .claude/rules/code-quality.md
+```
+
+Rules are path-conditional. Go rules only fire on `*.go` files. Framework rules only fire on their file types. No noise.
+
+---
+
+## Quick Start
+
+### Install
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/dcsg/keel/main/install.sh | bash
+```
+
+This copies commands to `~/.claude/commands/` and templates to `~/.keel/templates/`. No dependencies, no build step, no runtime.
+
+### Initialize a Project
+
+Open any project in Claude Code and run:
+
+```
+/keel:init
+```
+
+Keel detects whether your project is greenfield or established:
+
+- **Greenfield** (< 5 commits): Describe what you're building in natural language. Keel infers your architecture, languages, frameworks, and recommends rules.
+- **Established**: Keel audits your codebase, identifies languages and frameworks, and suggests rules based on what it finds.
+
+You get a toggleable selection of rules. Turn on what you want, turn off what you don't. Then keel generates everything:
+
+```
+.claude/rules/code-quality.md
+.claude/rules/testing.md
+.claude/rules/security.md
+.claude/rules/error-handling.md
+.claude/rules/go.md
+.claude/rules/chi.md
+.keel/config.yaml
+docs/soul.md
+CLAUDE.md
+```
+
+---
+
+## Commands
+
+| Command | What it does |
+|---------|-------------|
+| `/keel:init` | Detect project, infer architecture, install rules and context |
+| `/keel:context` | Load soul, plans, ADRs, and product docs into current session |
+| `/keel:plan` | Interview + phased execution plan with dependency tracking |
+| `/keel:status` | Dashboard — plan progress, installed rules, governance health |
+| `/keel:intake` | Scan for scattered docs and organize into keel structure |
+| `/keel:migrate` | Convert dof/conductor projects to keel |
+
+---
+
+## Rule Packs
+
+Three tiers. One `.md` file per topic. Each installed as a `.claude/rules/` file with `paths:` frontmatter so it only activates on relevant files.
+
+### Base (enabled by default)
+
+| Rule | What it enforces |
+|------|-----------------|
+| **code-quality** | SOLID, naming, size limits, early returns, no dead code |
+| **testing** | TDD, behavior-focused tests, mock boundaries, coverage |
+| **security** | Input validation, parameterized queries, no secrets in code |
+| **error-handling** | Typed errors, context enrichment, no silent catches |
+
+### Base (opt-in)
+
+| Rule | What it enforces |
+|------|-----------------|
+| **frontend** | Component patterns, a11y, state management, performance |
+| **architecture** | DDD, clean architecture, bounded contexts, layer boundaries |
+
+### Language
+
+| Rule | Scope |
+|------|-------|
+| **go** | Error wrapping, interfaces, goroutine safety, project layout |
+| **typescript** | Strict types, no `any`, async/await, Zod validation |
+| **python** | Type hints, PEP 8, dataclasses, pytest patterns |
+| **php** | strict_types, PHP 8+, PSR-12, Composer autoloading |
+
+### Framework
+
+| Rule | Scope |
+|------|-------|
+| **chi** | Route groups, middleware chains, thin handlers |
+| **nextjs** | App Router, Server Components, Server Actions |
+| **laravel** | Eloquent, Form Requests, Jobs, Events |
+| **symfony** | DI, Doctrine, Messenger, Security voters |
+| **rails** | ActiveRecord, service objects, jobs, RSpec |
+| **django** | Models, views, ORM optimization, Celery tasks |
+
+---
+
+## What Gets Generated
+
+After `/keel:init`, your project looks like this:
+
+```
+your-project/
+├── docs/
+│   ├── soul.md                  # project identity and non-negotiables
+│   └── product/
+│       ├── spec.md              # product spec / roadmap
+│       ├── prds/                # feature requirements
+│       └── plans/               # execution plans
+├── .keel/
+│   └── config.yaml              # keel configuration
+└── .claude/
+    ├── rules/                   # installed guardrails
+    │   ├── code-quality.md
+    │   ├── testing.md
+    │   ├── security.md
+    │   ├── error-handling.md
+    │   └── go.md                # language-specific
+    ├── commands/                 # keel commands (global)
+    ├── agents/
+    │   ├── reviewer.md          # code review agent
+    │   └── debugger.md          # root cause analysis agent
+    ├── settings.json            # hooks (compaction recovery)
+    └── CLAUDE.md                # generated context loader
+```
+
+---
+
+## Extensibility
+
+### Toggle rules on/off
+
+Edit `.keel/config.yaml`:
+
+```yaml
+rules:
+  base:
+    - code-quality
+    - testing
+    - security
+    - error-handling
+  lang:
+    - go
+  framework:
+    - chi
+```
+
+Remove a line to disable a rule. Add one to enable it. Run `/keel:init` again to regenerate.
+
+### Extend existing rules
+
+Add custom sections to any generated `.claude/rules/*.md` file. Keel tracks checksums — it won't overwrite your additions.
+
+### Create new rule topics
+
+Drop any `.md` file into `.claude/rules/` with `paths:` frontmatter:
+
+```markdown
+---
+paths:
+  - "internal/billing/**/*.go"
+description: "Billing domain rules"
+---
+
+# Billing Rules
+
+- All monetary amounts use `decimal.Decimal`, never `float64`
+- Every charge mutation requires an idempotency key
+```
+
+---
+
+## Context Loading
+
+`/keel:context` loads your project's memory into the current session:
+
+- **Soul** — project identity, non-negotiables, tech stack
+- **Active plan** — current phase, progress, what's next
+- **Product docs** — specs, PRDs, feature requirements
+- **Architecture decisions** — ADRs that inform code choices
+- **Installed rules** — summary of what's enforced
+
+This means Claude starts every session knowing *who the project is*, not just what the code looks like.
+
+---
+
+## Planning
+
+`/keel:plan` interviews you about a task, then produces a phased execution plan:
+
+- Dependency graph between phases
+- Parallelism annotations (which phases can run concurrently)
+- Progress table that survives context compaction
+- Model assignment suggestions (Opus for architecture, Sonnet for implementation)
+
+Plans live in `docs/product/plans/` as plain markdown.
+
+---
+
+## Claude Code Only
+
+Keel targets Claude Code exclusively. Other AI coding tools lack the features keel depends on:
+
+| Feature | Claude Code | Cursor | Copilot | Windsurf |
+|---------|:-----------:|:------:|:-------:|:--------:|
+| Path-conditional rules | Yes | No | No | No |
+| Hooks (pre-compact) | Yes | No | No | No |
+| Slash commands | Yes | No | No | No |
+| Agent tool (subagents) | Yes | No | No | No |
+
+The knowledge base (soul.md, ADRs, product docs) is plain markdown that works anywhere. But the full guardrail loop — rules that fire on the right files, hooks that protect context, commands that orchestrate workflows — only works in Claude Code.
+
+---
+
+## Philosophy
+
+**Context is everything.** The difference between good and bad AI output is almost always context. Keel's job is making sure Claude has the right context before it writes a single line.
+
+**Guardrails over guidelines.** Documentation that Claude has to be told to read is documentation it will forget. Rules installed in `.claude/rules/` are enforced automatically.
+
+**Infer, don't interrogate.** You describe your project in plain language. Keel figures out the architecture, picks the rules, and generates everything. You confirm and adjust.
+
+**Plain markdown, no magic.** No build step. No runtime. No proprietary formats. Every file is a `.md` or `.yaml` you can read, edit, and version control.
+
+**Minimal surface area.** Six commands. That's the entire interface. Each one does exactly one thing well.

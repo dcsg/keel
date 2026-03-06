@@ -1,0 +1,62 @@
+# CLAUDE.md
+
+## Project
+
+{{project_summary}}
+
+## Before Writing Code
+
+1. Read `docs/soul.md` for project context
+2. Rules are enforced automatically via `.claude/rules/`
+3. If a plan is active, read it in `docs/product/plans/` — check the progress table for current state
+
+## Build & Test Commands
+
+```
+# Build
+{{build_command}}
+
+# Test
+{{test_command}}
+
+# Lint
+{{lint_command}}
+```
+
+## Keel Commands
+
+When the user asks any of the following, run the corresponding command automatically — do not ask for confirmation:
+
+| If the user asks... | Run |
+|---------------------|-----|
+| "what's our status?", "where are we?", "project status" | `/keel:status` |
+| "what's next?", "what should we do next?", "next steps" | `/keel:status` |
+| "load context", "remind yourself", "what's this project?" | `/keel:context` |
+| "create a plan", "let's plan this", "plan for X" | `/keel:plan` |
+
+## After Compaction
+
+If context was compacted, re-read the active plan file in `docs/product/plans/`. The progress table is the persistent state — it tells you what's done and what's next.
+
+## Architecture Decisions
+
+When making a significant design choice during implementation, capture it as a decision record:
+
+```bash
+mkdir -p docs/decisions
+```
+
+```markdown
+# Decision: {title}
+**Date:** {date}
+**Status:** Accepted
+**Context:** {why this decision was needed}
+**Decision:** {what was decided}
+**Consequences:** {trade-offs accepted}
+```
+
+Save to `docs/decisions/{slug}.md`. This ensures future sessions understand why things were built this way.
+
+## Commit Convention
+
+{{commit_convention_block}}
