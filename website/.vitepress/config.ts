@@ -67,7 +67,6 @@ export default defineConfig({
       {
         text: 'More',
         items: [
-          { text: 'Migration from dof', link: '/migration' },
           { text: 'FAQ', link: '/faq' },
           { text: 'Philosophy', link: '/philosophy' },
         ],
