@@ -1,35 +1,58 @@
 # /keel:context
 
-Loads all project context into the current session.
+Loads your project's memory into the current session.
 
-## Usage
+## When to use it
 
-```
-/keel:context
-```
+**New session, existing project.** Claude starts with no memory. Run `/keel:context` (or just say "remind yourself") and it knows everything — your stack, your standards, your current plan, your decisions.
 
-## What Gets Loaded
+**After context compaction.** Long sessions hit Claude's context limit and get compacted. Run context to reload what matters.
 
-| Source | Content |
-|--------|---------|
+**Onboarding a teammate.** They open the project, run `/keel:context`, and Claude is immediately useful — no hand-holding, no re-explaining the architecture.
+
+## What it loads
+
+| Source | What Claude learns |
+|--------|--------------------|
 | `docs/soul.md` | Project identity, stack, non-negotiables |
-| `docs/product/spec.md` | Product vision and roadmap |
+| `docs/product/spec.md` | What you're building and why |
 | `docs/product/prds/` | Active feature requirements |
-| `docs/product/plans/` | Active execution plan + progress table |
-| `docs/decisions/` | Architecture decisions |
-| `.claude/rules/` | Summary of installed guardrails |
+| `docs/product/plans/` | Current plan + phase progress |
+| `docs/decisions/` | Architecture decisions and their reasoning |
+| `.claude/rules/` | Summary of what standards are enforced |
 
-## When to Use
+## What it looks like
 
-- At the start of a new session on an unfamiliar codebase
-- After context compaction (Claude will re-read the active plan automatically)
-- When onboarding a teammate to use Claude Code on the project
+> **You:** remind yourself about this project
+>
+> **Claude:** *(runs `/keel:context`)*
+>
+> ```
+> Loaded context for Orders API:
+>
+>   Soul:      Go REST API for order management
+>              DDD with bounded contexts (orders, inventory, billing)
+>              Chi router · PostgreSQL · Hexagonal architecture
+>
+>   Active plan: PLAN-bulk-orders
+>   Progress:    Phase 3 of 4 in progress (HTTP handler)
+>
+>   Rules:     code-quality · testing · security
+>              error-handling · go · chi
+>
+>   Decisions: 3 ADRs on file
+>              — hexagonal architecture
+>              — error wrapping strategy
+>              — JWT auth pattern
+>
+>   Product:   spec + 2 active PRDs
+>
+> Ready. What are we working on?
+> ```
 
-## Natural Language
+## Natural language triggers
 
-Just say:
-- "load context"
 - "remind yourself"
+- "load context"
 - "what's this project?"
-
-Claude will run `/keel:context` automatically.
+- "catch me up"

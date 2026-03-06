@@ -29,6 +29,7 @@ export default defineConfig({
         items: [
           { text: 'What is Keel?', link: '/what-is-keel' },
           { text: 'Getting Started', link: '/getting-started' },
+          { text: 'Natural Language', link: '/natural-language' },
         ],
       },
       {

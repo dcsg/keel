@@ -1,71 +1,104 @@
 # What is Keel?
 
-Keel is a context engine and guardrail installer for Claude Code. It ensures Claude always has the right architectural context, coding standards, and product knowledge before writing code — producing consistent, production-grade results across every session.
+Keel is a context engine for Claude Code. It installs your coding standards as rules Claude reads automatically, and loads your project memory at the start of every session — so Claude behaves like a senior engineer who's been on the team for months, not a stateless code generator.
 
-## The Problem
+## Who it's for
 
-Without structure, Claude starts every session stateless. It doesn't know your architecture decisions, coding standards, or business rules. Output quality varies wildly between sessions. ADRs get ignored. Invariants get violated. Not because Claude is incapable — because the right context isn't loaded.
+**You, if you've ever:**
+- Started a Claude session and spent the first 5 minutes re-explaining your architecture
+- Seen Claude write `panic("not implemented")` in Go when you've told it a hundred times to return errors
+- Had Claude ignore your ADRs because it didn't know they existed
+- Wished your whole team got the same quality output from Claude, not just you
 
-```
-Session 1:  "Use error wrapping in Go"         ← you remind it
-Session 2:  panic("not implemented")           ← forgot
-Session 3:  "I said use error wrapping!"       ← you remind again
-```
+**In short:** developers who use Claude Code seriously and are tired of getting inconsistent results.
 
-## The Solution
-
-Keel installs your standards where Claude actually reads them.
+## The problem in one session
 
 ```
+You:    "build the payment handler"
+Claude: func HandlePayment(w http.ResponseWriter, r *http.Request) {
+            // ... 80 lines of business logic in the handler
+            panic("stripe not configured")
+        }
+
+You:    "I told you — no business logic in handlers, return errors, use the service layer"
+Claude: "You're right, let me fix that..."
+
+// Next session — same conversation, same mistakes
+```
+
+Not because Claude is incapable. Because it started the session with no memory of your standards.
+
+## The solution
+
+```bash
 /keel:init
 ```
 
-One command. Describe your project. Keel infers your architecture, picks the right rules, and generates everything — coding standards as `.claude/rules/` files, project identity in `docs/soul.md`, and a `CLAUDE.md` that loads context automatically.
+Describe your project once. Keel installs your standards in `.claude/rules/` — files Claude reads automatically before writing any code. It generates your `soul.md`, your `CLAUDE.md`, your agents. Everything in place.
 
 ```
-Session 1:  Claude reads .claude/rules/go.md   ← automatic
-Session 2:  Claude reads .claude/rules/go.md   ← automatic
-Session 3:  Claude reads .claude/rules/go.md   ← always automatic
+// Same session, after keel:init
+
+You:    "build the payment handler"
+Claude: // Thin handler, delegates to PaymentService
+        // Error returned, not panicked
+        // Follows your DDD boundaries automatically
+        // Because it read .claude/rules/go.md and .claude/rules/architecture.md
+        // Before writing a single line
 ```
 
-## Two Pillars
+The rules don't change. The reminders disappear.
 
-### 1. Guardrails
+## Two things keel installs
 
-`.claude/rules/` files that Claude reads before writing code. Path-conditional — Go rules only fire on `.go` files, framework rules only fire on their file types.
+### Guardrails — `.claude/rules/`
+
+One `.md` file per topic. Path-conditional — Go rules only fire on `.go` files, framework rules only on their types. No noise on irrelevant files.
 
 ```
 .claude/rules/
-├── code-quality.md     ← all files
-├── testing.md          ← all files
-├── security.md         ← all files
-├── error-handling.md   ← all files
-├── go.md               ← **/*.go only
-└── chi.md              ← **/*.go only
+├── code-quality.md       ← every file
+├── testing.md            ← every file
+├── security.md           ← every file
+├── error-handling.md     ← every file
+├── go.md                 ← **/*.go only
+└── chi.md                ← **/*.go only
 ```
 
-### 2. Context
+### Context — `docs/`
 
-Project memory that loads at session start — who the project is, what decisions were made, what's being built next.
+Project memory that loads at session start. Claude knows who the project is — not just what files exist.
 
 ```
 docs/
-├── soul.md             ← project identity
+├── soul.md               ← identity, stack, non-negotiables
 └── product/
-    ├── spec.md         ← what you're building
-    ├── prds/           ← feature requirements
-    └── plans/          ← execution plans
+    ├── spec.md           ← what you're building
+    ├── prds/             ← feature requirements
+    └── plans/            ← execution plans with progress
 ```
 
-## Why Claude Code Only
+## Natural language, not slash commands
 
-Keel targets Claude Code exclusively. Other AI coding tools lack the features keel depends on:
+After init, you don't need to remember commands. Just talk:
 
-| Feature | Claude Code | Others |
-|---------|:-----------:|:------:|
-| Path-conditional rules | ✓ | ✗ |
-| Hooks (pre-compact) | ✓ | ✗ |
-| Slash commands | ✓ | ✗ |
-| Subagents (Agent tool) | ✓ | ✗ |
+> "what's our status?"
+> "what should we work on next?"
+> "load context"
+> "let's plan the bulk upload feature"
 
-The knowledge base (soul.md, ADRs, product docs) is plain markdown that works anywhere. But the full guardrail loop only works in Claude Code.
+Claude knows to run the right keel command. You have a conversation, not a CLI session.
+
+## Why Claude Code only
+
+Keel depends on features other tools don't have:
+
+| Feature | Claude Code | Cursor | Copilot | Windsurf |
+|---------|:-----------:|:------:|:-------:|:--------:|
+| Path-conditional rules | ✓ | ✗ | ✗ | ✗ |
+| Hooks (pre-compact recovery) | ✓ | ✗ | ✗ | ✗ |
+| Slash commands | ✓ | ✗ | ✗ | ✗ |
+| Subagents | ✓ | ✗ | ✗ | ✗ |
+
+The knowledge base (soul.md, ADRs, docs) is plain markdown that works anywhere. The guardrail loop only works in Claude Code.

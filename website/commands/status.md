@@ -1,16 +1,18 @@
 # /keel:status
 
-Project dashboard — plan progress, installed rules, and governance health.
+Your project dashboard. Where are we, what's in progress, what's next.
 
-## Usage
+## You probably won't type this
 
-```
-/keel:status
-```
+Just ask:
 
-Or just say **"what's our status?"** or **"what's next?"** — Claude runs it automatically.
+> "what's our status?"
+> "where are we?"
+> "what's next?"
 
-## Output
+Claude runs `/keel:status` automatically.
+
+## What it shows
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -19,8 +21,7 @@ Or just say **"what's our status?"** or **"what's next?"** — Claude runs it au
 
  ACTIVE PLAN
  ───────────
- PLAN-bulk-orders
- Progress: 2/4 phases (50%)
+ PLAN-bulk-orders  ·  2/4 phases (50%)
 
  | Phase | Title          | Status      |
  |-------|----------------|-------------|
@@ -49,3 +50,17 @@ Or just say **"what's our status?"** or **"what's next?"** — Claude runs it au
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
+
+**WHAT'S NEXT** is the most important part — it tells you the concrete next tasks, not just a phase name.
+
+## No active plan?
+
+If there's no plan in progress, `/keel:status` still shows your installed rules and governance health, and suggests running `/keel:plan` to start one.
+
+## Natural language triggers
+
+- "what's our status?"
+- "where are we?"
+- "what's next?"
+- "what should we work on?"
+- "project status"

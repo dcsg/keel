@@ -2,13 +2,23 @@
 
 **Stop hoping Claude remembers your standards. Install them.**
 
-Keel is a context engine for Claude Code. It installs coding standards as `.claude/rules/` files, loads project context at session start, and keeps every session consistent — whether it's you, a teammate, or a fresh conversation.
+Keel is a context engine for Claude Code. It installs coding standards as `.claude/rules/` files, loads project memory at session start, and keeps every session consistent — whether it's you, a teammate, or a fresh conversation.
 
 ```
 /keel:init
 ```
 
-That's it. Describe your project, keel figures out the rest.
+Describe your project once. Keel figures out the rest.
+
+---
+
+**If you've ever:**
+- Spent the first 5 minutes of a Claude session re-explaining your architecture
+- Seen Claude write `panic("not implemented")` after you've told it a hundred times to return errors
+- Had Claude ignore your ADRs because it didn't know they existed
+- Wished your whole team got consistent output from Claude, not just you
+
+Keel is for you.
 
 ---
 
@@ -81,6 +91,17 @@ CLAUDE.md
 | `/keel:status` | Dashboard — plan progress, installed rules, governance health |
 | `/keel:intake` | Scan for scattered docs and organize into keel structure |
 | `/keel:migrate` | Convert dof/conductor projects to keel |
+
+## You don't need to remember commands
+
+After init, just talk to Claude naturally:
+
+| Say this... | Claude runs |
+|-------------|-------------|
+| "what's our status?" | `/keel:status` |
+| "what's next?" | `/keel:status` |
+| "remind yourself" | `/keel:context` |
+| "let's plan the X feature" | `/keel:plan` |
 
 ---
 
