@@ -33,7 +33,7 @@ Read `{base}/soul.md` (or `docs/soul.md`). If it exists, summarize the key point
 Search for plan files in the plans directory:
 
 ```bash
-ls -t docs/product/plans/*.md docs/plans/*.md 2>/dev/null | head -5
+ls -t {base}/product/plans/*.md {base}/plans/*.md 2>/dev/null | head -5
 ```
 
 If plans exist:
@@ -53,7 +53,7 @@ If PRDs exist in `{base}/product/prds/`, list them with titles.
 ### 5. Load Architecture Decisions
 
 ```bash
-ls docs/decisions/*.md 2>/dev/null
+ls {base}/decisions/*.md 2>/dev/null
 ```
 
 If decision records exist, read and summarize each (title, status, key decision). These inform implementation choices.
@@ -61,7 +61,7 @@ If decision records exist, read and summarize each (title, status, key decision)
 ### 6. Load Invariants
 
 ```bash
-ls docs/invariants/*.md 2>/dev/null
+ls {base}/invariants/*.md 2>/dev/null
 ```
 
 Invariants are hard architectural constraints — non-negotiables that must never be violated. Read each one and keep them in mind for the session. If none exist, skip silently.

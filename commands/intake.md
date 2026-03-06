@@ -65,20 +65,20 @@ Organize found docs into keel categories:
 Found {n} documentation files:
 
   Architecture / Decisions:
-    docs/adr/001-use-postgres.md     → docs/decisions/001-use-postgres.md
-    .dof/architecture/decisions/*.md → docs/decisions/
+    docs/adr/001-use-postgres.md     → {base}/decisions/001-use-postgres.md
+    .dof/architecture/decisions/*.md → {base}/decisions/
 
   Invariants:
-    .dof/architecture/invariants/*.md → docs/invariants/
+    .dof/architecture/invariants/*.md → {base}/invariants/
 
   Product / Requirements:
-    docs/product-spec.md             → docs/product/spec.md
-    docs/requirements/feature-x.md   → docs/product/prds/feature-x.md
+    docs/product-spec.md             → {base}/product/spec.md
+    docs/requirements/feature-x.md   → {base}/product/prds/feature-x.md
 
   Reference:
-    docs/api.md                      → docs/reference/api.md
-    docs/deployment.md               → docs/reference/deployment.md
-    CONTRIBUTING.md                   → docs/reference/contributing.md
+    docs/api.md                      → {base}/reference/api.md
+    docs/deployment.md               → {base}/reference/deployment.md
+    CONTRIBUTING.md                   → {base}/reference/contributing.md
 
   Already in place:
     README.md                        → (keep as-is)
@@ -93,7 +93,7 @@ Proceed with this organization? (y/n/edit)
 
 For each confirmed move:
 
-1. Create target directory if needed: `mkdir -p docs/{category}/`
+1. Create target directory if needed: `mkdir -p {base}/{category}/`
 2. Copy (not move) the file to its new location: `cp source target`
 3. If the source is in a legacy directory (`.dof/`, `.conductor/`), note it for cleanup
 
@@ -116,10 +116,10 @@ Update soul.md with this information? (y/n)
 
 If `.dof/` or `.conductor/` content was found:
 
-- **Soul files**: merge into `docs/soul.md`
-- **ADRs/decisions**: copy to `docs/decisions/`
-- **Invariants**: copy to `docs/invariants/` (or `{base}/invariants/` from config). If an invariant directly constrains code behavior, add a one-line reference in the relevant `.claude/rules/` file pointing to it.
-- **Component contracts**: copy to `docs/reference/`
+- **Soul files**: merge into `{base}/soul.md`
+- **ADRs/decisions**: copy to `{base}/decisions/`
+- **Invariants**: copy to `{base}/invariants/`. If an invariant directly constrains code behavior, add a one-line reference in the relevant `.claude/rules/` file pointing to it.
+- **Component contracts**: copy to `{base}/reference/`
 - **Config**: note differences from current `.keel/config.yaml`
 
 ### 7. Output Summary
@@ -129,10 +129,10 @@ Intake complete!
 
   Organized: {n} files
   Copied to:
-    docs/decisions/     — {count} decision records
-    docs/invariants/    — {count} invariants
-    docs/product/prds/  — {count} product requirements
-    docs/reference/     — {count} reference docs
+    {base}/decisions/     — {count} decision records
+    {base}/invariants/    — {count} invariants
+    {base}/product/prds/  — {count} product requirements
+    {base}/reference/     — {count} reference docs
 
   Soul updated: {yes/no}
 

@@ -23,11 +23,13 @@ No keel config found. Run /keel:init to set up this project.
 
 ### 2. Gather Status
 
+Read `base:` from `.keel/config.yaml` (default: `docs`). Use `{base}` for all paths below.
+
 Collect information in parallel where possible:
 
 **Plans:**
 ```bash
-ls -t docs/product/plans/PLAN-*.md docs/plans/PLAN-*.md 2>/dev/null
+ls -t {base}/product/plans/PLAN-*.md {base}/plans/PLAN-*.md 2>/dev/null
 ```
 For each plan, read the Progress table to determine status.
 
@@ -38,14 +40,19 @@ ls .claude/rules/*.md 2>/dev/null
 Count installed packs. Optionally check if they match templates (checksum).
 
 **Soul:**
-Check if `docs/soul.md` exists.
+Check if `{base}/soul.md` exists.
 
 **Product:**
-Check if `docs/product/spec.md` exists. Check for PRDs.
+Check if `{base}/product/spec.md` exists. Check for PRDs in `{base}/product/prds/`.
 
 **Decisions:**
 ```bash
-ls docs/decisions/*.md 2>/dev/null | wc -l
+ls {base}/decisions/*.md 2>/dev/null | wc -l
+```
+
+**Invariants:**
+```bash
+ls {base}/invariants/*.md 2>/dev/null | wc -l
 ```
 
 ### 3. Determine Plan Status
