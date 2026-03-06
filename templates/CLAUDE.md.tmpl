@@ -1,16 +1,17 @@
-# CLAUDE.md
+<!-- keel:start — managed by keel, do not edit manually -->
+## Keel
 
-## Project
+### Project
 
 {{project_summary}}
 
-## Before Writing Code
+### Before Writing Code
 
 1. Read `docs/soul.md` for project context
 2. Rules are enforced automatically via `.claude/rules/`
 3. If a plan is active, read it in `docs/product/plans/` — check the progress table for current state
 
-## Build & Test Commands
+### Build & Test Commands
 
 ```
 # Build
@@ -23,7 +24,7 @@
 {{lint_command}}
 ```
 
-## Keel Commands
+### Keel Commands
 
 When the user asks any of the following, run the corresponding command automatically — do not ask for confirmation:
 
@@ -34,17 +35,13 @@ When the user asks any of the following, run the corresponding command automatic
 | "load context", "remind yourself", "what's this project?" | `/keel:context` |
 | "create a plan", "let's plan this", "plan for X" | `/keel:plan` |
 
-## After Compaction
+### After Compaction
 
 If context was compacted, re-read the active plan file in `docs/product/plans/`. The progress table is the persistent state — it tells you what's done and what's next.
 
-## Architecture Decisions
+### Architecture Decisions
 
-When making a significant design choice during implementation, capture it as a decision record:
-
-```bash
-mkdir -p docs/decisions
-```
+When making a significant design choice during implementation, capture it as a decision record in `docs/decisions/{slug}.md`:
 
 ```markdown
 # Decision: {title}
@@ -55,8 +52,7 @@ mkdir -p docs/decisions
 **Consequences:** {trade-offs accepted}
 ```
 
-Save to `docs/decisions/{slug}.md`. This ensures future sessions understand why things were built this way.
-
-## Commit Convention
+### Commit Convention
 
 {{commit_convention_block}}
+<!-- keel:end -->

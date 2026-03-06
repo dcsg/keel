@@ -237,26 +237,25 @@ Templates not found. To generate rules, install keel globally:
 Or manually copy rule templates from the keel repo to .claude/rules/
 ```
 
-#### 5.4 — `.claude/CLAUDE.md`
+#### 5.4 — `CLAUDE.md` (root) — safe merge
 
-Generate a project-specific CLAUDE.md:
+**Never overwrite an existing CLAUDE.md.** Use sentinel comments to manage the keel section safely.
+
+The keel-managed block looks like this:
 
 ```markdown
-# CLAUDE.md
+<!-- keel:start — managed by keel, do not edit manually -->
+## Keel
 
-## Project
+### Project
+{one-line from soul.md}
 
-{One-line from soul.md}
-
-## Before Writing Code
-
+### Before Writing Code
 1. Read `docs/soul.md` for project context
 2. Rules are enforced automatically via `.claude/rules/`
-3. If a plan is active, read it: `docs/plans/` (check for progress table)
+3. If a plan is active, read it in `docs/product/plans/` — check progress table for current state
 
-## Build & Test Commands
-
-{Detected from codebase audit, or leave as placeholders:}
+### Build & Test Commands
 ```
 # Build
 {detected build command or "# TODO: add build command"}
@@ -268,23 +267,28 @@ Generate a project-specific CLAUDE.md:
 {detected lint command or "# TODO: add lint command"}
 ```
 
-## After Compaction
+### Keel Commands
+When the user asks any of the following, run the corresponding command automatically:
 
-If context was compacted, re-read the active plan file in `docs/plans/` — it contains the progress table with current state.
+| If the user asks... | Run |
+|---------------------|-----|
+| "what's our status?", "where are we?", "project status" | `/keel:status` |
+| "what's next?", "what should we do next?", "next steps" | `/keel:status` |
+| "load context", "remind yourself", "what's this project?" | `/keel:context` |
+| "create a plan", "let's plan this", "plan for X" | `/keel:plan` |
 
-## Architecture Decisions
-
-When making a significant design choice, document it as a decision record in `docs/decisions/`. Use this format:
-
+### After Compaction
+If context was compacted, re-read the active plan file in `docs/product/plans/`. The progress table is the persistent state — it tells you what's done and what's next.
+<!-- keel:end -->
 ```
-# Decision: {title}
-**Date:** {date}
-**Status:** Accepted
-**Context:** {why this decision was needed}
-**Decision:** {what was decided}
-**Consequences:** {trade-offs}
-```
-```
+
+**Logic:**
+
+- **No CLAUDE.md exists** → create it with just the keel block (no wrapper heading needed)
+- **CLAUDE.md exists, no keel block** → append the keel block at the bottom
+- **CLAUDE.md exists, keel block present** → replace only the content between `<!-- keel:start -->` and `<!-- keel:end -->`, leave everything else untouched
+
+Use a Read + Edit approach — never Write the whole file. Find the markers with grep, replace only between them.
 
 #### 5.5 — `.claude/settings.json` (hooks)
 
