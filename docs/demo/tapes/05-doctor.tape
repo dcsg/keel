@@ -13,7 +13,7 @@ Source docs/demo/shared.tape
 Source docs/demo/env.tape
 
 # Launch Claude Code
-Type "claude"
+Type "claude --dangerously-skip-permissions"
 Enter
 Wait+Screen@30s />/
 

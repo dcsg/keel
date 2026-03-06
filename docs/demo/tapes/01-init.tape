@@ -22,7 +22,7 @@ Enter
 Sleep 2
 
 # Launch Claude Code
-Type "claude"
+Type "claude --dangerously-skip-permissions"
 Enter
 Wait+Screen@30s />/
 
