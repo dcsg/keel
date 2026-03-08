@@ -38,17 +38,22 @@ Run all three checks in parallel and collect findings.
 
 Read `.claude/settings.json`. Read `~/.keel/templates/settings.json.tmpl`.
 
-Compare the following hook types between installed and template:
-- `SessionStart`: does the installed command contain `git log`? If not → outdated
-- `PostToolUse`: is it present? If not → missing
-- `Stop`: does the installed prompt contain all three signal types (`ARCHITECTURE/PRODUCT SIGNALS`, `DOC GAP SIGNALS`, `SECURITY SIGNALS`)? If not → outdated
-- `PreCompact`: does it mention `/keel:session`? If not → outdated
+For each hook type, check two things: (1) is the content correct, and (2) is it using the modern `.sh` script reference format?
+
+**Migration check — inline bash vs. script references:**
+If any `type: command` hook has its logic inline (a long bash string) rather than referencing `$HOME/.keel/hooks/*.sh`, it is outdated regardless of content. Note: "using inline bash — migrate to script reference".
+
+**Content checks:**
+- `SessionStart`: command should be `$HOME/.keel/hooks/session-start.sh` (or contain `git log` if inline) — if not → outdated
+- `PostToolUse`: must be present with `Write|Edit` matcher — if missing → missing
+- `Stop`: prompt must instruct JSON response (`"ok": true` / `"ok": false`) — if it uses the old "end your next response with" free-text format → outdated (causes JSON validation errors)
+- `PreCompact`: command should reference `$HOME/.keel/hooks/pre-compact.sh` or contain `/keel:session` — if not → outdated
 
 For each outdated or missing hook, note what changed in plain English:
-- "SessionStart: missing git-awareness (now surfaces relevant agents based on recent changes)"
+- "SessionStart: inline bash → migrate to `$HOME/.keel/hooks/session-start.sh`"
 - "PostToolUse: missing (now auto-formats files after edits)"
-- "Stop: missing doc gap and security signals"
-- "PreCompact: missing /keel:session reminder"
+- "Stop: old free-text format → fix JSON validation error (now returns `{\"ok\": true/false}`)"
+- "PreCompact: inline bash → migrate to `$HOME/.keel/hooks/pre-compact.sh`"
 
 #### 2b. Agent check
 
@@ -72,18 +77,27 @@ Same logic as `/keel:rules-update`:
 - Skip files without `<!-- keel:generated -->` marker (manually edited)
 - Skip files not in the registry (custom rules)
 
-### 3. Show Upgrade Summary
+### 3. Show Release Notes + Upgrade Summary
 
-Show what will change before touching anything:
+First, show the relevant release notes. Read `~/.keel/CHANGELOG.md` if it exists and display the most recent release section (the first `## v` entry through the next `## v` or end of file).
+
+```
+WHAT'S NEW
+─────────────────────────────────────────────────────
+{content of the most recent changelog section}
+─────────────────────────────────────────────────────
+```
+
+Then show what will change in this project before touching anything:
 
 ```
 KEEL UPGRADE
 ─────────────────────────────────────────────────────
 Hooks (.claude/settings.json)
-  ⬆  SessionStart   — add git-awareness (surfaces relevant agents)
+  ⬆  SessionStart   — inline bash → script reference
   ⬆  PostToolUse    — missing, will add auto-format hook
-  ⬆  Stop           — add doc gap + security signals
-  ⬆  PreCompact     — add /keel:session reminder
+  ⬆  Stop           — fix JSON validation error (old free-text format)
+  ⬆  PreCompact     — inline bash → script reference
 
 Agents (.claude/agents/)
   ⬆  principal-dba.md   — template updated

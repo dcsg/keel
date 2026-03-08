@@ -88,6 +88,11 @@ assert_file_contains "$PROJECT_ROOT/commands/session.md" "keel:adr" "session.md 
 assert_file_contains "$PROJECT_ROOT/commands/upgrade.md" "KEEL UPGRADE" "upgrade.md has upgrade output format"
 assert_file_contains "$PROJECT_ROOT/commands/upgrade.md" "never overwrites" "upgrade.md documents safe upgrade behavior"
 assert_file_contains "$PROJECT_ROOT/commands/upgrade.md" "keel:doctor" "upgrade.md suggests doctor after upgrade"
+assert_file_contains "$PROJECT_ROOT/commands/upgrade.md" "inline bash" "upgrade.md detects inline bash migration"
+assert_file_contains "$PROJECT_ROOT/commands/upgrade.md" "JSON validation" "upgrade.md detects Stop hook JSON bug"
+assert_file_contains "$PROJECT_ROOT/commands/upgrade.md" "WHAT'S NEW" "upgrade.md shows release notes"
+assert_file_contains "$PROJECT_ROOT/commands/upgrade.md" "CHANGELOG" "upgrade.md reads changelog"
+assert_file_exists "$PROJECT_ROOT/CHANGELOG.md" "CHANGELOG.md exists"
 assert_file_exists "$PROJECT_ROOT/website/commands/upgrade.md" "website/commands/upgrade.md exists"
 
 # audit.md checks

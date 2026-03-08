@@ -84,8 +84,18 @@ done
 curl -fsSL "${BASE_URL}/templates/agents/_registry.yaml" -o "${KEEL_HOME}/templates/agents/_registry.yaml"
 dim "agents/_registry.yaml"
 
-# Git hook templates
+# Hook scripts (Claude Code hooks + git hooks)
 mkdir -p "${KEEL_HOME}/templates/hooks"
+mkdir -p "${KEEL_HOME}/hooks"
+
+# Claude Code hook scripts — installed to ~/.keel/hooks/ and referenced from settings.json
+for hook in session-start pre-tool-use post-tool-use pre-compact; do
+  curl -fsSL "${BASE_URL}/templates/hooks/${hook}.sh" -o "${KEEL_HOME}/hooks/${hook}.sh"
+  chmod +x "${KEEL_HOME}/hooks/${hook}.sh"
+  dim "hooks/${hook}.sh"
+done
+
+# Git pre-push hook template
 curl -fsSL "${BASE_URL}/templates/hooks/pre-push" -o "${KEEL_HOME}/templates/hooks/pre-push"
 chmod +x "${KEEL_HOME}/templates/hooks/pre-push"
 dim "hooks/pre-push"
@@ -95,6 +105,9 @@ for sdlc in pull_request_template commit-convention; do
   curl -fsSL "${BASE_URL}/templates/sdlc/${sdlc}.md" -o "${KEEL_HOME}/templates/sdlc/${sdlc}.md"
   dim "sdlc/${sdlc}"
 done
+
+# Changelog
+curl -fsSL "${BASE_URL}/CHANGELOG.md" -o "${KEEL_HOME}/CHANGELOG.md"
 
 echo
 echo -e "${GREEN}${BOLD}Keel installed.${RESET}"
