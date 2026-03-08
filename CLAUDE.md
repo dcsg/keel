@@ -62,3 +62,38 @@ Run `./test/run.sh` to validate templates, registry, and install.
 ```
 
 Types: feat | fix | refactor | test | docs | chore
+
+<!-- keel:start — managed by keel, do not edit manually -->
+## Keel
+
+### Project
+Keel enforces coding standards and remembers architectural decisions so Claude behaves consistently — every session, every engineer.
+
+### Before Writing Code
+1. Read `docs/soul.md` for project context
+2. Rules are enforced automatically via `.claude/rules/`
+3. If a plan is active, read it in `docs/plans/` — check progress table for current state
+
+### Build & Test Commands
+```
+# Test
+./test/run.sh
+
+# Install (global)
+curl -fsSL https://raw.githubusercontent.com/dcsg/keel/main/install.sh | bash
+```
+
+### Keel Commands
+When the user asks any of the following, run the corresponding command automatically:
+
+| If the user asks... | Run |
+|---------------------|-----|
+| "what's our status?", "where are we?", "project status" | `/keel:status` |
+| "load context", "remind yourself", "what's this project?" | `/keel:context` |
+| "create a plan", "let's plan this", "plan for X" | `/keel:plan` |
+| "save this decision", "record this", "capture that" | `/keel:adr` |
+| "add an invariant", "that's a hard rule", "never do X" | `/keel:invariant` |
+
+### After Compaction
+If context was compacted, re-read the active plan file in `docs/plans/`. The progress table is the persistent state — it tells you what's done and what's next.
+<!-- keel:end -->
