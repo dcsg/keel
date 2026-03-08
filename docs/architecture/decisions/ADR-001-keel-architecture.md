@@ -28,7 +28,7 @@ Rules are templates shipped with keel, generated into `.claude/rules/` based on 
 
 Provide a framework to capture product context (soul.md, product specs, PRDs) and create phased execution plans. Plans are the persistent state — progress tracked directly in the plan file, surviving context compaction.
 
-### Core Commands (11 total)
+### Core Commands (17 total)
 
 | Command | Purpose |
 |---------|---------|

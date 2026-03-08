@@ -1,6 +1,6 @@
 # Commands
 
-Keel has eleven commands. Each does exactly one thing. You rarely need to remember them — Claude responds to natural language after init.
+Keel has seventeen commands. Each does exactly one thing. You rarely need to remember them — Claude responds to natural language after init.
 
 ## The commands
 
@@ -8,7 +8,7 @@ Keel has eleven commands. Each does exactly one thing. You rarely need to rememb
 |---------|-------------|
 | [`/keel:init`](/commands/init) | Detect project, infer architecture, install rules, agents, and context |
 | [`/keel:context`](/commands/context) | Load soul, plans, ADRs, and product docs into current session |
-| [`/keel:plan`](/commands/plan) | Interview + phased execution plan with dependency tracking |
+| [`/keel:plan`](/commands/plan) | Interview + phased execution plan with pre-flight specialist review |
 | [`/keel:status`](/commands/status) | Dashboard — plan progress, rules, what's next |
 | [`/keel:intake`](/commands/intake) | Scan scattered docs and organize into keel structure |
 | [`/keel:agents`](/commands/agents) | List, install, and manage specialist agent templates |
@@ -17,6 +17,12 @@ Keel has eleven commands. Each does exactly one thing. You rarely need to rememb
 | [`/keel:adr`](/commands/adr) | Capture an architecture decision record |
 | [`/keel:invariant`](/commands/invariant) | Define a hard constraint that must never be violated |
 | [`/keel:prd`](/commands/prd) | Write a product requirement document |
+| [`/keel:review`](/commands/review) | Post-implementation specialist review — routes to relevant domain agents |
+| [`/keel:audit`](/commands/audit) | Security audit — OWASP scan, secret detection, auth coverage |
+| [`/keel:session`](/commands/session) | End-of-session sweep — surface missed captures before context is lost |
+| [`/keel:docs`](/commands/docs) | Review documentation gaps for new routes, env vars, and services |
+| [`/keel:sync`](/commands/sync) | Translate linter configs into Claude rule packs |
+| [`/keel:doctor`](/commands/doctor) | Validate governance setup and report actionable warnings |
 
 ## You don't need to remember them
 
