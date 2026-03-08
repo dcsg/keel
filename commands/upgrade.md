@@ -42,11 +42,13 @@ Installed keel: {INSTALLED_VERSION}
 Project keel:   {PROJECT_VERSION}
 ```
 
-If both versions match AND there are no changes detected in step 2, show:
+If both versions match AND there are no changes detected in step 2, AND `keel_version` is already set in `.keel/config.yaml`, show:
 ```
 ✅ Already up to date (keel {INSTALLED_VERSION}) — nothing to upgrade.
 ```
 and stop.
+
+If `keel_version` is missing from `.keel/config.yaml` (project predates versioning), always proceed — adding the version is itself an upgrade.
 
 ### 2. Detect What Needs Upgrading
 
@@ -194,9 +196,9 @@ Same as `/keel:rules-update` logic — replace outdated packs, skip manually edi
 
 After applying:
 
-1. Update `keel_version` in `.keel/config.yaml` to the installed version:
+1. Always update `keel_version` in `.keel/config.yaml` to the installed version — even if no other changes were applied:
    - If a `keel_version:` line exists, replace it
-   - If it doesn't exist, add it as the first non-comment line after the opening comment
+   - If it doesn't exist (project predates versioning), add it as the first non-comment line after any leading `#` comment block at the top of the file
 
 2. Check if linter configs exist and linter rules are outdated (template mtime > linter rule mtime):
    ```
@@ -204,6 +206,23 @@ After applying:
    ```
 
 3. Output results:
+
+If only `keel_version` was added (everything else was already current):
+```
+UPGRADE COMPLETE
+─────────────────────────────────────────────────────
+Version:     {old or "unset"} → {new}
+Hooks:       ✓ up to date
+Agents:      ✓ up to date
+Rule packs:  ✓ up to date
+
+Commit to record the version:
+  git add .keel/config.yaml && git commit -m "chore: set keel_version to {new}"
+
+Run /keel:doctor to verify governance health.
+```
+
+If changes were applied:
 ```
 UPGRADE COMPLETE
 ─────────────────────────────────────────────────────
