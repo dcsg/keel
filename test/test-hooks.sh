@@ -352,6 +352,20 @@ else
     fail "Stop hook contains Security-sensitive"
 fi
 
+# Stop hook prompt instructs JSON response (ok: true/false)
+if python3 -c "
+import json, sys
+s = json.load(open('$SETTINGS'))
+prompt = s['hooks']['Stop'][0]['hooks'][0]['prompt']
+if '\"ok\"' not in prompt and 'ok\": true' not in prompt:
+    print('Stop hook prompt does not instruct JSON response')
+    sys.exit(1)
+" 2>/dev/null; then
+    pass "Stop hook prompt instructs JSON response format"
+else
+    fail "Stop hook prompt instructs JSON response format"
+fi
+
 # Pre-push hook contains KEEL_SECURITY_SKIP
 assert_file_contains "$PROJECT_ROOT/templates/hooks/pre-push" "KEEL_SECURITY_SKIP" "pre-push has security skip flag"
 
