@@ -352,18 +352,21 @@ else
     fail "Stop hook contains Security-sensitive"
 fi
 
-# Stop hook prompt instructs JSON response (ok: true/false)
+# Stop hook prompt instructs JSON response (ok: true only — never ok: false)
 if python3 -c "
 import json, sys
 s = json.load(open('$SETTINGS'))
 prompt = s['hooks']['Stop'][0]['hooks'][0]['prompt']
-if '\"ok\"' not in prompt and 'ok\": true' not in prompt:
-    print('Stop hook prompt does not instruct JSON response')
+if '\"ok\": true' not in prompt and 'ok\\\": true' not in prompt:
+    print('Stop hook prompt does not instruct ok: true response')
+    sys.exit(1)
+if 'never use {\\\"ok\\\": false' not in prompt and 'never use' not in prompt:
+    print('Stop hook prompt does not warn against ok: false')
     sys.exit(1)
 " 2>/dev/null; then
-    pass "Stop hook prompt instructs JSON response format"
+    pass "Stop hook prompt instructs ok:true only (never ok:false)"
 else
-    fail "Stop hook prompt instructs JSON response format"
+    fail "Stop hook prompt instructs ok:true only (never ok:false)"
 fi
 
 # Pre-push hook contains KEEL_SECURITY_SKIP
