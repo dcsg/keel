@@ -100,18 +100,9 @@ Same logic as `/keel:rules-update`:
 - Skip files without `<!-- keel:generated -->` marker (manually edited)
 - Skip files not in the registry (custom rules)
 
-### 3. Show Release Notes + Upgrade Summary
+### 3. Show Upgrade Summary
 
-First, show the relevant release notes. Read `~/.keel/CHANGELOG.md` if it exists and display the most recent release section (the first `## v` entry through the next `## v` or end of file).
-
-```
-WHAT'S NEW
-─────────────────────────────────────────────────────
-{content of the most recent changelog section}
-─────────────────────────────────────────────────────
-```
-
-Then show what will change in this project before touching anything:
+Show what will change in this project before touching anything:
 
 ```
 KEEL UPGRADE
@@ -223,6 +214,11 @@ Commit to record the version:
   git add .keel/config.yaml && git commit -m "chore: set keel_version to {new}"
 
 Run /keel:doctor to verify governance health.
+
+WHAT'S NEW in {new}
+─────────────────────────────────────────────────────
+{content of the most recent changelog section from ~/.keel/CHANGELOG.md}
+─────────────────────────────────────────────────────
 ```
 
 If changes were applied:
@@ -238,4 +234,9 @@ Commit these changes to share the upgrade with your team:
   git add .claude/ .keel/config.yaml && git commit -m "chore: upgrade keel to {new}"
 
 Run /keel:doctor to verify governance health.
+
+WHAT'S NEW in {new}
+─────────────────────────────────────────────────────
+{content of the most recent changelog section from ~/.keel/CHANGELOG.md}
+─────────────────────────────────────────────────────
 ```
