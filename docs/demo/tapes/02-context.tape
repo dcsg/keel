@@ -1,4 +1,4 @@
-# Flow 2: Loading context — /keel:context at different depths
+# Flow 2: Loading context — /keel:context
 #
 # Story: Developer starts a session on an established project.
 #         Loads context to understand what exists before coding.
@@ -20,35 +20,17 @@ Sleep 2
 # Launch Claude Code
 Type "claude --dangerously-skip-permissions"
 Enter
-Wait+Screen@30s /trust this folder/
-Enter
-Wait+Screen@30s /Type to talk/
+Wait+Screen@60s /bypass permissions/
 
 Sleep 1
 
-# Full context — loads everything
+# Load full context — shows soul, decisions, invariants, rules
 Type "/keel:context"
 Enter
 Wait+Screen@120s /keel:context/
-Wait+Screen@180s /Type to talk/
+Wait+Screen@1800s /bypass permissions/
 
 Sleep 4
-
-# Focused context — only branch-relevant ADRs
-Type "/keel:context --depth=focused"
-Enter
-Wait+Screen@120s /depth: focused/
-Wait+Screen@180s /Type to talk/
-
-Sleep 4
-
-# Minimal context — soul + phase + invariants only
-Type "/keel:context --depth=minimal"
-Enter
-Wait+Screen@120s /depth: minimal/
-Wait+Screen@180s /Type to talk/
-
-Sleep 3
 
 Type "/exit"
 Enter

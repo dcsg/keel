@@ -15,27 +15,30 @@ Source docs/demo/env.tape
 # Launch Claude Code
 Type "claude --dangerously-skip-permissions"
 Enter
-Wait+Screen@30s /trust this folder/
-Enter
-Wait+Screen@30s /Type to talk/
+Wait+Screen@60s /bypass permissions/
 
 Sleep 1
 
-# Create a plan for a new feature
+# Create a plan — keel asks a few questions then generates phases
 Type "/keel:plan add webhook notifications for task status changes"
 Enter
 Wait+Screen@120s /keel:plan/
 
-# Wait for the interview + plan generation
-Wait+Screen@300s />/
+# Answer the interview: confirm defaults / skip details
+Wait+Screen@60s /question/
+Type "no feature flag, postgres outbox pattern, ship all in one PR"
+Enter
+
+# Wait for plan generation to finish
+Wait+Screen@1800s /bypass permissions/
 
 Sleep 4
 
 # Check status to see the new plan
 Type "/keel:status"
 Enter
-Wait+Screen@60s /keel:status/
-Wait+Screen@120s /Type to talk/
+Wait+Screen@120s /keel:status/
+Wait+Screen@300s /bypass permissions/
 
 Sleep 4
 

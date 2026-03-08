@@ -56,7 +56,9 @@ record_flow() {
     # Run: claude /tmp/keel-demo-<flow> once to accept the trust dialog, then
     # all subsequent recordings skip it automatically.
     DEMO_DIR="/tmp/keel-demo-$1"
-    rm -rf "$DEMO_DIR"
+    # Keep the dir so Claude's workspace trust persists; wipe only the contents.
+    mkdir -p "$DEMO_DIR"
+    find "$DEMO_DIR" -mindepth 1 -maxdepth 1 ! -name '.claude' -exec rm -rf {} +
     echo "  Setting up demo project..."
     bash "$setup_script" "$DEMO_DIR"
 

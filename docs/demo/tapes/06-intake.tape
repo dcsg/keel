@@ -20,9 +20,7 @@ Sleep 2
 # Launch Claude Code
 Type "claude --dangerously-skip-permissions"
 Enter
-Wait+Screen@30s /trust this folder/
-Enter
-Wait+Screen@30s /Type to talk/
+Wait+Screen@60s /bypass permissions/
 
 Sleep 1
 
@@ -32,7 +30,7 @@ Enter
 Wait+Screen@120s /keel:intake/
 
 # Wait for scan + categorization + user prompts
-Wait+Screen@300s />/
+Wait+Screen@1800s /bypass permissions/
 
 Sleep 4
 

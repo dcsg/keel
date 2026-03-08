@@ -20,9 +20,7 @@ Sleep 2
 # Launch Claude Code
 Type "claude --dangerously-skip-permissions"
 Enter
-Wait+Screen@30s /trust this folder/
-Enter
-Wait+Screen@30s /Type to talk/
+Wait+Screen@60s /bypass permissions/
 
 Sleep 1
 
@@ -30,31 +28,23 @@ Sleep 1
 Type "/keel:init"
 Enter
 Wait+Screen@120s /keel:init/
-Wait+Screen@180s /Type to talk/
+Wait+Screen@1800s /bypass permissions/
 
 Sleep 3
 
-# ── Step 2: Create a plan ──
-Type "/keel:plan build user authentication with JWT"
-Enter
-Wait+Screen@120s /keel:plan/
-Wait+Screen@300s />/
-
-Sleep 3
-
-# ── Step 3: Check status ──
+# ── Step 2: Check governance status ──
 Type "/keel:status"
 Enter
-Wait+Screen@60s /keel:status/
-Wait+Screen@120s /Type to talk/
+Wait+Screen@120s /keel:status/
+Wait+Screen@300s /bypass permissions/
 
 Sleep 3
 
-# ── Step 4: Load context and start working ──
-Type "/keel:context"
+# ── Step 3: Load context before writing code ──
+Type "/keel:context --depth=minimal"
 Enter
 Wait+Screen@120s /keel:context/
-Wait+Screen@180s /Type to talk/
+Wait+Screen@1800s /bypass permissions/
 
 Sleep 3
 

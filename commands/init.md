@@ -338,14 +338,22 @@ Generate two hooks:
     "PreToolUse": [
       {
         "matcher": "Write|Edit",
-        "type": "command",
-        "command": "if [ -f 'docs/soul.md' ] && [ -f '.keel/config.yaml' ]; then SENTINEL=\"/tmp/keel-$(echo \"$PWD\" | md5sum 2>/dev/null | cut -c1-8 || echo \"$PWD\" | md5 2>/dev/null | cut -c1-8)\"; if [ ! -f \"$SENTINEL\" ]; then touch \"$SENTINEL\"; echo '📋 Keel: context not loaded this session. Read docs/soul.md, docs/decisions/, docs/invariants/, and check docs/product/plans/ for active plan before writing code.'; fi; fi"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f 'docs/soul.md' ] && [ -f '.keel/config.yaml' ]; then SENTINEL=\"/tmp/keel-$(echo \"$PWD\" | md5sum 2>/dev/null | cut -c1-8 || echo \"$PWD\" | md5 2>/dev/null | cut -c1-8)\"; if [ ! -f \"$SENTINEL\" ]; then touch \"$SENTINEL\"; echo '📋 Keel: context not loaded this session. Read docs/soul.md, docs/decisions/, docs/invariants/, and check docs/product/plans/ for active plan before writing code.'; fi; fi"
+          }
+        ]
       }
     ],
     "PreCompact": [
       {
-        "type": "command",
-        "command": "echo '⚠️  Context compacting. If a plan is active, update its progress table NOW before context is lost.'"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '⚠️  Context compacting. If a plan is active, update its progress table NOW before context is lost.'"
+          }
+        ]
       }
     ]
   }

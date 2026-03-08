@@ -14,7 +14,7 @@ cd "$DEMO_DIR"
 git init -q
 
 # --- Project files ---
-mkdir -p src cmd
+mkdir -p src cmd/server
 
 cat > go.mod << 'EOF'
 module github.com/acme/payments

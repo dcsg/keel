@@ -15,17 +15,15 @@ Source docs/demo/env.tape
 # Launch Claude Code
 Type "claude --dangerously-skip-permissions"
 Enter
-Wait+Screen@30s /trust this folder/
-Enter
-Wait+Screen@30s /Type to talk/
+Wait+Screen@60s /bypass permissions/
 
 Sleep 1
 
 # Run the health check
 Type "/keel:doctor"
 Enter
-Wait+Screen@60s /keel:doctor/
-Wait+Screen@120s /Type to talk/
+Wait+Screen@120s /keel:doctor/
+Wait+Screen@300s /bypass permissions/
 
 Sleep 5
 
