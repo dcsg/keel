@@ -64,36 +64,21 @@ else
     fail "All hooks use nested hooks[] array with type field"
 fi
 
-# Stop hook must be type:prompt (not type:command)
+# Stop hook must be type:command referencing stop-hook.sh
 if python3 -c "
 import json, sys
 s = json.load(open('$SETTINGS'))
 stop = s['hooks']['Stop'][0]['hooks'][0]
-if stop['type'] != 'prompt':
-    print(f'Stop hook type is {stop[\"type\"]}, expected prompt')
+if stop['type'] != 'command':
+    print(f'Stop hook type is {stop[\"type\"]}, expected command')
     sys.exit(1)
-if 'prompt' not in stop:
-    print('Stop hook missing prompt field')
+if '.keel/hooks/stop-hook.sh' not in stop.get('command', ''):
+    print('Stop hook command does not reference stop-hook.sh')
     sys.exit(1)
 " 2>/dev/null; then
-    pass "Stop hook is type:prompt with prompt field"
+    pass "Stop hook is type:command referencing stop-hook.sh"
 else
-    fail "Stop hook is type:prompt with prompt field"
-fi
-
-# Stop prompt mentions ADR, invariant, PRD
-if python3 -c "
-import json, sys
-s = json.load(open('$SETTINGS'))
-prompt = s['hooks']['Stop'][0]['hooks'][0]['prompt']
-for kw in ['ADR', 'invariant', 'PRD']:
-    if kw not in prompt:
-        print(f'Stop prompt missing keyword: {kw}')
-        sys.exit(1)
-" 2>/dev/null; then
-    pass "Stop hook prompt references ADR, invariant, PRD"
-else
-    fail "Stop hook prompt references ADR, invariant, PRD"
+    fail "Stop hook is type:command referencing stop-hook.sh"
 fi
 
 # PreToolUse must have matcher: Write|Edit
@@ -321,58 +306,51 @@ else
 fi
 
 # ============================================================
-# Stop hook security signal assertions
+# Stop hook script content assertions
 # ============================================================
 
-# Stop hook contains keel:audit
-if python3 -c "
-import json, sys
-s = json.load(open('$SETTINGS'))
-prompt = s['hooks']['Stop'][0]['hooks'][0]['prompt']
-if 'keel:audit' not in prompt:
-    print('Stop hook missing keel:audit reference')
-    sys.exit(1)
-" 2>/dev/null; then
-    pass "Stop hook contains keel:audit"
+STOP_HOOK="$HOOKS_DIR/stop-hook.sh"
+
+# Stop hook script exists
+if [ -f "$STOP_HOOK" ]; then
+    pass "Stop hook script exists: templates/hooks/stop-hook.sh"
 else
-    fail "Stop hook contains keel:audit"
+    fail "Stop hook script exists: templates/hooks/stop-hook.sh"
 fi
 
-# Stop hook contains Security-sensitive
-if python3 -c "
-import json, sys
-s = json.load(open('$SETTINGS'))
-prompt = s['hooks']['Stop'][0]['hooks'][0]['prompt']
-if 'Security-sensitive' not in prompt:
-    print('Stop hook missing Security-sensitive reference')
-    sys.exit(1)
-" 2>/dev/null; then
-    pass "Stop hook contains Security-sensitive"
+# Stop hook contains keel:audit signal
+if grep -q 'keel:audit' "$STOP_HOOK" 2>/dev/null; then
+    pass "Stop hook script references keel:audit"
 else
-    fail "Stop hook contains Security-sensitive"
+    fail "Stop hook script references keel:audit"
 fi
 
-# Stop hook prompt instructs valid JSON only (single line, no plain text)
-if python3 -c "
-import json, sys
-s = json.load(open('$SETTINGS'))
-prompt = s['hooks']['Stop'][0]['hooks'][0]['prompt']
-# Must instruct ok:true for no signals
-if '{\"ok\": true}' not in prompt and '{\\\\\"ok\\\\\": true}' not in prompt:
-    print('Stop hook prompt does not instruct ok:true for no signals')
-    sys.exit(1)
-# Must use ok:false for signals (not plain text before ok:true)
-if '{\"ok\": false' not in prompt and 'ok\\\": false' not in prompt:
-    print('Stop hook prompt does not use ok:false for signals')
-    sys.exit(1)
-# Must instruct single-line JSON (no plain text output)
-if 'single line' not in prompt and 'No text before' not in prompt and 'nothing else' not in prompt:
-    print('Stop hook prompt does not enforce single-line JSON output')
-    sys.exit(1)
-" 2>/dev/null; then
-    pass "Stop hook prompt: ok:true (no signals), ok:false with reason (signals), single-line JSON"
+# Stop hook contains security signal
+if grep -q 'Security-sensitive' "$STOP_HOOK" 2>/dev/null; then
+    pass "Stop hook script contains Security-sensitive signal"
 else
-    fail "Stop hook prompt: ok:true (no signals), ok:false with reason (signals), single-line JSON"
+    fail "Stop hook script contains Security-sensitive signal"
+fi
+
+# Stop hook outputs systemMessage (non-blocking notification)
+if grep -q 'systemMessage' "$STOP_HOOK" 2>/dev/null; then
+    pass "Stop hook uses systemMessage for non-blocking signal display"
+else
+    fail "Stop hook uses systemMessage for non-blocking signal display"
+fi
+
+# Stop hook guards against infinite loops via stop_hook_active
+if grep -q 'stop_hook_active' "$STOP_HOOK" 2>/dev/null; then
+    pass "Stop hook guards against infinite loops (stop_hook_active check)"
+else
+    fail "Stop hook guards against infinite loops (stop_hook_active check)"
+fi
+
+# Stop hook references ADR signal
+if grep -q 'keel:adr' "$STOP_HOOK" 2>/dev/null; then
+    pass "Stop hook script references keel:adr"
+else
+    fail "Stop hook script references keel:adr"
 fi
 
 # Pre-push hook contains KEEL_SECURITY_SKIP

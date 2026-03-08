@@ -1,5 +1,20 @@
 # Keel Changelog
 
+## v3.7 (2026-03-08)
+
+### Fix: Stop hook no longer requires ANTHROPIC_API_KEY — regex-based detection
+
+v3.6 switched to `type: command` with an external Claude API call to avoid the "Prompt hook condition was not met" UX issue. But this required `ANTHROPIC_API_KEY` to be set as an environment variable — which Claude Code OAuth users don't have.
+
+The Stop hook now uses **regex-based signal detection** in the shell script — no API key, no external calls, instant execution. Signals are still surfaced as `systemMessage` (non-blocking, no error label).
+
+Detection patterns:
+- **Architecture:** "chose X over Y", "trade-off", "going forward all/every/must", "hard constraint"
+- **Doc gap:** New HTTP routes (`POST /path`, `GET /path`, etc.), new env vars (UPPER_CASE pattern)
+- **Security:** 2+ security terms (JWT, OAuth, payment, PII, encrypt, secret, etc.)
+
+Also added `test/test-stop-hook-e2e.sh` — runs the hook script directly with simulated payloads, no API key needed.
+
 ## v3.6 (2026-03-08)
 
 ### Bug fix: Stop hook signals were silently lost (JSON validation failed)
