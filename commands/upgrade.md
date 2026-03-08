@@ -95,8 +95,11 @@ Do NOT touch agents that have no matching template (user-created agents).
 
 #### 2c. Rule packs check
 
-Same logic as `/keel:rules-update`:
+If `.claude/rules/` does not exist or contains no `.md` files → mark rule packs as "nothing installed, skip" (not outdated).
+
+Otherwise, same logic as `/keel:rules-update`:
 - Compare `version:` frontmatter in installed vs template
+- Only flag as outdated if installed version < template version
 - Skip files without `<!-- keel:generated -->` marker (manually edited)
 - Skip files not in the registry (custom rules)
 
@@ -128,6 +131,13 @@ Rule packs (.claude/rules/)
 ─────────────────────────────────────────────────────
 4 hook changes, 2 agents, 2 rule packs
 ```
+
+If no rule packs are installed (`.claude/rules/` is missing or empty), show:
+```
+Rule packs (.claude/rules/)
+  —  no rule packs installed
+```
+Do NOT show any `⬆` icon for rules in this case.
 
 If everything is already up to date:
 ```

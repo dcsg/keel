@@ -34,6 +34,12 @@ Keel templates not found. Install keel globally or provide the path.
 
 ### 3. Compare Versions
 
+If `.claude/rules/` does not exist or contains no `.md` files:
+```
+No rule packs installed. Run /keel:init to set up rules for this project.
+```
+Stop.
+
 For each `.claude/rules/*.md` file:
 
 1. Read the installed file's YAML frontmatter to get `version:`

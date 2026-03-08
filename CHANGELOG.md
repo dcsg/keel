@@ -1,5 +1,11 @@
 # Keel Changelog
 
+## v3.5 (2026-03-08)
+
+### Bug fix: upgrade and rules-update incorrectly flagged rules as outdated when none were installed
+
+When `.claude/rules/` was missing or empty, the upgrade command showed a stale icon for rule packs despite there being nothing to compare. Both `upgrade` and `rules-update` now explicitly handle this case — showing "no rule packs installed" instead of a false outdated indicator.
+
 ## v3.4 (2026-03-08)
 
 ### Improvement: Release notes shown after upgrade completes
