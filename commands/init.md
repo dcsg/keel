@@ -334,8 +334,6 @@ Generate four hooks:
 
 **PreToolUse** — fires before Write or Edit. If `docs/soul.md` is missing, warns that init is incomplete.
 
-**PostToolUse** — fires after Write or Edit on any source file. Detects the file extension and runs the project's formatter (gofmt, prettier, black/ruff, rubocop, php-cs-fixer, rustfmt) if available. Skipped via `KEEL_FORMAT_SKIP=1` or `post-tool-use: false` in `.keel/config.yaml`.
-
 **Stop** — fires after every Claude response. Actively scans the response for artifact signals (ADR/invariant/PRD) and prompts Claude to surface them.
 
 **PreCompact** — fires before context compaction. Reminds Claude to update the active plan's progress table.
@@ -439,22 +437,18 @@ Install specialist agent templates based on detected stack:
 5. Copy each selected agent template to `.claude/agents/{slug}.md`
 6. Note: `optional` agents in the registry are available via `/keel:agents add {slug}` but not auto-installed
 
-#### 5.9 — Git pre-push hook (doc gap detection)
+### 5.10 — Linter-aware rules (established projects only)
 
-Install the doc-gap pre-push hook:
+If this is an established project and linter configs were found during the codebase audit (step 3B), run `/keel:sync` automatically:
 
-```bash
-cp ~/.keel/templates/hooks/pre-push .git/hooks/pre-push
-chmod +x .git/hooks/pre-push
+```
+Linter configs detected: {list of found configs}
+Running keel:sync to generate linter-aware AI rules...
 ```
 
-The hook warns about undocumented public surface changes (new routes, env vars, infra components) before each push. It **never blocks** — always exits 0. It's for awareness, not enforcement.
+Execute the keel:sync logic to detect, translate, and write to `.claude/rules/linter-*.md`. This produces rules that reinforce what the linter already enforces, so Claude never writes violations in the first place.
 
-**Disable options (mention these in the summary):**
-- One-off: `KEEL_DOCS_SKIP=1 git push`
-- Permanent: add `hooks: { pre-push: false }` to `.keel/config.yaml`
-
-Note: `.git/hooks/` is not committed to git — each team member must run `/keel:team setup` to install it locally.
+If no linter configs found, skip silently.
 
 ### 6. Offer Intake for Established Projects
 
@@ -474,10 +468,7 @@ Keel initialized!
   Rules:      .claude/rules/ ({count} packs installed)
   Agents:     .claude/agents/ ({count} specialist agents installed)
   CLAUDE.md:  CLAUDE.md
-  Hooks:      .claude/settings.json (5 Claude Code hooks)
-  Git hook:   .git/hooks/pre-push (doc gap detection — warns, never blocks)
-              Disable: KEEL_DOCS_SKIP=1 git push
-              Or add to .keel/config.yaml: hooks: { pre-push: false }
+  Hooks:      .claude/settings.json
 
   Rules installed:
     {list each rule pack with one-line description}

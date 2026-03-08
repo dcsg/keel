@@ -45,7 +45,7 @@ assert_file_contains "$PROJECT_ROOT/templates/settings.json.tmpl" "Write|Edit" "
 assert_file_contains "$PROJECT_ROOT/templates/settings.json.tmpl" "PostToolUse" "settings.json.tmpl has PostToolUse hook"
 
 # All keel commands exist
-for cmd in init context plan status intake doctor rules-update adr invariant prd agents mcp team docs; do
+for cmd in init context plan status intake doctor rules-update adr invariant prd agents mcp team docs sync; do
     assert_file_exists "$PROJECT_ROOT/commands/${cmd}.md" "commands/${cmd}.md exists"
 done
 

@@ -85,26 +85,21 @@ grep -q 'keel:' CLAUDE.md 2>/dev/null
 
 **Hooks:**
 ```bash
-# Check for PreToolUse, PostToolUse, and PreCompact hooks
+# Check for PreToolUse and PreCompact hooks
 python3 -c "
 import json
 s = json.load(open('.claude/settings.json'))
 hooks = s.get('hooks', {})
 pre_tool = hooks.get('PreToolUse', [])
-post_tool = hooks.get('PostToolUse', [])
 pre_compact = hooks.get('PreCompact', [])
 has_tool = any('Write|Edit' in str(h.get('matcher','')) for h in pre_tool)
-has_post_tool = any('Write|Edit' in str(h.get('matcher','')) for h in post_tool)
 has_compact = len(pre_compact) > 0
 print(f'PreToolUse:{has_tool}')
-print(f'PostToolUse:{has_post_tool}')
 print(f'PreCompact:{has_compact}')
 " 2>/dev/null
 ```
 - `[ok] PreToolUse hook (Write|Edit sentinel)` if present
 - `[!!] PreToolUse hook missing` — suggest `/keel:init`
-- `[ok] PostToolUse auto-format hook` if present
-- `[!!] PostToolUse auto-format hook not found — run /keel:init to reinstall hooks.` if missing
 - `[ok] PreCompact hook` if present
 - `[!!] PreCompact hook missing` — suggest `/keel:init`
 
@@ -136,6 +131,17 @@ ls .claude/agents/*.md 2>/dev/null
 ```
 - `[ok] {n} agents installed` if present
 - `[--] No agents installed` — suggest `/keel:init` or `/keel:agents suggest`
+
+**Linter sync:**
+```bash
+# Find linter configs
+find . -maxdepth 3 -name ".golangci-lint.yaml" -o -name ".golangci.yaml" -o -name ".eslintrc*" -o -name "eslint.config.*" -o -name "ruff.toml" -o -name ".rubocop.yml" -o -name "biome.json" 2>/dev/null | grep -v node_modules | grep -v .git
+# Find generated linter rules
+ls .claude/rules/linter-*.md 2>/dev/null
+```
+- For each linter config found with no corresponding `.claude/rules/linter-*.md`: `[!!] {config} found but no linter rules installed — run /keel:sync`
+- For each `.claude/rules/linter-*.md`: compare its mtime to source config mtime. If config is newer: `[!!] Linter config changed since last sync — run /keel:sync`
+- If no linter configs found: skip silently
 
 **Hooks:**
 Check for SessionStart, Stop, PreCompact hooks in `.claude/settings.json`:
