@@ -80,4 +80,19 @@ assert_file_contains "$PROJECT_ROOT/commands/session.md" "context: fork" "sessio
 assert_file_contains "$PROJECT_ROOT/commands/session.md" "SESSION SUMMARY" "session.md has session summary output"
 assert_file_contains "$PROJECT_ROOT/commands/session.md" "keel:adr" "session.md suggests artifact capture"
 
+# audit.md checks
+assert_file_contains "$PROJECT_ROOT/commands/audit.md" "context: fork" "audit.md has context: fork"
+assert_file_contains "$PROJECT_ROOT/commands/audit.md" "OWASP" "audit.md covers OWASP"
+assert_file_contains "$PROJECT_ROOT/commands/audit.md" "staff-security" "audit.md routes to staff-security"
+
+# review.md checks
+assert_file_contains "$PROJECT_ROOT/commands/review.md" "context: fork" "review.md has context: fork"
+assert_file_contains "$PROJECT_ROOT/commands/review.md" "IMPLEMENTATION REVIEW" "review.md has review output format"
+assert_file_contains "$PROJECT_ROOT/commands/review.md" "principal-dba" "review.md routes to principal-dba"
+
+# website pages exist for all v3 commands
+assert_file_exists "$PROJECT_ROOT/website/commands/review.md" "website/commands/review.md exists"
+assert_file_exists "$PROJECT_ROOT/website/commands/audit.md" "website/commands/audit.md exists"
+assert_file_exists "$PROJECT_ROOT/website/commands/session.md" "website/commands/session.md exists"
+
 test_summary
