@@ -85,21 +85,26 @@ grep -q 'keel:' CLAUDE.md 2>/dev/null
 
 **Hooks:**
 ```bash
-# Check for PreToolUse and PreCompact hooks
+# Check for PreToolUse, PostToolUse, and PreCompact hooks
 python3 -c "
 import json
 s = json.load(open('.claude/settings.json'))
 hooks = s.get('hooks', {})
 pre_tool = hooks.get('PreToolUse', [])
+post_tool = hooks.get('PostToolUse', [])
 pre_compact = hooks.get('PreCompact', [])
 has_tool = any('Write|Edit' in str(h.get('matcher','')) for h in pre_tool)
+has_post_tool = any('Write|Edit' in str(h.get('matcher','')) for h in post_tool)
 has_compact = len(pre_compact) > 0
 print(f'PreToolUse:{has_tool}')
+print(f'PostToolUse:{has_post_tool}')
 print(f'PreCompact:{has_compact}')
 " 2>/dev/null
 ```
 - `[ok] PreToolUse hook (Write|Edit sentinel)` if present
 - `[!!] PreToolUse hook missing` — suggest `/keel:init`
+- `[ok] PostToolUse auto-format hook` if present
+- `[!!] PostToolUse auto-format hook not found — run /keel:init to reinstall hooks.` if missing
 - `[ok] PreCompact hook` if present
 - `[!!] PreCompact hook missing` — suggest `/keel:init`
 

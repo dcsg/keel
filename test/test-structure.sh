@@ -42,11 +42,21 @@ assert_file_contains "$PROJECT_ROOT/templates/settings.json.tmpl" "PreToolUse" "
 assert_file_contains "$PROJECT_ROOT/templates/settings.json.tmpl" "Stop" "settings.json.tmpl has Stop hook"
 assert_file_contains "$PROJECT_ROOT/templates/settings.json.tmpl" "PreCompact" "settings.json.tmpl has PreCompact hook"
 assert_file_contains "$PROJECT_ROOT/templates/settings.json.tmpl" "Write|Edit" "PreToolUse hook targets Write|Edit"
+assert_file_contains "$PROJECT_ROOT/templates/settings.json.tmpl" "PostToolUse" "settings.json.tmpl has PostToolUse hook"
 
 # All keel commands exist
 for cmd in init context plan status intake doctor rules-update adr invariant prd agents mcp team docs; do
     assert_file_exists "$PROJECT_ROOT/commands/${cmd}.md" "commands/${cmd}.md exists"
 done
+
+# Shell preprocessing markers exist in artifact commands
+assert_file_contains "$PROJECT_ROOT/commands/adr.md" '!`' "adr.md has shell preprocessing"
+assert_file_contains "$PROJECT_ROOT/commands/invariant.md" '!`' "invariant.md has shell preprocessing"
+assert_file_contains "$PROJECT_ROOT/commands/prd.md" '!`' "prd.md has shell preprocessing"
+assert_file_contains "$PROJECT_ROOT/commands/plan.md" '!`' "plan.md has shell preprocessing"
+assert_file_contains "$PROJECT_ROOT/commands/adr.md" "keel:live" "adr.md injects live ADR number"
+assert_file_contains "$PROJECT_ROOT/commands/invariant.md" "keel:live" "invariant.md injects live INV number"
+assert_file_contains "$PROJECT_ROOT/commands/prd.md" "keel:live" "prd.md injects live PRD number"
 
 # Agent templates directory exists
 assert_dir_exists "$PROJECT_ROOT/templates/agents" "templates/agents/ exists"

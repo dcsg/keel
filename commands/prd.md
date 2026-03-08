@@ -8,6 +8,7 @@ allowed-tools:
   - Bash
   - Glob
 ---
+!`BASE=$(grep "^base:" .keel/config.yaml 2>/dev/null | awk '{print $2}' | tr -d '"' || echo "docs"); COUNT=$(ls "${BASE}/product/prds/"*.md 2>/dev/null | wc -l | tr -d ' '); NEXT=$(printf "%03d" $((COUNT + 1))); EXISTING=$(ls "${BASE}/product/prds/"*.md 2>/dev/null | xargs -I{} basename {} .md | sort | tr '\n' ', ' | sed 's/,$//'); printf "<!-- keel:live -->\nNext PRD number: PRD-%s\nExisting PRDs: %s\n<!-- /keel:live -->\n" "$NEXT" "${EXISTING:-(none yet)}"`
 
 # keel:prd
 
@@ -30,7 +31,7 @@ ls {BASE}/product/prds/*.md 2>/dev/null | sort
 Read `{BASE}/soul.md` for project identity, users, and stack.
 Read `{BASE}/product/spec.md` if it exists — for roadmap context.
 
-Note the highest existing PRD number. Zero-pad to 3 digits (e.g. `003`).
+The correct next PRD number is provided at the top of this prompt in the `<!-- keel:live -->` block. Use it exactly — do not guess or count files yourself.
 
 ### 3. Clarify Requirements
 

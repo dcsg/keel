@@ -1,6 +1,7 @@
 ---
 name: keel:status
 description: "Dashboard — plans, rules, governance health"
+context: fork
 allowed-tools:
   - Read
   - Glob

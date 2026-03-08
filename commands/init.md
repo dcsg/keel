@@ -334,6 +334,8 @@ Generate four hooks:
 
 **PreToolUse** — fires before Write or Edit. If `docs/soul.md` is missing, warns that init is incomplete.
 
+**PostToolUse** — fires after Write or Edit on any source file. Detects the file extension and runs the project's formatter (gofmt, prettier, black/ruff, rubocop, php-cs-fixer, rustfmt) if available. Skipped via `KEEL_FORMAT_SKIP=1` or `post-tool-use: false` in `.keel/config.yaml`.
+
 **Stop** — fires after every Claude response. Actively scans the response for artifact signals (ADR/invariant/PRD) and prompts Claude to surface them.
 
 **PreCompact** — fires before context compaction. Reminds Claude to update the active plan's progress table.
@@ -472,7 +474,7 @@ Keel initialized!
   Rules:      .claude/rules/ ({count} packs installed)
   Agents:     .claude/agents/ ({count} specialist agents installed)
   CLAUDE.md:  CLAUDE.md
-  Hooks:      .claude/settings.json (4 Claude Code hooks)
+  Hooks:      .claude/settings.json (5 Claude Code hooks)
   Git hook:   .git/hooks/pre-push (doc gap detection — warns, never blocks)
               Disable: KEEL_DOCS_SKIP=1 git push
               Or add to .keel/config.yaml: hooks: { pre-push: false }

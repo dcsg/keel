@@ -1,3 +1,14 @@
+---
+name: keel:docs
+description: "Audit documentation gaps — find what changed in code but wasn't reflected in docs"
+context: fork
+allowed-tools:
+  - Read
+  - Glob
+  - Grep
+  - Bash
+---
+
 # /keel:docs
 
 Audit documentation gaps — find what changed in code but wasn't reflected in docs.

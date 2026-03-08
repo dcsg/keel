@@ -8,6 +8,7 @@ allowed-tools:
   - Bash
   - Glob
 ---
+!`BASE=$(grep "^base:" .keel/config.yaml 2>/dev/null | awk '{print $2}' | tr -d '"' || echo "docs"); COUNT=$(ls "${BASE}/invariants/"*.md 2>/dev/null | wc -l | tr -d ' '); NEXT=$(printf "%03d" $((COUNT + 1))); EXISTING=$(ls "${BASE}/invariants/"*.md 2>/dev/null | xargs -I{} basename {} .md | sort | tr '\n' ', ' | sed 's/,$//'); printf "<!-- keel:live -->\nNext INV number: INV-%s\nExisting invariants: %s\n<!-- /keel:live -->\n" "$NEXT" "${EXISTING:-(none yet)}"`
 
 # keel:invariant
 
@@ -43,7 +44,7 @@ Read `.keel/config.yaml`. `BASE` = `base:` value (default: `docs`).
 ls {BASE}/invariants/*.md 2>/dev/null | sort
 ```
 
-Note the highest existing number. Zero-pad to 3 digits (e.g. `003`).
+The correct next INV number is provided at the top of this prompt in the `<!-- keel:live -->` block. Use it exactly — do not guess or count files yourself.
 
 ### 3. Determine Mode
 

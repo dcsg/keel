@@ -11,6 +11,7 @@ allowed-tools:
   - Agent
   - AskUserQuestion
 ---
+!`PLAN=$(ls -t docs/product/plans/*.md docs/plans/*.md 2>/dev/null | head -1); if [ -n "$PLAN" ]; then NAME=$(basename "$PLAN"); PHASE=$(grep -E "in.progress|In Progress" "$PLAN" 2>/dev/null | head -1 | tr -d '|' | xargs); printf "<!-- keel:live -->\nActive plan: %s\nCurrent phase status: %s\n<!-- /keel:live -->\n" "$NAME" "${PHASE:-(none in progress)}"; fi`
 
 # keel:plan
 

@@ -21,20 +21,20 @@ else
     test_summary; exit 1
 fi
 
-# Check all four required hook types exist
+# Check all five required hook types exist
 if python3 -c "
 import json, sys
 s = json.load(open('$SETTINGS'))
 hooks = s.get('hooks', {})
-required = ['SessionStart', 'PreToolUse', 'Stop', 'PreCompact']
+required = ['SessionStart', 'PreToolUse', 'PostToolUse', 'Stop', 'PreCompact']
 for h in required:
     if h not in hooks:
         print(f'MISSING: {h}')
         sys.exit(1)
 " 2>/dev/null; then
-    pass "All four hook types present (SessionStart, PreToolUse, Stop, PreCompact)"
+    pass "All five hook types present (SessionStart, PreToolUse, PostToolUse, Stop, PreCompact)"
 else
-    fail "All four hook types present (SessionStart, PreToolUse, Stop, PreCompact)"
+    fail "All five hook types present (SessionStart, PreToolUse, PostToolUse, Stop, PreCompact)"
 fi
 
 # Check nested hooks[] array format for each hook
@@ -211,5 +211,68 @@ else
     fail "PreToolUse: silent when setup is complete" "Got: $OUTPUT"
 fi
 rm -rf "$COMPLETE"
+
+# ============================================================
+# PostToolUse hook assertions
+# ============================================================
+
+# PostToolUse hook present
+if python3 -c "
+import json, sys
+s = json.load(open('$SETTINGS'))
+if 'PostToolUse' not in s.get('hooks', {}):
+    sys.exit(1)
+" 2>/dev/null; then
+    pass "PostToolUse hook present in settings.json.tmpl"
+else
+    fail "PostToolUse hook present in settings.json.tmpl"
+fi
+
+# PostToolUse has Write|Edit matcher
+if python3 -c "
+import json, sys
+s = json.load(open('$SETTINGS'))
+entries = s['hooks'].get('PostToolUse', [])
+if not any(e.get('matcher') == 'Write|Edit' for e in entries):
+    sys.exit(1)
+" 2>/dev/null; then
+    pass "PostToolUse hook has Write|Edit matcher"
+else
+    fail "PostToolUse hook has Write|Edit matcher"
+fi
+
+# PostToolUse has KEEL_FORMAT_SKIP disable guard
+if python3 -c "
+import json, sys
+s = json.load(open('$SETTINGS'))
+entries = s['hooks'].get('PostToolUse', [])
+for entry in entries:
+    for h in entry.get('hooks', []):
+        cmd = h.get('command', '')
+        if 'KEEL_FORMAT_SKIP' in cmd:
+            sys.exit(0)
+sys.exit(1)
+" 2>/dev/null; then
+    pass "PostToolUse hook has KEEL_FORMAT_SKIP disable guard"
+else
+    fail "PostToolUse hook has KEEL_FORMAT_SKIP disable guard"
+fi
+
+# PostToolUse hook always exits 0
+if python3 -c "
+import json, sys
+s = json.load(open('$SETTINGS'))
+entries = s['hooks'].get('PostToolUse', [])
+for entry in entries:
+    for h in entry.get('hooks', []):
+        cmd = h.get('command', '')
+        if 'exit 0' in cmd:
+            sys.exit(0)
+sys.exit(1)
+" 2>/dev/null; then
+    pass "PostToolUse hook always exits 0 (has exit 0 at end)"
+else
+    fail "PostToolUse hook always exits 0 (has exit 0 at end)"
+fi
 
 test_summary
