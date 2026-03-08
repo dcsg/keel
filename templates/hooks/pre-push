@@ -110,5 +110,37 @@ if [ ${#GAPS[@]} -gt 0 ]; then
   echo ""
 fi
 
+# ── Security scan ─────────────────────────────────────────────────────────────
+if [ "${KEEL_SECURITY_SKIP:-0}" = "1" ]; then
+  : # skip security checks
+elif grep -q "pre-push-security: false" .keel/config.yaml 2>/dev/null; then
+  : # disabled in config
+else
+  SEC_FINDINGS=""
+
+  # Hardcoded secrets
+  SECRETS=$(git diff "$BASE" "$LOCAL_REF" -- . 2>/dev/null | grep "^+" | grep -v "^+++" | grep -iE '(api_key|password|secret|token)\s*=\s*["'"'"'][^"'"'"']{8,}' | head -3)
+  [ -n "$SECRETS" ] && SEC_FINDINGS="${SEC_FINDINGS}   • Possible hardcoded secret\n"
+
+  # SQL string concatenation
+  SQL=$(git diff "$BASE" "$LOCAL_REF" -- . 2>/dev/null | grep "^+" | grep -v "^+++" | grep -E '"(SELECT|INSERT|UPDATE|DELETE).*"\s*\+' | head -3)
+  [ -n "$SQL" ] && SEC_FINDINGS="${SEC_FINDINGS}   • SQL string concatenation (injection risk)\n"
+
+  # TODO security comments
+  TODOS=$(git diff "$BASE" "$LOCAL_REF" -- . 2>/dev/null | grep "^+" | grep -v "^+++" | grep -iE 'TODO.*(auth|security|validate|sanitize)' | head -3)
+  [ -n "$TODOS" ] && SEC_FINDINGS="${SEC_FINDINGS}   • Security TODO comments not resolved\n"
+
+  if [ -n "$SEC_FINDINGS" ]; then
+    echo ""
+    echo "🔒 keel: security patterns detected:"
+    printf "$SEC_FINDINGS"
+    echo ""
+    echo "   Run /keel:audit to review. Pushing anyway."
+    echo "   To skip: KEEL_SECURITY_SKIP=1 git push"
+    echo "   To disable: add 'pre-push-security: false' under 'hooks:' in .keel/config.yaml"
+    echo ""
+  fi
+fi
+
 # Always exit 0 — never block the push
 exit 0

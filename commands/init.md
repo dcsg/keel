@@ -351,7 +351,7 @@ Use a Read + Edit approach — never Write the whole file. Find the markers with
 
 Generate four hooks:
 
-**SessionStart** — fires at the start of every session. Detects keel project and checks if auto-memory is stale (>7 days). Prompts to run `/keel:context` if needed.
+**SessionStart** — fires at the start of every session. Detects keel project, checks memory staleness, and summarizes what changed in git since the last session with relevant agent suggestions. If memory is >7d old, warns to refresh. Supports disabling git analysis via `hooks: { session-start-git: false }` in `.keel/config.yaml`.
 
 **PreToolUse** — fires before Write or Edit. If `docs/soul.md` is missing, warns that init is incomplete.
 

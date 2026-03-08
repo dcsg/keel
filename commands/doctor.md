@@ -147,6 +147,16 @@ ls .claude/rules/linter-*.md 2>/dev/null
 Check for SessionStart, Stop, PreCompact hooks in `.claude/settings.json`:
 - `[ok]` / `[!!]` for each hook type
 
+Also check SessionStart hook version:
+```python
+import json
+s = json.load(open('.claude/settings.json'))
+cmd = s.get('hooks', {}).get('SessionStart', [{}])[0].get('hooks', [{}])[0].get('command', '')
+print('git_aware' if 'git log' in cmd else 'outdated')
+```
+- `[ok] SessionStart hook is git-aware` if `git log` is present in the command
+- `[!!] SessionStart hook outdated — run /keel:init to reinstall hooks` if not
+
 ### 3. Output Report
 
 ```

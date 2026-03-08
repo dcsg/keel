@@ -213,8 +213,54 @@ fi
 rm -rf "$COMPLETE"
 
 # ============================================================
+# SessionStart git-aware hook assertions
+# ============================================================
+
+# SessionStart hook contains git log (git-aware)
+if echo "$SESSION_CMD" | grep -q 'git log'; then
+    pass "SessionStart hook is git-aware (contains 'git log')"
+else
+    fail "SessionStart hook is git-aware (contains 'git log')"
+fi
+
+# SessionStart hook contains migration domain signal
+if echo "$SESSION_CMD" | grep -q 'migration'; then
+    pass "SessionStart hook contains 'migration' domain signal"
+else
+    fail "SessionStart hook contains 'migration' domain signal"
+fi
+
+# SessionStart hook contains docker domain signal
+if echo "$SESSION_CMD" | grep -q 'docker'; then
+    pass "SessionStart hook contains 'docker' domain signal"
+else
+    fail "SessionStart hook contains 'docker' domain signal"
+fi
+
+# SessionStart hook contains session-start-git disable flag
+if echo "$SESSION_CMD" | grep -q 'session-start-git'; then
+    pass "SessionStart hook respects session-start-git disable flag"
+else
+    fail "SessionStart hook respects session-start-git disable flag"
+fi
+
+# ============================================================
 # PostToolUse hook assertions
 # ============================================================
+
+# PreCompact hook contains /keel:session
+if python3 -c "
+import json, sys
+s = json.load(open('$SETTINGS'))
+cmd = s['hooks']['PreCompact'][0]['hooks'][0]['command']
+if '/keel:session' not in cmd:
+    print('PreCompact hook missing /keel:session reference')
+    sys.exit(1)
+" 2>/dev/null; then
+    pass "PreCompact hook contains '/keel:session'"
+else
+    fail "PreCompact hook contains '/keel:session'"
+fi
 
 # PostToolUse hook present
 if python3 -c "
@@ -274,5 +320,40 @@ sys.exit(1)
 else
     fail "PostToolUse hook always exits 0 (has exit 0 at end)"
 fi
+
+# ============================================================
+# Stop hook security signal assertions
+# ============================================================
+
+# Stop hook contains keel:audit
+if python3 -c "
+import json, sys
+s = json.load(open('$SETTINGS'))
+prompt = s['hooks']['Stop'][0]['hooks'][0]['prompt']
+if 'keel:audit' not in prompt:
+    print('Stop hook missing keel:audit reference')
+    sys.exit(1)
+" 2>/dev/null; then
+    pass "Stop hook contains keel:audit"
+else
+    fail "Stop hook contains keel:audit"
+fi
+
+# Stop hook contains Security-sensitive
+if python3 -c "
+import json, sys
+s = json.load(open('$SETTINGS'))
+prompt = s['hooks']['Stop'][0]['hooks'][0]['prompt']
+if 'Security-sensitive' not in prompt:
+    print('Stop hook missing Security-sensitive reference')
+    sys.exit(1)
+" 2>/dev/null; then
+    pass "Stop hook contains Security-sensitive"
+else
+    fail "Stop hook contains Security-sensitive"
+fi
+
+# Pre-push hook contains KEEL_SECURITY_SKIP
+assert_file_contains "$PROJECT_ROOT/templates/hooks/pre-push" "KEEL_SECURITY_SKIP" "pre-push has security skip flag"
 
 test_summary

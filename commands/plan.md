@@ -186,3 +186,50 @@ Next steps:
 
 To check progress: /keel:status
 ```
+
+### 10. Pre-Flight Specialist Review
+
+Skip this step if `$ARGUMENTS` contains `--no-review`.
+
+Otherwise, scan the full plan text (all phase prompts, objectives, titles) for domain signals:
+
+- **Database:** SQL, query, schema, migration, index, database, db, table, foreign key, join, transaction, ORM, Postgres, MySQL, SQLite, MongoDB → `principal-dba`
+- **Infrastructure:** deploy, docker, kubernetes, k8s, terraform, helm, CI, CD, infra, container, Dockerfile, compose, nginx, AWS, GCP, Azure, cloud → `staff-sre`
+- **Security:** auth, JWT, OAuth, payment, PCI, HIPAA, token, secret, encrypt, credential, password, permission, role, RBAC, CORS, XSS, injection → `staff-security`
+- **API:** API, endpoint, REST, GraphQL, route, webhook, contract, openapi, swagger, versioning, breaking change → `senior-api`
+- **Architecture:** bounded context, domain, architecture, refactor, pattern, layer, dependency, coupling, abstraction, interface, hexagonal, clean arch → `principal-architect`
+- **Performance:** performance, N+1, cache, latency, throughput, slow, optimize, index, query optimization, benchmark → `senior-performance`
+
+If no domains detected, output:
+```
+Pre-flight: no specialist domains detected — plan looks self-contained.
+```
+and stop.
+
+For each detected domain, invoke the corresponding advisor agent using the Agent tool as a subagent. Each advisor:
+1. Reads the plan content
+2. Reviews from their domain lens ONLY
+3. Returns findings with severity:
+   - 🔴 Critical: must address before execution (data loss, security breach, broken contract)
+   - 🟡 Warning: should address, not blocking
+   - 🟢 OK: domain looks healthy
+
+Output the consolidated review using this format:
+
+```
+PRE-FLIGHT REVIEW
+─────────────────────────────────────────────────────
+Domains detected: {list} ({n} of 6 checked)
+
+{AGENT NAME}
+  🔴  {finding}
+  🟡  {finding}
+  🟢  {positive finding}
+
+─────────────────────────────────────────────────────
+{N critical, N warnings}. Address in plan before executing?
+Type your updates now, or press enter to proceed with known risks noted.
+```
+
+If the user provides updates → incorporate them into the plan file.
+If the user skips (presses enter) → add a `## Known Risks` section to the plan file listing the outstanding findings.
