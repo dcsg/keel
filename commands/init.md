@@ -139,6 +139,16 @@ A couple more questions:
 
 1. Commit convention? (conventional/angular/none) [conventional]
 2. Install PR template? (y/n) [y]
+3. Project management tools? (select all that apply)
+   [ ] Linear   — /keel:mcp add linear
+   [ ] GitHub   — /keel:mcp add github
+   [ ] Jira     — /keel:mcp add jira
+   [ ] None
+
+   For each selected: add to .mcp.json and note required env vars in the summary.
+
+4. Team name? (optional — used in /keel:team overview)
+   Press enter to skip.
 ```
 
 ### 5. Generate Everything
@@ -183,10 +193,21 @@ sdlc:
   commit-convention: {choice}
   pr-template: {true/false}
 
+# {If team name provided:}
+# team:
+#   name: "{team-name}"
+
 # Ticket system (uncomment to enable):
 # ticket:
 #   system: linear
 #   team: my-team
+```
+
+If a team name was provided in step 4, add it to the config (uncommented):
+
+```yaml
+team:
+  name: "{team-name}"
 ```
 
 Uncomment the rules that the user confirmed. Leave others commented as examples.
@@ -412,7 +433,51 @@ If PR template enabled:
 <!-- Anything reviewers should know? -->
 ```
 
-#### 5.7 — Directory structure
+#### 5.7 — `.mcp.json` — MCP server configuration
+
+For each project management tool selected in step 4:
+
+- **Linear**: add the following entry to `.mcp.json` under `mcpServers`:
+  ```json
+  "linear": {
+    "type": "http",
+    "url": "https://mcp.linear.app/sse",
+    "authorization_token": "${LINEAR_API_KEY}"
+  }
+  ```
+  Required env var: `LINEAR_API_KEY`
+
+- **GitHub**: add:
+  ```json
+  "github": {
+    "type": "stdio",
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-github"],
+    "env": {
+      "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+    }
+  }
+  ```
+  Required env var: `GITHUB_TOKEN`
+
+- **Jira**: add:
+  ```json
+  "jira": {
+    "type": "stdio",
+    "command": "npx",
+    "args": ["-y", "mcp-atlassian"],
+    "env": {
+      "JIRA_URL": "${JIRA_URL}",
+      "JIRA_USERNAME": "${JIRA_USERNAME}",
+      "JIRA_API_TOKEN": "${JIRA_API_TOKEN}"
+    }
+  }
+  ```
+  Required env vars: `JIRA_URL`, `JIRA_USERNAME`, `JIRA_API_TOKEN`
+
+If `.mcp.json` already exists, read it and merge — preserve existing entries. If "None" was selected, skip this step.
+
+#### 5.9 — Directory structure
 
 ```bash
 mkdir -p docs/product/prds
@@ -422,7 +487,7 @@ mkdir -p docs/invariants
 mkdir -p docs/reference
 ```
 
-#### 5.8 — Specialist agents
+#### 5.10 — Specialist agents
 
 Install specialist agent templates based on detected stack:
 
@@ -469,6 +534,9 @@ Keel initialized!
   Agents:     .claude/agents/ ({count} specialist agents installed)
   CLAUDE.md:  CLAUDE.md
   Hooks:      .claude/settings.json
+  MCP:        .mcp.json ({n} servers configured)
+              Each member needs: {list of required env vars, or "No env vars required"}
+  Team:       {team-name} (or "Not configured — run /keel:team init")
 
   Rules installed:
     {list each rule pack with one-line description}
@@ -491,5 +559,5 @@ Keel initialized!
     /keel:agents           — list installed and available agents
     /keel:agents add {slug} — install an additional specialist agent
 
-  Commit .keel/ and .claude/ to git — your team gets the same guardrails.
+  Commit .keel/, .claude/, and .mcp.json to git — your team gets the same guardrails.
 ```

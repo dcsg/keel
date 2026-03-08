@@ -56,6 +56,21 @@ ls {base}/decisions/*.md 2>/dev/null | wc -l
 ls {base}/invariants/*.md 2>/dev/null | wc -l
 ```
 
+**Team (only if `.keel/config.yaml` exists):**
+```bash
+# Count rule packs
+ls .claude/rules/*.md 2>/dev/null | wc -l
+# Count agents
+ls .claude/agents/*.md 2>/dev/null | wc -l
+# Read MCP config
+cat .mcp.json 2>/dev/null
+```
+- Read `.keel/config.yaml` for `team.name`
+- Parse `.mcp.json` to list server names and collect all required env vars across all configured servers:
+  - linear → `LINEAR_API_KEY`
+  - github → `GITHUB_TOKEN`
+  - jira → `JIRA_URL`, `JIRA_USERNAME`, `JIRA_API_TOKEN`
+
 ### 3. Determine Plan Status
 
 For each plan file, read the Progress table:
@@ -101,6 +116,19 @@ For each plan file, read the Progress table:
  Invariants:  {count} constraints
  Product:     {spec exists + PRD count, or "No product spec"}
  Tickets:     {system name, or "Not configured"}
+
+ TEAM
+ ────
+ Shared (committed to git):
+   Rules:    {n} packs in .claude/rules/
+   Agents:   {n} agents in .claude/agents/
+   MCP:      {server names} in .mcp.json (or "not configured")
+
+ Members need:
+   {list env vars from .mcp.json, or "No env vars required"}
+
+ Run /keel:team setup to validate your environment.
+ Run /keel:team to see full onboarding instructions.
 
  WARNINGS
  ────────
