@@ -1,5 +1,11 @@
 # Keel Changelog
 
+## v3.4 (2026-03-08)
+
+### Improvement: Release notes shown after upgrade completes
+
+The "WHAT'S NEW" section now appears at the bottom of the upgrade output — after the summary and commit instructions — so you can review what changed at your own pace without it blocking the upgrade flow.
+
 ## v3.3 (2026-03-08)
 
 ### Bug fix: Stop hook response leaking into chat
