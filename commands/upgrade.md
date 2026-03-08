@@ -74,8 +74,8 @@ If any `type: command` hook has its logic inline (a long bash string) rather tha
 For each outdated or missing hook, note what changed in plain English:
 - "SessionStart: inline bash → migrate to `$HOME/.keel/hooks/session-start.sh`"
 - "PostToolUse: missing (now auto-formats files after edits)"
-- "Stop: old free-text format → fix JSON validation error (now returns `{\"ok\": true}` always)"
-- "Stop: uses `ok: false` for signals → fix 'Prompt hook condition was not met' error (signals must be plain text before `{\"ok\": true}`)"
+- "Stop: old free-text format → fix JSON validation error"
+- "Stop: uses plain text before `{\"ok\": true}` for signals → fix JSON validation error (signals must be encoded in `{\"ok\": false, \"reason\": \"...\"}` JSON)"
 - "PreCompact: inline bash → migrate to `$HOME/.keel/hooks/pre-compact.sh`"
 
 #### 2b. Agent check

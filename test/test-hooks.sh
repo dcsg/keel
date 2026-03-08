@@ -352,21 +352,27 @@ else
     fail "Stop hook contains Security-sensitive"
 fi
 
-# Stop hook prompt instructs JSON response (ok: true only — never ok: false)
+# Stop hook prompt instructs valid JSON only (single line, no plain text)
 if python3 -c "
 import json, sys
 s = json.load(open('$SETTINGS'))
 prompt = s['hooks']['Stop'][0]['hooks'][0]['prompt']
-if '\"ok\": true' not in prompt and 'ok\\\": true' not in prompt:
-    print('Stop hook prompt does not instruct ok: true response')
+# Must instruct ok:true for no signals
+if '{\"ok\": true}' not in prompt and '{\\\\\"ok\\\\\": true}' not in prompt:
+    print('Stop hook prompt does not instruct ok:true for no signals')
     sys.exit(1)
-if 'Never {' not in prompt and 'Never {\"ok\": false' not in prompt and 'never use' not in prompt and 'Never' not in prompt:
-    print('Stop hook prompt does not warn against ok: false')
+# Must use ok:false for signals (not plain text before ok:true)
+if '{\"ok\": false' not in prompt and 'ok\\\": false' not in prompt:
+    print('Stop hook prompt does not use ok:false for signals')
+    sys.exit(1)
+# Must instruct single-line JSON (no plain text output)
+if 'single line' not in prompt and 'No text before' not in prompt and 'nothing else' not in prompt:
+    print('Stop hook prompt does not enforce single-line JSON output')
     sys.exit(1)
 " 2>/dev/null; then
-    pass "Stop hook prompt instructs ok:true only (never ok:false)"
+    pass "Stop hook prompt: ok:true (no signals), ok:false with reason (signals), single-line JSON"
 else
-    fail "Stop hook prompt instructs ok:true only (never ok:false)"
+    fail "Stop hook prompt: ok:true (no signals), ok:false with reason (signals), single-line JSON"
 fi
 
 # Pre-push hook contains KEEL_SECURITY_SKIP

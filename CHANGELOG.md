@@ -1,5 +1,19 @@
 # Keel Changelog
 
+## v3.6 (2026-03-08)
+
+### Bug fix: Stop hook signals were silently lost (JSON validation failed)
+
+The Stop hook prompt told Claude to output signal lines followed by `{"ok": true}` on the last line. Claude Code validates the **entire** response as JSON — so any plain text before the JSON caused a `JSON validation failed` error and signals were never shown.
+
+**Root cause:** Mixed plain-text + JSON output is never valid JSON.
+
+**Fix:** Signals are now encoded as `{"ok": false, "reason": "signal text"}`. Claude Code surfaces the `reason` to the user, making signals visible. When no signals are detected, the hook returns `{"ok": true}` as before.
+
+The prompt was also tightened to be more conservative — it now only flags clear, unambiguous signals to avoid false positives that would interrupt normal flow.
+
+Added `test/test-stop-hook-e2e.sh` — an e2e test that calls the Claude API with simulated responses and validates the hook output format and signal detection behavior.
+
 ## v3.5 (2026-03-08)
 
 ### Bug fix: upgrade and rules-update incorrectly flagged rules as outdated when none were installed
