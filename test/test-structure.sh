@@ -16,6 +16,7 @@ assert_dir_exists "$PROJECT_ROOT/templates/rules/lang" "templates/rules/lang/ ex
 assert_dir_exists "$PROJECT_ROOT/templates/rules/framework" "templates/rules/framework/ exists"
 assert_dir_exists "$PROJECT_ROOT/templates/agents" "templates/agents/ exists"
 assert_dir_exists "$PROJECT_ROOT/templates/sdlc" "templates/sdlc/ exists"
+assert_dir_exists "$PROJECT_ROOT/templates/hooks" "templates/hooks/ exists"
 assert_dir_exists "$PROJECT_ROOT/test" "test/ exists"
 assert_dir_exists "$PROJECT_ROOT/docs" "docs/ exists"
 
@@ -43,12 +44,19 @@ assert_file_contains "$PROJECT_ROOT/templates/settings.json.tmpl" "PreCompact" "
 assert_file_contains "$PROJECT_ROOT/templates/settings.json.tmpl" "Write|Edit" "PreToolUse hook targets Write|Edit"
 
 # All keel commands exist
-for cmd in init context plan status intake doctor rules-update adr invariant prd agents mcp team; do
+for cmd in init context plan status intake doctor rules-update adr invariant prd agents mcp team docs; do
     assert_file_exists "$PROJECT_ROOT/commands/${cmd}.md" "commands/${cmd}.md exists"
 done
 
 # Agent templates directory exists
 assert_dir_exists "$PROJECT_ROOT/templates/agents" "templates/agents/ exists"
 assert_file_exists "$PROJECT_ROOT/templates/agents/_registry.yaml" "Agent registry exists"
+assert_file_exists "$PROJECT_ROOT/templates/agents/staff-docs.md" "staff-docs agent exists"
+
+# Git hook template exists
+assert_file_exists "$PROJECT_ROOT/templates/hooks/pre-push" "pre-push hook template exists"
+assert_file_contains "$PROJECT_ROOT/templates/hooks/pre-push" "KEEL_DOCS_SKIP" "pre-push hook has disable flag"
+assert_file_contains "$PROJECT_ROOT/templates/hooks/pre-push" "exit 0" "pre-push hook never blocks (exits 0)"
+assert_file_contains "$PROJECT_ROOT/templates/hooks/pre-push" "pre-push: false" "pre-push hook respects config disable"
 
 test_summary

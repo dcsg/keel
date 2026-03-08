@@ -437,6 +437,23 @@ Install specialist agent templates based on detected stack:
 5. Copy each selected agent template to `.claude/agents/{slug}.md`
 6. Note: `optional` agents in the registry are available via `/keel:agents add {slug}` but not auto-installed
 
+#### 5.9 — Git pre-push hook (doc gap detection)
+
+Install the doc-gap pre-push hook:
+
+```bash
+cp ~/.keel/templates/hooks/pre-push .git/hooks/pre-push
+chmod +x .git/hooks/pre-push
+```
+
+The hook warns about undocumented public surface changes (new routes, env vars, infra components) before each push. It **never blocks** — always exits 0. It's for awareness, not enforcement.
+
+**Disable options (mention these in the summary):**
+- One-off: `KEEL_DOCS_SKIP=1 git push`
+- Permanent: add `hooks: { pre-push: false }` to `.keel/config.yaml`
+
+Note: `.git/hooks/` is not committed to git — each team member must run `/keel:team setup` to install it locally.
+
 ### 6. Offer Intake for Established Projects
 
 If this is an established project:
@@ -455,7 +472,10 @@ Keel initialized!
   Rules:      .claude/rules/ ({count} packs installed)
   Agents:     .claude/agents/ ({count} specialist agents installed)
   CLAUDE.md:  CLAUDE.md
-  Hooks:      .claude/settings.json
+  Hooks:      .claude/settings.json (4 Claude Code hooks)
+  Git hook:   .git/hooks/pre-push (doc gap detection — warns, never blocks)
+              Disable: KEEL_DOCS_SKIP=1 git push
+              Or add to .keel/config.yaml: hooks: { pre-push: false }
 
   Rules installed:
     {list each rule pack with one-line description}

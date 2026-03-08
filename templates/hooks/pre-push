@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+# keel doc-gap pre-push hook
+# Warns about undocumented public surface changes before push.
+# Never blocks — always exits 0.
+#
+# Disable: set KEEL_DOCS_SKIP=1 in your environment, or add to .keel/config.yaml:
+#   hooks:
+#     pre-push: false
+
+# Respect disable flag
+if [ "${KEEL_DOCS_SKIP:-0}" = "1" ]; then
+  exit 0
+fi
+
+# Only run in keel projects
+if [ ! -f ".keel/config.yaml" ]; then
+  exit 0
+fi
+
+# Check if disabled in config
+if command -v grep >/dev/null 2>&1; then
+  if grep -q "pre-push: false" .keel/config.yaml 2>/dev/null; then
+    exit 0
+  fi
+fi
+
+# Get the diff being pushed (commits not yet on remote)
+REMOTE="$1"
+LOCAL_REF="$3"
+REMOTE_REF="$4"
+
+# If nothing to compare (new branch, empty push), skip
+if [ -z "$LOCAL_REF" ] || [ "$LOCAL_REF" = "0000000000000000000000000000000000000000" ]; then
+  exit 0
+fi
+
+# Find the base commit to diff from
+BASE=$(git merge-base "${REMOTE_REF:-origin/HEAD}" "$LOCAL_REF" 2>/dev/null || echo "")
+if [ -z "$BASE" ]; then
+  # No common ancestor (new branch) — diff against the last pushed commit
+  BASE=$(git rev-parse "${REMOTE}/${LOCAL_REF##*/}" 2>/dev/null || echo "")
+fi
+if [ -z "$BASE" ]; then
+  exit 0
+fi
+
+DIFF=$(git diff "$BASE" "$LOCAL_REF" -- . 2>/dev/null)
+if [ -z "$DIFF" ]; then
+  exit 0
+fi
+
+GAPS=()
+
+# ── Detect new HTTP routes ────────────────────────────────────────────────────
+NEW_ROUTES=$(echo "$DIFF" | grep "^+" | grep -E \
+  '(router\.|app\.(get|post|put|patch|delete|use)\(|http\.HandleFunc|@(Get|Post|Put|Patch|Delete)\(|Route\(|@app\.route|r\.(GET|POST|PUT|PATCH|DELETE)\()' \
+  | grep -v "^+++" | sed 's/^+//' | head -5)
+
+if [ -n "$NEW_ROUTES" ]; then
+  # Check if API docs exist
+  API_DOC=$(find . -name "api.md" -o -name "openapi.yaml" -o -name "swagger.json" -o -name "swagger.yaml" 2>/dev/null | grep -v ".git" | head -1)
+  if [ -n "$API_DOC" ]; then
+    GAPS+=("New HTTP route(s) detected — check ${API_DOC}")
+  else
+    GAPS+=("New HTTP route(s) detected — no API docs found (consider docs/api.md)")
+  fi
+fi
+
+# ── Detect new env vars ───────────────────────────────────────────────────────
+NEW_ENVS=$(echo "$DIFF" | grep "^+" | grep -E \
+  '(os\.Getenv\(|process\.env\.|ENV\[|os\.environ|getenv\()' \
+  | grep -v "^+++" | grep -oE '[A-Z][A-Z0-9_]{2,}' | sort -u | head -5)
+
+if [ -n "$NEW_ENVS" ]; then
+  README=$(find . -maxdepth 2 -name "README.md" -o -name "README.rst" 2>/dev/null | grep -v ".git" | head -1)
+  for ENV_VAR in $NEW_ENVS; do
+    if [ -n "$README" ]; then
+      if ! grep -q "$ENV_VAR" "$README" 2>/dev/null; then
+        GAPS+=("New env var ${ENV_VAR} — not in ${README}")
+      fi
+    else
+      GAPS+=("New env var ${ENV_VAR} — no README found to document it")
+    fi
+  done
+fi
+
+# ── Detect new docker-compose services ────────────────────────────────────────
+NEW_SERVICES=$(echo "$DIFF" | grep "^+" | grep -E '^+[a-zA-Z][a-zA-Z0-9_-]+:$' \
+  | grep -v "^+++" | sed 's/^+//' | sed 's/:$//' | head -5)
+
+COMPOSE_CHANGED=$(echo "$DIFF" | grep "^diff --git" | grep -E "docker-compose" | head -1)
+if [ -n "$COMPOSE_CHANGED" ] && [ -n "$NEW_SERVICES" ]; then
+  INFRA_DOC=$(find . -name "infrastructure.md" -o -name "infra.md" -o -name "architecture.md" 2>/dev/null | grep -v ".git" | head -1)
+  for SVC in $NEW_SERVICES; do
+    GAPS+=("New docker-compose service '${SVC}'${INFRA_DOC:+ — check ${INFRA_DOC}}")
+  done
+fi
+
+# ── Report ────────────────────────────────────────────────────────────────────
+if [ ${#GAPS[@]} -gt 0 ]; then
+  echo ""
+  echo "📄 keel: doc gaps detected (${#GAPS[@]}):"
+  for GAP in "${GAPS[@]}"; do
+    echo "   • ${GAP}"
+  done
+  echo ""
+  echo "   Run /keel:docs to review. Pushing anyway."
+  echo "   To skip this check: KEEL_DOCS_SKIP=1 git push"
+  echo "   To disable permanently: add 'pre-push: false' under 'hooks:' in .keel/config.yaml"
+  echo ""
+fi
+
+# Always exit 0 — never block the push
+exit 0

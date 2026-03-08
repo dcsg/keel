@@ -85,7 +85,19 @@ Run environment checks for this member:
    - GitHub: `GITHUB_TOKEN`
    - Jira: `JIRA_URL`, `JIRA_USERNAME`, `JIRA_API_TOKEN`
 
-5. **Output:**
+5. **Git pre-push hook:**
+   ```bash
+   ls .git/hooks/pre-push 2>/dev/null
+   ```
+   - ✅ if `.git/hooks/pre-push` exists and is executable
+   - ⚠️ if missing — install it:
+     ```bash
+     cp ~/.keel/templates/hooks/pre-push .git/hooks/pre-push
+     chmod +x .git/hooks/pre-push
+     ```
+   Note: if `hooks: { pre-push: false }` is set in `.keel/config.yaml`, show as intentionally disabled (✅ disabled by config).
+
+6. **Output:**
    ```
    Keel Team Setup — {team-name}
 
