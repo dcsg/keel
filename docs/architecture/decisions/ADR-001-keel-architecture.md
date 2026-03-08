@@ -28,18 +28,21 @@ Rules are templates shipped with keel, generated into `.claude/rules/` based on 
 
 Provide a framework to capture product context (soul.md, product specs, PRDs) and create phased execution plans. Plans are the persistent state — progress tracked directly in the plan file, surviving context compaction.
 
-### Core Commands (5 total)
+### Core Commands (11 total)
 
 | Command | Purpose |
 |---------|---------|
 | `/keel:init` | Intelligent onboarding: detect project age, interview or audit, infer architecture, scaffold everything |
-| `/keel:context` | Load all context into session, show what's being pulled |
+| `/keel:context` | Load all context into session, write auto-memory snapshot |
 | `/keel:plan` | Interview + phased execution plan with parallelism analysis |
 | `/keel:status` | Dashboard: roadmap progress, active plans, governance health |
 | `/keel:intake` | Onboard scattered existing docs into keel's standard structure |
 | `/keel:adr` | Capture an architectural decision — from scratch or from conversation |
 | `/keel:invariant` | Define a hard constraint that must never be violated |
 | `/keel:prd` | Write a product requirement document for a feature |
+| `/keel:agents` | List, inspect, and manage specialist agent templates |
+| `/keel:mcp` | Manage MCP server configuration (Linear, GitHub, Jira) |
+| `/keel:team` | Onboard team members and show shared team configuration |
 
 ### Proactive Capture Loop
 
@@ -61,7 +64,7 @@ Init detects whether a project is greenfield or established:
 ### What Keel Does NOT Do
 
 - **No execution orchestration** — Claude Code handles worktrees, agents, parallelism natively
-- **No 25-command surface** — 8 commands, each with a single outcome
+- **No 25-command surface** — 11 commands, each with a single outcome
 - **No proprietary formats** — Everything is plain markdown and YAML
 - **No runtime dependencies** — Copy .md files, done
 - **No backward compatibility with dof** — Clean break, migration path provided

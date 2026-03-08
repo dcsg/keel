@@ -1,6 +1,6 @@
 # Command Reference
 
-Keel provides 8 slash commands for Claude Code.
+Keel provides 11 slash commands for Claude Code.
 
 ---
 
@@ -279,3 +279,90 @@ You don't need to remember to run these commands. Keel watches your conversation
 ```
 
 Suggestions only fire on strong signals — architectural decisions with trade-offs, hard constraints, and clearly defined product requirements. Preferences and implementation details are ignored.
+
+This works via a `Stop` hook in `.claude/settings.json` — after every Claude response, the hook actively reviews the response for artifact signals. This is more reliable than asking Claude to self-audit in CLAUDE.md.
+
+---
+
+## `/keel:agents [add|remove|show|suggest] [{slug}]`
+
+**List, inspect, and manage specialist agents.**
+
+With no argument, lists installed agents and available agents not yet installed.
+
+**Subcommands:**
+- `add {slug}` — install an agent from `~/.keel/templates/agents/`
+- `remove {slug}` — uninstall an agent
+- `show {slug}` — print the agent's full prompt
+- `suggest` — recommend agents for your stack
+
+**Example output:**
+```
+Installed agents (9):
+  principal-architect  — System design, ADRs, trade-off analysis
+  staff-engineer       — Implementation leadership, code review
+  ...
+
+Available (not installed):
+  principal-data       — Data modeling, analytics, pipelines
+  senior-performance   — Performance profiling and optimization
+
+/keel:agents add principal-data
+```
+
+---
+
+## `/keel:mcp [add|remove|status] [{server}]`
+
+**Manage MCP server configuration for project management integrations.**
+
+With no argument, shows which servers are configured and which env vars are set/missing.
+
+**Supported servers:** `linear`, `github`, `jira`
+
+**Example output:**
+```
+MCP Servers:
+
+  linear    ✅ configured, LINEAR_API_KEY set
+  github    ⚠️  configured, GITHUB_TOKEN not set
+                Set: export GITHUB_TOKEN="ghp_..."
+
+Not configured:
+  jira      /keel:mcp add jira
+```
+
+**Add a server:**
+```
+/keel:mcp add linear    → adds Linear to .mcp.json, shows required env vars
+/keel:mcp add github    → adds GitHub to .mcp.json
+/keel:mcp add jira      → adds Jira to .mcp.json
+```
+
+`.mcp.json` is committed to git — your team inherits the server configs. Each member adds their own API keys to their local shell environment.
+
+---
+
+## `/keel:team [setup|init] [{name}]`
+
+**Onboard team members and show shared team configuration.**
+
+With no argument, shows what's committed to git and how to onboard new members.
+
+**Subcommands:**
+- `setup` — validate this member's local environment (git config, Claude Code, env vars)
+- `init {name}` — add team config to `.keel/config.yaml`
+
+**Example setup output:**
+```
+Keel Team Setup — Invoicer Team
+
+  ✅ Git configured (Daniel Gomes <daniel@example.com>)
+  ✅ Claude Code v2.1.70
+  ✅ Keel config found
+  ✅ LINEAR_API_KEY set
+  ⚠️  GITHUB_TOKEN not set
+      Get a token (repo scope): https://github.com/settings/tokens
+
+1 item needs attention. Fix it, then run /keel:team setup again.
+```

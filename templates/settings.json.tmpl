@@ -1,12 +1,32 @@
 {
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f '.keel/config.yaml' ]; then ENCODED=$(echo \"$PWD\" | sed 's|/|-|g'); MEMORY=\"$HOME/.claude/projects/${ENCODED}/memory/MEMORY.md\"; if [ -f \"$MEMORY\" ]; then AGE=$(( ($(date +%s) - $(date -r \"$MEMORY\" +%s 2>/dev/null || stat -f %m \"$MEMORY\" 2>/dev/null || echo 0)) / 86400 )); if [ \"$AGE\" -gt 7 ]; then echo \"⚠️  Keel memory is ${AGE} days old. Run /keel:context to refresh.\"; else echo \"📋 Keel project detected — memory loaded (${AGE}d old). Run /keel:context to reload if needed.\"; fi; else echo \"📋 Keel project detected. Run /keel:context to load project context before writing code.\"; fi; fi"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
-            "command": "if [ -f '.keel/config.yaml' ]; then SENTINEL=\"/tmp/keel-$(echo \"$PWD\" | md5sum 2>/dev/null | cut -c1-8 || echo \"$PWD\" | md5 2>/dev/null | cut -c1-8)\"; if [ ! -f \"$SENTINEL\" ]; then touch \"$SENTINEL\"; SOUL=''; ADRS=0; INVS=0; RULES=0; PLANS=0; PRDS=0; [ -f 'docs/soul.md' ] && SOUL=$(head -1 docs/soul.md | sed 's/^#* *//'); ADRS=$(find docs/decisions -maxdepth 1 -name '*.md' 2>/dev/null | wc -l | tr -d ' '); INVS=$(find docs/invariants -maxdepth 1 -name '*.md' 2>/dev/null | wc -l | tr -d ' '); RULES=$(find .claude/rules -maxdepth 1 -name '*.md' 2>/dev/null | wc -l | tr -d ' '); PLANS=$(find docs/product/plans docs/plans -maxdepth 1 -name 'PLAN-*.md' 2>/dev/null | wc -l | tr -d ' '); PRDS=$(find docs/product/prds -maxdepth 1 -name '*.md' 2>/dev/null | wc -l | tr -d ' '); echo \"📋 Keel context available — load with /keel:context before writing code.\"; [ -n \"$SOUL\" ] && echo \"   Project: $SOUL\"; echo \"   Soul: $([ -f docs/soul.md ] && echo 'yes' || echo 'missing')  |  Decisions: $ADRS  |  Invariants: $INVS\"; echo \"   Rules: $RULES packs  |  Plans: $PLANS  |  PRDs: $PRDS\"; fi; fi"
+            "command": "if [ -f '.keel/config.yaml' ] && [ ! -f 'docs/soul.md' ]; then echo '⚠️  Keel: docs/soul.md not found. Run /keel:init to complete setup.'; fi"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Review your last response. Did it contain: (1) a significant technical choice with trade-offs — database selection, architectural pattern, API design, infrastructure decision; (2) a hard constraint that must NEVER be violated — data integrity rule, security boundary, domain purity requirement; or (3) a clearly defined new feature or user need with enough detail to act on? If yes to any, end your next response with ONE of these on its own line: '💡 This looks like an ADR — run `/keel:adr` to capture it.' OR '💡 This is an invariant — run `/keel:invariant` to capture it.' OR '💡 This looks like a PRD — run `/keel:prd` to capture it.' Only suggest if the signal is strong. Skip for preferences, style choices, implementation details, and refactoring notes."
           }
         ]
       }

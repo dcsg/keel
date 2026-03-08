@@ -123,6 +123,67 @@ Or with no argument to extract from the current conversation:
 /keel:prd         → extracts the last feature requirement discussed
 ```
 
+## Specialist Agents
+
+Keel installs specialist agent templates in `.claude/agents/` based on your stack. These give Claude a defined "role" when you invoke it as an agent — making its expertise and constraints transparent.
+
+Agents installed by default (based on stack):
+
+| Agent | Role |
+|-------|------|
+| `principal-architect` | System design, ADRs, trade-off analysis |
+| `staff-engineer` | Implementation leadership, code review |
+| `senior-backend` | Backend implementation, APIs, data layers |
+| `principal-dba` | Database design, query optimization, migrations |
+| `staff-security` | Security review, OWASP, threat modeling |
+| `staff-sre` | Reliability, observability, deployment |
+| `staff-qa` | Testing strategy, test writing, coverage |
+| `staff-frontend` | Frontend, React/Next.js, accessibility |
+| `principal-ux` | UX/UI review, user flows, design systems |
+| `senior-pm` | Product requirements, PRD writing |
+| `senior-api` | API design, REST/GraphQL, versioning |
+
+```
+/keel:agents              → list installed and available agents
+/keel:agents add {slug}   → install an additional agent
+/keel:agents show {slug}  → show an agent's full prompt
+```
+
+## Memory Persistence
+
+After running `/keel:context`, keel writes a compact snapshot to Claude's auto-memory (`~/.claude/projects/.../memory/MEMORY.md`). This is auto-loaded at the start of every future session — so Claude always knows the project name, stack, active plan, and hard constraints without needing to run `/keel:context` first.
+
+The `SessionStart` hook detects when memory is stale (>7 days old) and reminds you to refresh.
+
+## Connecting to Project Management
+
+Wire keel to your ticket system for native access in Claude:
+
+```
+/keel:mcp add linear    → configure Linear (needs LINEAR_API_KEY)
+/keel:mcp add github    → configure GitHub (needs GITHUB_TOKEN)
+/keel:mcp add jira      → configure Jira (needs JIRA_URL + JIRA_USERNAME + JIRA_API_TOKEN)
+/keel:mcp               → show status and required env vars
+```
+
+MCP config is committed to git (`.mcp.json`) — your team inherits the server config. Each member adds their own API keys to their local environment.
+
+## Team Setup
+
+Share keel config with your team:
+
+```bash
+git add .keel/ .claude/ .mcp.json docs/ CLAUDE.md
+git commit -m "chore: initialize keel"
+git push
+```
+
+New team members:
+```
+git clone ... && cd project
+/keel:team setup    → validates environment and lists missing env vars
+```
+
 ## Commit to Git
 
 The `.keel/` and `.claude/` directories should be committed. Your team gets the same guardrails automatically.

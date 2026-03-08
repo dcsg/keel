@@ -216,3 +216,53 @@ If anything is missing or stale, note it:
   - Plan "PLAN-xyz.md" has no progress updates in 7+ days
   - Rule pack "go.md" was manually edited (no keel:generated marker) — customizations preserved
 ```
+
+### 11. Write Auto-Memory
+
+After printing the full context summary, write a compact snapshot to Claude's auto-memory. This persists context across sessions so the SessionStart hook can surface it.
+
+Compute memory path:
+```bash
+ENCODED=$(echo "$PWD" | sed 's|/|-|g')
+MEMORY_DIR="$HOME/.claude/projects/${ENCODED}/memory"
+MEMORY_FILE="$MEMORY_DIR/MEMORY.md"
+mkdir -p "$MEMORY_DIR"
+```
+
+Write the following to `$MEMORY_FILE` (keep under 150 lines):
+
+```markdown
+# {Project Name from soul.md} — Keel Memory
+
+_Last updated: {YYYY-MM-DD} via /keel:context_
+
+## Soul
+{2-3 sentence summary from soul.md}
+
+## Stack
+{stack from config.yaml}
+
+## Active Plan
+{plan name + current phase title, or "None"}
+
+## Architecture Decisions
+{list of ADR titles with status — one line each, e.g. "ADR-001 (Accepted) — Use PostgreSQL for persistence"}
+
+## Invariants
+{list of invariants — HARD RULES — one line each}
+
+## Rules Installed
+{list of rule pack filenames — e.g. code-quality.md, testing.md, go.md}
+
+## Agents Installed
+{list of agent names from .claude/agents/}
+
+## Key Files
+- Config: .keel/config.yaml
+- Soul: docs/soul.md
+- Plans: docs/product/plans/ (or docs/plans/)
+- Decisions: docs/decisions/
+- Invariants: docs/invariants/
+```
+
+After writing, output one line: `  Memory: updated ~/.claude/projects/.../memory/MEMORY.md`

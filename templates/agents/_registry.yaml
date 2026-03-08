@@ -1,0 +1,84 @@
+# Agent registry — maps stacks to recommended agents
+# Format: category: [agent-slugs]
+#
+# Used by keel:init to select which agents to install based on detected stack.
+
+# Always installed for every project
+always:
+  - principal-architect
+  - staff-engineer
+
+# Installed when these languages/frameworks are detected
+go:
+  - senior-backend
+  - principal-dba
+  - staff-qa
+
+typescript:
+  - staff-frontend
+  - senior-backend
+  - staff-qa
+
+python:
+  - senior-backend
+  - principal-dba
+  - staff-qa
+
+php:
+  - senior-backend
+  - staff-qa
+
+ruby:
+  - senior-backend
+  - staff-qa
+
+java:
+  - senior-backend
+  - principal-dba
+  - staff-qa
+
+react:
+  - staff-frontend
+  - principal-ux
+
+nextjs:
+  - staff-frontend
+  - principal-ux
+
+vue:
+  - staff-frontend
+  - principal-ux
+
+angular:
+  - staff-frontend
+  - principal-ux
+
+# Installed when soul.md or stack implies these concerns
+api:
+  - senior-api
+
+data:
+  - principal-data
+
+performance:
+  - senior-performance
+
+# Installed when soul.md mentions payment/auth/compliance/HIPAA/PCI/sensitive data
+security-keywords:
+  - staff-security
+
+# Installed for all projects with infrastructure/deployment
+infrastructure:
+  - staff-sre
+
+# Always available for all projects
+all:
+  - staff-sre
+  - staff-qa
+  - senior-pm
+  - senior-api
+
+# Available but not auto-installed — add with /keel:agents add {slug}
+optional:
+  - senior-performance
+  - principal-data

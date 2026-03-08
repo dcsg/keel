@@ -316,16 +316,6 @@ When the user asks any of the following, run the corresponding command automatic
 
 ### After Compaction
 If context was compacted, re-read the active plan file in `docs/product/plans/`. The progress table is the persistent state — it tells you what's done and what's next.
-
-### Proactive Artifact Suggestions
-
-After each response, check if the conversation contains any of the following. If yes, end your response with a short suggestion on its own line:
-
-- **Architectural decision** — a significant technical choice with trade-offs (database, pattern, API design, infra) → `💡 This looks like an ADR — run \`/keel:adr\` to capture it.`
-- **Hard constraint** — something that must NEVER be violated regardless of context (data integrity, security boundary, domain purity) → `💡 This is an invariant — run \`/keel:invariant\` to capture it.`
-- **Product requirement** — a new feature or user need defined clearly enough to act on → `💡 This looks like a PRD — run \`/keel:prd\` to capture it.`
-
-Only suggest when the signal is strong. Preferences, implementation details, and refactoring notes do not warrant artifacts.
 <!-- keel:end -->
 ```
 
@@ -339,22 +329,46 @@ Use a Read + Edit approach — never Write the whole file. Find the markers with
 
 #### 5.5 — `.claude/settings.json` (hooks)
 
-Generate two hooks:
+Generate four hooks:
 
-**PreToolUse** — fires before the first Write or Edit in a session. If a keel project is detected and context hasn't been loaded yet this session, reminds Claude to load context before writing code. Uses a temp file sentinel so it only fires once per session per project.
+**SessionStart** — fires at the start of every session. Detects keel project and checks if auto-memory is stale (>7 days). Prompts to run `/keel:context` if needed.
 
-**PreCompact** — fires before context compaction. Reminds Claude to update the active plan's progress table before context is lost.
+**PreToolUse** — fires before Write or Edit. If `docs/soul.md` is missing, warns that init is incomplete.
+
+**Stop** — fires after every Claude response. Actively scans the response for artifact signals (ADR/invariant/PRD) and prompts Claude to surface them.
+
+**PreCompact** — fires before context compaction. Reminds Claude to update the active plan's progress table.
 
 ```json
 {
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f '.keel/config.yaml' ]; then ENCODED=$(echo \"$PWD\" | sed 's|/|-|g'); MEMORY=\"$HOME/.claude/projects/${ENCODED}/memory/MEMORY.md\"; if [ -f \"$MEMORY\" ]; then AGE=$(( ($(date +%s) - $(date -r \"$MEMORY\" +%s 2>/dev/null || stat -f %m \"$MEMORY\" 2>/dev/null || echo 0)) / 86400 )); if [ \"$AGE\" -gt 7 ]; then echo \"⚠️  Keel memory is ${AGE} days old. Run /keel:context to refresh.\"; else echo \"📋 Keel project detected — memory loaded (${AGE}d old). Run /keel:context to reload if needed.\"; fi; else echo \"📋 Keel project detected. Run /keel:context to load project context before writing code.\"; fi; fi"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
-            "command": "if [ -f 'docs/soul.md' ] && [ -f '.keel/config.yaml' ]; then SENTINEL=\"/tmp/keel-$(echo \"$PWD\" | md5sum 2>/dev/null | cut -c1-8 || echo \"$PWD\" | md5 2>/dev/null | cut -c1-8)\"; if [ ! -f \"$SENTINEL\" ]; then touch \"$SENTINEL\"; echo '📋 Keel: context not loaded this session. Read docs/soul.md, docs/decisions/, docs/invariants/, and check docs/product/plans/ for active plan before writing code.'; fi; fi"
+            "command": "if [ -f '.keel/config.yaml' ] && [ ! -f 'docs/soul.md' ]; then echo '⚠️  Keel: docs/soul.md not found. Run /keel:init to complete setup.'; fi"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Review your last response. Did it contain: (1) a significant technical choice with trade-offs — database selection, architectural pattern, API design, infrastructure decision; (2) a hard constraint that must NEVER be violated — data integrity rule, security boundary, domain purity requirement; or (3) a clearly defined new feature or user need with enough detail to act on? If yes to any, end your next response with ONE of these on its own line: '💡 This looks like an ADR — run `/keel:adr` to capture it.' OR '💡 This is an invariant — run `/keel:invariant` to capture it.' OR '💡 This looks like a PRD — run `/keel:prd` to capture it.' Only suggest if the signal is strong. Skip for preferences, style choices, implementation details, and refactoring notes."
           }
         ]
       }
@@ -373,7 +387,7 @@ Generate two hooks:
 }
 ```
 
-**Important:** If `.claude/settings.json` already exists, merge both hooks — don't overwrite existing settings.
+**Important:** If `.claude/settings.json` already exists, merge all hooks — don't overwrite existing settings.
 
 #### 5.6 — SDLC Files
 
@@ -409,6 +423,21 @@ mkdir -p docs/invariants
 mkdir -p docs/reference
 ```
 
+#### 5.8 — Specialist agents
+
+Install specialist agent templates based on detected stack:
+
+1. Check if `~/.keel/templates/agents/` exists. If not, skip with a note (same pattern as rules).
+2. Read `~/.keel/templates/agents/_registry.yaml`.
+3. Build the agent list:
+   - Always include: `always` agents (`principal-architect`, `staff-engineer`)
+   - Match detected stack (from config.yaml) against registry keys
+   - Include `all` agents (`staff-sre`, `staff-qa`, `senior-pm`, `senior-api`)
+   - If soul.md description mentions payment/auth/HIPAA/PCI/compliance/security → add `staff-security`
+4. Create `.claude/agents/` directory
+5. Copy each selected agent template to `.claude/agents/{slug}.md`
+6. Note: `optional` agents in the registry are available via `/keel:agents add {slug}` but not auto-installed
+
 ### 6. Offer Intake for Established Projects
 
 If this is an established project:
@@ -425,22 +454,30 @@ Keel initialized!
   Config:     .keel/config.yaml
   Soul:       docs/soul.md
   Rules:      .claude/rules/ ({count} packs installed)
-  CLAUDE.md:  .claude/CLAUDE.md
+  Agents:     .claude/agents/ ({count} specialist agents installed)
+  CLAUDE.md:  CLAUDE.md
   Hooks:      .claude/settings.json
 
   Rules installed:
     {list each rule pack with one-line description}
 
+  Agents installed:
+    {list each agent with name and one-line description}
+
   Next steps:
   1. Review docs/soul.md and edit if needed
   2. Review .keel/config.yaml for additional options
-  3. Start working — rules are active automatically
+  3. Start working — rules and agents are active automatically
   4. Run /keel:plan to create an execution plan for your first task
 
   Capture artifacts as you work:
     /keel:adr        — record an architectural decision
     /keel:invariant  — define a hard constraint
     /keel:prd        — write a product requirement
+
+  Manage agents:
+    /keel:agents           — list installed and available agents
+    /keel:agents add {slug} — install an additional specialist agent
 
   Commit .keel/ and .claude/ to git — your team gets the same guardrails.
 ```

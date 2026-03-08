@@ -42,16 +42,6 @@ When the user asks any of the following, run the corresponding command automatic
 
 If context was compacted, re-read the active plan file in `docs/product/plans/`. The progress table is the persistent state — it tells you what's done and what's next.
 
-### Proactive Artifact Suggestions
-
-After each response, check if the conversation contains any of the following. If yes, end your response with a short suggestion on its own line:
-
-- **Architectural decision** — a significant technical choice with trade-offs (database, pattern, API design, infra) → `💡 This looks like an ADR — run \`/keel:adr\` to capture it.`
-- **Hard constraint** — something that must NEVER be violated regardless of context (data integrity, security boundary, domain purity) → `💡 This is an invariant — run \`/keel:invariant\` to capture it.`
-- **Product requirement** — a new feature or user need defined clearly enough to act on → `💡 This looks like a PRD — run \`/keel:prd\` to capture it.`
-
-Only suggest when the signal is strong. Preferences, implementation details, and refactoring notes do not warrant artifacts.
-
 ### Commit Convention
 
 {{commit_convention_block}}

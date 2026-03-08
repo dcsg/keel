@@ -119,6 +119,27 @@ ls {base}/product/plans/PLAN-*.md {base}/plans/PLAN-*.md 2>/dev/null
 - Check for `.dof/` or `.conductor/` directories
 - `[!!]` if found — suggest `/keel:intake` to migrate, then remove
 
+**Auto-memory:**
+```bash
+ENCODED=$(echo "$PWD" | sed 's|/|-|g')
+MEMORY="$HOME/.claude/projects/${ENCODED}/memory/MEMORY.md"
+```
+- `[ok] Memory exists ({N} days old, {lines}/200 lines)` if present and fresh
+- `[!!] Memory is stale ({N} days old)` — suggest `/keel:context` to refresh
+- `[!!] Memory missing` — suggest `/keel:context` to create
+- `[!!] Memory near limit ({lines}/200 lines)` — if > 180 lines, suggest pruning
+
+**Agents:**
+```bash
+ls .claude/agents/*.md 2>/dev/null
+```
+- `[ok] {n} agents installed` if present
+- `[--] No agents installed` — suggest `/keel:init` or `/keel:agents suggest`
+
+**Hooks:**
+Check for SessionStart, Stop, PreCompact hooks in `.claude/settings.json`:
+- `[ok]` / `[!!]` for each hook type
+
 ### 3. Output Report
 
 ```
@@ -132,10 +153,13 @@ ls {base}/product/plans/PLAN-*.md {base}/plans/PLAN-*.md 2>/dev/null
  [ok]   {base}/invariants/ — {n} invariants
  [ok]   .claude/rules/ — {n} packs installed
  [ok]   CLAUDE.md has keel sentinel
- [ok]   PreToolUse hook (Write|Edit sentinel)
+ [ok]   SessionStart hook
+ [ok]   Stop hook (artifact suggestions)
  [ok]   PreCompact hook
  [ok]   {base}/product/spec.md exists
  [ok]   {n} plans found
+ [ok]   {n} agents installed in .claude/agents/
+ [ok]   Memory: {n} days old, {lines}/200 lines
  [!!]   .dof/ directory found — run /keel:intake to migrate
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

@@ -3,7 +3,23 @@
     "allow": [
       "Bash(bash:*)",
       "Bash(vhs:*)",
-      "WebFetch(domain:usenib.dev)"
+      "WebFetch(domain:usenib.dev)",
+      "Read(//private/tmp/keel-test-empty/**)",
+      "Bash(mkdir -p .keel .claude/rules docs/product/prds docs/product/plans docs/decisions docs/invariants docs/reference)",
+      "Read(//Users/danielgomes/dotfiles/claude/commands/keel/**)",
+      "Read(//Users/danielgomes/.keel/templates/**)",
+      "Bash(cp:*)",
+      "Bash(./node_modules/.bin/remotion render:*)",
+      "Bash(./test/run.sh:*)",
+      "Bash(asciinema rec:*)",
+      "Bash(agg:*)",
+      "Bash(/Users/danielgomes/Projects/MyStuff/keel/test/record-workflow.sh:*)",
+      "Bash(do cp:*)",
+      "Bash(python3:*)",
+      "Read(//Users/danielgomes/.claude/**)",
+      "Bash(rm -rf /Users/danielgomes/Projects/MyStuff/keel/docs/demo/output/*)",
+      "Skill(keel:context)",
+      "Skill(keel:plan)"
     ]
   }
 }

@@ -39,7 +39,7 @@ mkdir -p "${CLAUDE_COMMANDS}/keel"
 mkdir -p "${CLAUDE_COMMANDS}/dof"
 
 # Download keel commands (/keel:init, /keel:context, etc.)
-KEEL_COMMANDS=(init context plan status intake doctor rules-update adr invariant prd)
+KEEL_COMMANDS=(init context plan status intake doctor rules-update adr invariant prd agents mcp team)
 info "Installing keel commands..."
 for cmd in "${KEEL_COMMANDS[@]}"; do
   curl -fsSL "${BASE_URL}/commands/${cmd}.md" -o "${CLAUDE_COMMANDS}/keel/${cmd}.md"
@@ -86,10 +86,12 @@ for tmpl in CLAUDE.md.tmpl soul.md.tmpl product-spec.md.tmpl prd.md.tmpl setting
 done
 
 # Agent templates
-for agent in reviewer debugger; do
+for agent in reviewer debugger principal-architect staff-engineer senior-backend principal-dba staff-security staff-sre staff-qa staff-frontend principal-ux senior-pm senior-api senior-performance principal-data; do
   curl -fsSL "${BASE_URL}/templates/agents/${agent}.md" -o "${KEEL_HOME}/templates/agents/${agent}.md"
   dim "agents/${agent}"
 done
+curl -fsSL "${BASE_URL}/templates/agents/_registry.yaml" -o "${KEEL_HOME}/templates/agents/_registry.yaml"
+dim "agents/_registry.yaml"
 
 # SDLC templates
 for sdlc in pull_request_template commit-convention; do
