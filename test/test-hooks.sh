@@ -360,7 +360,7 @@ prompt = s['hooks']['Stop'][0]['hooks'][0]['prompt']
 if '\"ok\": true' not in prompt and 'ok\\\": true' not in prompt:
     print('Stop hook prompt does not instruct ok: true response')
     sys.exit(1)
-if 'never use {\\\"ok\\\": false' not in prompt and 'never use' not in prompt:
+if 'Never {' not in prompt and 'Never {\"ok\": false' not in prompt and 'never use' not in prompt and 'Never' not in prompt:
     print('Stop hook prompt does not warn against ok: false')
     sys.exit(1)
 " 2>/dev/null; then

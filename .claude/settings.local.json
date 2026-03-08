@@ -19,7 +19,13 @@
       "Read(//Users/danielgomes/.claude/**)",
       "Bash(rm -rf /Users/danielgomes/Projects/MyStuff/keel/docs/demo/output/*)",
       "Skill(keel:context)",
-      "Skill(keel:plan)"
+      "Skill(keel:plan)",
+      "Bash(jq:*)",
+      "Bash(do:*)",
+      "Read(//Users/danielgomes/go/src/github.com/dcsg/archway/**)",
+      "Bash(for f in website/guides/*.md)",
+      "Read(//Users/danielgomes/Projects/MyStuff/keel/**)",
+      "Bash(done)"
     ]
   }
 }

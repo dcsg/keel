@@ -1,5 +1,15 @@
 # Keel Changelog
 
+## v3.3 (2026-03-08)
+
+### Bug fix: Stop hook response leaking into chat
+
+The Stop hook prompt used "always end your response with `{"ok": true}`" — broad enough that Claude applied it to every regular response, not just hook evaluations. The `{"ok": true}` line was appearing at the bottom of every reply in the chat.
+
+The prompt is now evaluation-specific: "This is a hook evaluation — not a user message." Claude Code consumes the hook response silently; it never appears in the conversation.
+
+**Action required:** Run `/keel:upgrade` to apply the fix to your project.
+
 ## v3.2 (2026-03-08)
 
 ### Bug fix: Stop hook "Prompt hook condition was not met" error
