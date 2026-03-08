@@ -23,9 +23,30 @@ assert_dir_exists "$PROJECT_ROOT/docs" "docs/ exists"
 # Core files exist
 assert_file_exists "$PROJECT_ROOT/CLAUDE.md" "CLAUDE.md exists"
 assert_file_exists "$PROJECT_ROOT/README.md" "README.md exists"
+assert_file_exists "$PROJECT_ROOT/VERSION" "VERSION file exists"
+assert_file_exists "$PROJECT_ROOT/CHANGELOG.md" "CHANGELOG.md exists"
 assert_file_exists "$PROJECT_ROOT/.keel/config.yaml" ".keel/config.yaml exists"
 assert_file_exists "$PROJECT_ROOT/.keel/soul.md" ".keel/soul.md exists"
 assert_file_exists "$PROJECT_ROOT/templates/rules/_registry.yaml" "Registry exists"
+
+# VERSION file contains a semver-like version
+if grep -qE '^[0-9]+\.[0-9]+' "$PROJECT_ROOT/VERSION"; then
+    pass "VERSION file contains a version number"
+else
+    fail "VERSION file contains a version number"
+fi
+
+# .keel/config.yaml has keel_version
+assert_file_contains "$PROJECT_ROOT/.keel/config.yaml" "keel_version" ".keel/config.yaml has keel_version"
+
+# keel_version in config matches VERSION file
+CONFIG_VER=$(grep '^keel_version:' "$PROJECT_ROOT/.keel/config.yaml" | awk '{print $2}' | tr -d '"')
+FILE_VER=$(cat "$PROJECT_ROOT/VERSION" | tr -d '[:space:]')
+if [ "$CONFIG_VER" = "$FILE_VER" ]; then
+    pass "keel_version in config matches VERSION file ($FILE_VER)"
+else
+    fail "keel_version in config matches VERSION file" "config=$CONFIG_VER, file=$FILE_VER"
+fi
 
 # No legacy tool references
 assert_file_not_contains "$PROJECT_ROOT/CLAUDE.md" "conductor:context" "CLAUDE.md has no conductor: command references"
@@ -92,8 +113,16 @@ assert_file_contains "$PROJECT_ROOT/commands/upgrade.md" "inline bash" "upgrade.
 assert_file_contains "$PROJECT_ROOT/commands/upgrade.md" "JSON validation" "upgrade.md detects Stop hook JSON bug"
 assert_file_contains "$PROJECT_ROOT/commands/upgrade.md" "WHAT'S NEW" "upgrade.md shows release notes"
 assert_file_contains "$PROJECT_ROOT/commands/upgrade.md" "CHANGELOG" "upgrade.md reads changelog"
-assert_file_exists "$PROJECT_ROOT/CHANGELOG.md" "CHANGELOG.md exists"
+assert_file_contains "$PROJECT_ROOT/commands/upgrade.md" "keel_version" "upgrade.md updates keel_version after upgrade"
+assert_file_contains "$PROJECT_ROOT/commands/upgrade.md" "VERSION" "upgrade.md reads installed VERSION"
 assert_file_exists "$PROJECT_ROOT/website/commands/upgrade.md" "website/commands/upgrade.md exists"
+
+# doctor.md version check
+assert_file_contains "$PROJECT_ROOT/commands/doctor.md" "keel_version" "doctor.md checks keel_version in config"
+assert_file_contains "$PROJECT_ROOT/commands/doctor.md" "~/.keel/VERSION" "doctor.md reads installed VERSION"
+
+# init.md writes keel_version
+assert_file_contains "$PROJECT_ROOT/commands/init.md" "keel_version" "init.md writes keel_version to config"
 
 # audit.md checks
 assert_file_contains "$PROJECT_ROOT/commands/audit.md" "context: fork" "audit.md has context: fork"

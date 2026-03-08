@@ -2,11 +2,20 @@
 
 Keel has two layers that need updating separately: the **global templates** (installed on your machine) and the **project configuration** (committed in each repo).
 
-## How updates work
+## How versioning works
 
-When you run the keel installer, it updates your global templates at `~/.keel/templates/` and your commands at `~/.claude/commands/keel/`. But existing projects keep their own `.claude/settings.json` and `.claude/agents/` — those don't update automatically.
+Every keel install writes its version to `~/.keel/VERSION`. Every project records its keel version in `.keel/config.yaml`:
 
-This is intentional: your project config is committed to git and shared with your team. An auto-update would surprise people.
+```yaml
+keel_version: "3.1"
+```
+
+`/keel:doctor` compares the two and warns when they differ:
+```
+[!!] project on keel 3.0, installed is 3.1 — run /keel:upgrade
+```
+
+`/keel:upgrade` reads both, shows a diff, applies changes, and bumps `keel_version` in your config when done.
 
 ## Update flow
 
@@ -16,7 +25,7 @@ This is intentional: your project config is committed to git and shared with you
 curl -fsSL https://raw.githubusercontent.com/dcsg/keel/main/install.sh | bash
 ```
 
-This takes ~10 seconds. Your commands and templates are now current.
+This takes ~10 seconds. Your commands, templates, and `~/.keel/VERSION` are now current.
 
 ### Step 2 — Upgrade each project
 
@@ -26,15 +35,22 @@ Open the project in Claude Code and run:
 /keel:upgrade
 ```
 
-Keel compares what's in the project against the current templates and shows you a diff before touching anything:
+Keel shows release notes first, then a diff of what will change:
 
 ```
+WHAT'S NEW
+─────────────────────────────────────────────────────
+v3.1 — Stop hook JSON fix, hooks migrated to ~/.keel/hooks/ scripts
+─────────────────────────────────────────────────────
+
+Installed keel: 3.1
+Project keel:   3.0
+
 KEEL UPGRADE
 ─────────────────────────────────────────────────────
 Hooks (.claude/settings.json)
-  ⬆  SessionStart   — add git-awareness
-  ⬆  PostToolUse    — missing, will add auto-format hook
-  ⬆  Stop           — add doc gap + security signals
+  ⬆  SessionStart   — inline bash → script reference
+  ⬆  Stop           — fix JSON validation error
   ✓  PreToolUse     — up to date
 
 Agents (.claude/agents/)
@@ -49,12 +65,12 @@ Rule packs (.claude/rules/)
 Apply these upgrades? (y/n/select)
 ```
 
-You can apply everything, cancel, or choose sections. Customizations are never overwritten.
+You can apply everything, cancel, or choose sections. After applying, `keel_version` in `.keel/config.yaml` is bumped to match the installed version.
 
 ### Step 3 — Share with your team
 
 ```bash
-git add .claude/ && git commit -m "chore: upgrade keel to latest"
+git add .claude/ .keel/config.yaml && git commit -m "chore: upgrade keel to 3.1"
 git push
 ```
 
@@ -64,7 +80,7 @@ Your team gets the upgrade on next pull. No manual steps needed on their end.
 
 ## What gets upgraded
 
-**Hooks** — The most common reason to upgrade. New keel versions add hook capabilities (git-aware session start, PostToolUse auto-format, security signals) that older projects don't have.
+**Hooks** — The most common reason to upgrade. New keel versions add hook capabilities or fix bugs (like the v3.1 Stop hook JSON fix). Old inline bash hooks get migrated to readable `~/.keel/hooks/*.sh` script references.
 
 **Agent templates** — Specialist agents are periodically improved. Upgrades bring better prompts, new domain coverage, and more precise advice.
 
@@ -77,7 +93,7 @@ Your team gets the upgrade on next pull. No manual steps needed on their end.
 - Rule files without the `<!-- keel:generated -->` marker — you've customized these
 - Agent files with no matching keel template — you created these
 - Hooks you added yourself — keel only updates its own hook entries, never removes yours
-- `.keel/config.yaml` — your project configuration is always preserved
+- `.keel/config.yaml` — only `keel_version` is updated, everything else is preserved
 
 ---
 
@@ -87,9 +103,10 @@ Your team gets the upgrade on next pull. No manual steps needed on their end.
 /keel:doctor
 ```
 
-Doctor flags outdated hooks:
+Doctor now shows version status as the first check:
 ```
-[!!] SessionStart hook outdated — run /keel:upgrade to update hooks
+[!!] project on keel 3.0, installed is 3.1 — run /keel:upgrade
+[!!] Stop hook outdated (JSON validation error) — run /keel:upgrade
 [!!] go.md outdated (installed: 1.0, available: 1.2) — run /keel:upgrade
 ```
 
@@ -100,7 +117,7 @@ Doctor flags outdated hooks:
 For teams with many repos, the upgrade pattern is:
 
 1. One person runs the installer and upgrades each project
-2. Commits the `.claude/` changes to each repo
+2. Commits `.claude/` and `.keel/config.yaml` changes to each repo
 3. Team gets upgrades via normal git pull
 
 Or document it in your team's runbook:

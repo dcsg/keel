@@ -143,19 +143,33 @@ ls .claude/rules/linter-*.md 2>/dev/null
 - For each `.claude/rules/linter-*.md`: compare its mtime to source config mtime. If config is newer: `[!!] Linter config changed since last sync — run /keel:sync`
 - If no linter configs found: skip silently
 
+**Keel version:**
+```bash
+INSTALLED=$(cat ~/.keel/VERSION 2>/dev/null | tr -d '[:space:]' || echo "unknown")
+PROJECT=$(grep '^keel_version:' .keel/config.yaml | awk '{print $2}' | tr -d '"' || echo "unknown")
+```
+- `[ok] keel {PROJECT} (installed: {INSTALLED})` if versions match
+- `[!!] project on keel {PROJECT}, installed is {INSTALLED} — run /keel:upgrade` if they differ
+- `[!!] keel_version not set in .keel/config.yaml — run /keel:upgrade` if key missing
+
 **Hooks:**
 Check for SessionStart, Stop, PreCompact hooks in `.claude/settings.json`:
 - `[ok]` / `[!!]` for each hook type
 
-Also check SessionStart hook version:
+Also check hook format and content:
 ```python
 import json
 s = json.load(open('.claude/settings.json'))
+# SessionStart
 cmd = s.get('hooks', {}).get('SessionStart', [{}])[0].get('hooks', [{}])[0].get('command', '')
-print('git_aware' if 'git log' in cmd else 'outdated')
+# Stop
+stop = s.get('hooks', {}).get('Stop', [{}])[0].get('hooks', [{}])[0]
+stop_prompt = stop.get('prompt', '') if stop.get('type') == 'prompt' else ''
 ```
-- `[ok] SessionStart hook is git-aware` if `git log` is present in the command
-- `[!!] SessionStart hook outdated — run /keel:upgrade to update hooks` if not
+- `[ok] SessionStart hook` if command references `.keel/hooks/session-start.sh`
+- `[!!] SessionStart hook outdated (inline bash) — run /keel:upgrade` if command is inline bash
+- `[ok] Stop hook` if prompt contains `"ok": true`
+- `[!!] Stop hook outdated (JSON validation error) — run /keel:upgrade` if prompt uses old free-text format
 
 ### 3. Output Report
 
@@ -164,6 +178,7 @@ print('git_aware' if 'git log' in cmd else 'outdated')
  KEEL DOCTOR
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+ [ok]   keel {version} (installed: {installed})
  [ok]   .keel/config.yaml valid
  [ok]   {base}/soul.md exists
  [ok]   {base}/decisions/ — {n} ADRs

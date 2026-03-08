@@ -106,7 +106,8 @@ for sdlc in pull_request_template commit-convention; do
   dim "sdlc/${sdlc}"
 done
 
-# Changelog
+# Version + Changelog
+curl -fsSL "${BASE_URL}/VERSION" -o "${KEEL_HOME}/VERSION"
 curl -fsSL "${BASE_URL}/CHANGELOG.md" -o "${KEEL_HOME}/CHANGELOG.md"
 
 echo

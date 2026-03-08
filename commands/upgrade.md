@@ -30,6 +30,24 @@ Keel templates not found. Re-install keel:
   curl -fsSL https://raw.githubusercontent.com/dcsg/keel/main/install.sh | bash
 ```
 
+Read the installed keel version:
+```bash
+INSTALLED_VERSION=$(cat ~/.keel/VERSION 2>/dev/null | tr -d '[:space:]' || echo "unknown")
+PROJECT_VERSION=$(grep '^keel_version:' .keel/config.yaml | awk '{print $2}' | tr -d '"' || echo "unknown")
+```
+
+Show at the top of the output:
+```
+Installed keel: {INSTALLED_VERSION}
+Project keel:   {PROJECT_VERSION}
+```
+
+If both versions match AND there are no changes detected in step 2, show:
+```
+✅ Already up to date (keel {INSTALLED_VERSION}) — nothing to upgrade.
+```
+and stop.
+
 ### 2. Detect What Needs Upgrading
 
 Run all three checks in parallel and collect findings.
@@ -176,21 +194,26 @@ Same as `/keel:rules-update` logic — replace outdated packs, skip manually edi
 
 After applying:
 
-1. Check if linter configs exist and linter rules are outdated (template mtime > linter rule mtime):
+1. Update `keel_version` in `.keel/config.yaml` to the installed version:
+   - If a `keel_version:` line exists, replace it
+   - If it doesn't exist, add it as the first non-comment line after the opening comment
+
+2. Check if linter configs exist and linter rules are outdated (template mtime > linter rule mtime):
    ```
    Linter configs found. Run /keel:sync to regenerate linter rules.
    ```
 
-2. Output results:
+3. Output results:
 ```
 UPGRADE COMPLETE
 ─────────────────────────────────────────────────────
+Version:     {old} → {new}
 Hooks:       4 updated
 Agents:      2 updated
 Rule packs:  2 updated (1 skipped — manually edited)
 
 Commit these changes to share the upgrade with your team:
-  git add .claude/ && git commit -m "chore: upgrade keel to latest"
+  git add .claude/ .keel/config.yaml && git commit -m "chore: upgrade keel to {new}"
 
 Run /keel:doctor to verify governance health.
 ```
