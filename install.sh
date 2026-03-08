@@ -39,7 +39,7 @@ mkdir -p "${CLAUDE_COMMANDS}/keel"
 mkdir -p "${CLAUDE_COMMANDS}/dof"
 
 # Download keel commands (/keel:init, /keel:context, etc.)
-KEEL_COMMANDS=(init context plan status intake doctor rules-update)
+KEEL_COMMANDS=(init context plan status intake doctor rules-update adr invariant prd)
 info "Installing keel commands..."
 for cmd in "${KEEL_COMMANDS[@]}"; do
   curl -fsSL "${BASE_URL}/commands/${cmd}.md" -o "${CLAUDE_COMMANDS}/keel/${cmd}.md"
