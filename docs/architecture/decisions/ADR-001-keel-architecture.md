@@ -37,6 +37,19 @@ Provide a framework to capture product context (soul.md, product specs, PRDs) an
 | `/keel:plan` | Interview + phased execution plan with parallelism analysis |
 | `/keel:status` | Dashboard: roadmap progress, active plans, governance health |
 | `/keel:intake` | Onboard scattered existing docs into keel's standard structure |
+| `/keel:adr` | Capture an architectural decision — from scratch or from conversation |
+| `/keel:invariant` | Define a hard constraint that must never be violated |
+| `/keel:prd` | Write a product requirement document for a feature |
+
+### Proactive Capture Loop
+
+Keel's `CLAUDE.md` block instructs Claude to watch each response for signals worth capturing:
+
+- **Architectural decisions** (technical choice with trade-offs) → suggest `/keel:adr`
+- **Hard constraints** (must-never-violate rules) → suggest `/keel:invariant`
+- **Product requirements** (clearly defined feature need) → suggest `/keel:prd`
+
+This is transparent — Claude tells you what it detected and you decide whether to capture it. No silent background writes. The suggestion fires only on strong signals; preferences and implementation details are ignored.
 
 ### Intelligent Init
 
@@ -48,7 +61,7 @@ Init detects whether a project is greenfield or established:
 ### What Keel Does NOT Do
 
 - **No execution orchestration** — Claude Code handles worktrees, agents, parallelism natively
-- **No 25-command surface** — 5 commands, each with a single outcome
+- **No 25-command surface** — 8 commands, each with a single outcome
 - **No proprietary formats** — Everything is plain markdown and YAML
 - **No runtime dependencies** — Copy .md files, done
 - **No backward compatibility with dof** — Clean break, migration path provided
@@ -136,4 +149,4 @@ Building for the lowest common denominator would mean losing everything that mak
 - Existing dof/conductor projects need migration (rename + restructure)
 - Rule templates must be maintained and kept current with language/framework evolution
 - Init intelligence requires good inference logic (can improve over time)
-- Users who want formal ADRs/invariants can create them as custom rule topics
+- ADRs, invariants, and PRDs are first-class artifacts captured via `/keel:adr`, `/keel:invariant`, `/keel:prd`

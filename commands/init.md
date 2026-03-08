@@ -310,9 +310,22 @@ When the user asks any of the following, run the corresponding command automatic
 | "what's next?", "what should we do next?", "next steps" | `/keel:status` |
 | "load context", "remind yourself", "what's this project?" | `/keel:context` |
 | "create a plan", "let's plan this", "plan for X" | `/keel:plan` |
+| "save this decision", "record this", "capture that" | `/keel:adr` |
+| "add an invariant", "that's a hard rule", "never do X" | `/keel:invariant` |
+| "write a PRD", "document this feature", "requirements for X" | `/keel:prd` |
 
 ### After Compaction
 If context was compacted, re-read the active plan file in `docs/product/plans/`. The progress table is the persistent state — it tells you what's done and what's next.
+
+### Proactive Artifact Suggestions
+
+After each response, check if the conversation contains any of the following. If yes, end your response with a short suggestion on its own line:
+
+- **Architectural decision** — a significant technical choice with trade-offs (database, pattern, API design, infra) → `💡 This looks like an ADR — run \`/keel:adr\` to capture it.`
+- **Hard constraint** — something that must NEVER be violated regardless of context (data integrity, security boundary, domain purity) → `💡 This is an invariant — run \`/keel:invariant\` to capture it.`
+- **Product requirement** — a new feature or user need defined clearly enough to act on → `💡 This looks like a PRD — run \`/keel:prd\` to capture it.`
+
+Only suggest when the signal is strong. Preferences, implementation details, and refactoring notes do not warrant artifacts.
 <!-- keel:end -->
 ```
 
@@ -423,6 +436,11 @@ Keel initialized!
   2. Review .keel/config.yaml for additional options
   3. Start working — rules are active automatically
   4. Run /keel:plan to create an execution plan for your first task
+
+  Capture artifacts as you work:
+    /keel:adr        — record an architectural decision
+    /keel:invariant  — define a hard constraint
+    /keel:prd        — write a product requirement
 
   Commit .keel/ and .claude/ to git — your team gets the same guardrails.
 ```

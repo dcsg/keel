@@ -97,6 +97,32 @@ After init, your typical workflow:
 /keel:status    → check plan progress and governance health
 ```
 
+## Capturing Decisions as You Work
+
+As you build, keel watches the conversation and suggests when something is worth capturing:
+
+```
+💡 This looks like an ADR — run `/keel:adr` to capture it.
+💡 This is an invariant — run `/keel:invariant` to capture it.
+💡 This looks like a PRD — run `/keel:prd` to capture it.
+```
+
+You can also run them explicitly at any time:
+
+```
+/keel:adr use postgres for persistence     → docs/decisions/001-use-postgres.md
+/keel:invariant no floats for money        → docs/invariants/INV-001-no-floats.md
+/keel:prd webhook delivery with retries    → docs/product/prds/PRD-001-webhooks.md
+```
+
+Or with no argument to extract from the current conversation:
+
+```
+/keel:adr         → extracts the last architectural decision discussed
+/keel:invariant   → extracts the last hard constraint discussed
+/keel:prd         → extracts the last feature requirement discussed
+```
+
 ## Commit to Git
 
 The `.keel/` and `.claude/` directories should be committed. Your team gets the same guardrails automatically.

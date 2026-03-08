@@ -1,6 +1,6 @@
 # Command Reference
 
-Keel provides 5 slash commands for Claude Code.
+Keel provides 8 slash commands for Claude Code.
 
 ---
 
@@ -204,3 +204,78 @@ Proceed with this organization? (y/n/edit)
 ```
 
 Files are **copied**, not moved. Originals are preserved until you delete them.
+
+---
+
+## `/keel:adr [decision topic]`
+
+**Capture an Architecture Decision Record.**
+
+Two modes:
+
+- **With argument** — `/keel:adr use postgres for persistence` — works through the decision with you
+- **No argument** — `/keel:adr` — extracts a decision from the current conversation
+
+Keel also proactively suggests running this command when it detects a significant technical choice being made in conversation.
+
+**What gets created:** `docs/decisions/{NNN}-{slug}.md` with context, decision, rationale, alternatives, and consequences.
+
+**Example:**
+```
+/keel:adr use event sourcing for audit log
+/keel:adr   ← after discussing a database choice
+```
+
+---
+
+## `/keel:invariant [constraint]`
+
+**Capture a hard architectural constraint that must never be violated.**
+
+An invariant is not a guideline — it's a rule where violation causes real harm. Invariants are loaded at every depth level of `/keel:context`.
+
+Two modes:
+
+- **With argument** — `/keel:invariant no floats for money` — define from scratch
+- **No argument** — `/keel:invariant` — extracts a constraint from the current conversation
+
+**What gets created:** `docs/invariants/INV-{NNN}-{slug}.md`
+
+**Good invariants:**
+- "All monetary amounts stored as integer cents. Never use float64 for money."
+- "Domain package imports only stdlib. No HTTP, no SQL, no framework types."
+- "All payment operations require an idempotency key."
+
+**Not invariants** (use `.claude/rules/` instead): preferences, "try to" statements, style guidelines.
+
+---
+
+## `/keel:prd [feature description]`
+
+**Write a Product Requirements Document.**
+
+Reads `docs/soul.md` and `docs/product/spec.md` for context. Asks clarifying questions if the description is vague.
+
+**What gets created:** `docs/product/prds/PRD-{NNN}-{slug}.md` with problem, users, goals, requirements, user stories, and acceptance criteria.
+
+**Example:**
+```
+/keel:prd webhook delivery with retry logic
+/keel:prd   ← after discussing a feature in conversation
+```
+
+After creating a PRD, run `/keel:plan PRD-{NNN}` to generate an execution plan for it.
+
+---
+
+## Proactive Suggestions
+
+You don't need to remember to run these commands. Keel watches your conversation and suggests when something is worth capturing:
+
+```
+💡 This looks like an ADR — run `/keel:adr` to capture it.
+💡 This is an invariant — run `/keel:invariant` to capture it.
+💡 This looks like a PRD — run `/keel:prd` to capture it.
+```
+
+Suggestions only fire on strong signals — architectural decisions with trade-offs, hard constraints, and clearly defined product requirements. Preferences and implementation details are ignored.
