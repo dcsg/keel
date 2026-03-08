@@ -36,7 +36,6 @@ mkdir -p "${KEEL_HOME}/templates/rules/framework"
 mkdir -p "${KEEL_HOME}/templates/agents"
 mkdir -p "${KEEL_HOME}/templates/sdlc"
 mkdir -p "${CLAUDE_COMMANDS}/keel"
-mkdir -p "${CLAUDE_COMMANDS}/dof"
 
 # Download keel commands (/keel:init, /keel:context, etc.)
 KEEL_COMMANDS=(init context plan status intake doctor rules-update adr invariant prd agents mcp team)
@@ -44,14 +43,6 @@ info "Installing keel commands..."
 for cmd in "${KEEL_COMMANDS[@]}"; do
   curl -fsSL "${BASE_URL}/commands/${cmd}.md" -o "${CLAUDE_COMMANDS}/keel/${cmd}.md"
   dim "keel:${cmd}"
-done
-
-# Download dof commands (/dof:migrate, etc.)
-DOF_COMMANDS=(migrate)
-info "Installing dof commands..."
-for cmd in "${DOF_COMMANDS[@]}"; do
-  curl -fsSL "${BASE_URL}/commands/dof/${cmd}.md" -o "${CLAUDE_COMMANDS}/dof/${cmd}.md"
-  dim "dof:${cmd}"
 done
 
 # Download rule templates
@@ -102,7 +93,7 @@ done
 echo
 echo -e "${GREEN}${BOLD}Keel installed.${RESET}"
 echo
-echo "  Commands:  ${CLAUDE_COMMANDS}/keel/ and ${CLAUDE_COMMANDS}/dof/"
+echo "  Commands:  ${CLAUDE_COMMANDS}/keel/"
 echo "  Templates: ${KEEL_HOME}/templates/"
 echo
 echo "  Open any project in Claude Code and run:"

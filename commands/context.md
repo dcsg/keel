@@ -37,7 +37,7 @@ Note: This project has {n} ADRs and {m} PRDs (~{est}k tokens).
 
 ### 1. Find Config
 
-Look for `.keel/config.yaml`. If not found, check for `.dof/config.yaml` or `.conductor/config.yaml` (legacy). If none exist:
+Look for `.keel/config.yaml`. If not found:
 
 ```
 No keel config found. Run /keel:init to set up this project.

@@ -44,8 +44,6 @@ Agent(
   7. Onboarding guides, contributing guides
   8. Product specs, PRDs, requirements docs
   9. Runbooks, playbooks, deployment docs
-  10. .dof/ or .conductor/ content (legacy keel)
-
   For each file found, report:
   - Path
   - Type (architecture, product, reference, onboarding, api, etc.)
@@ -66,10 +64,6 @@ Found {n} documentation files:
 
   Architecture / Decisions:
     docs/adr/001-use-postgres.md     → {base}/decisions/001-use-postgres.md
-    .dof/architecture/decisions/*.md → {base}/decisions/
-
-  Invariants:
-    .dof/architecture/invariants/*.md → {base}/invariants/
 
   Product / Requirements:
     docs/product-spec.md             → {base}/product/spec.md
@@ -147,7 +141,7 @@ For each confirmed move:
 
 1. Create target directory if needed: `mkdir -p {base}/{category}/`
 2. Copy (not move) the file to its new location: `cp source target`
-3. If the source is in a legacy directory (`.dof/`, `.conductor/`), note it for cleanup
+3. Note the original source path so the user can clean up after verifying
 
 **Important:** COPY, don't move. The user can delete originals after verifying. Never delete files without explicit confirmation.
 
@@ -164,17 +158,7 @@ Found additional context from existing docs:
 Update soul.md with this information? (y/n)
 ```
 
-### 7. Convert Legacy Content
-
-If `.dof/` or `.conductor/` content was found:
-
-- **Soul files**: merge into `{base}/soul.md`
-- **ADRs/decisions**: copy to `{base}/decisions/`
-- **Invariants**: copy to `{base}/invariants/`. If an invariant directly constrains code behavior, add a one-line reference in the relevant `.claude/rules/` file pointing to it.
-- **Component contracts**: copy to `{base}/reference/`
-- **Config**: note differences from current `.keel/config.yaml`
-
-### 8. Output Summary
+### 7. Output Summary
 
 ```
 Intake complete!
@@ -208,7 +192,6 @@ Options:
 **If archiving:**
 1. `mkdir -p {base}/archive/`
 2. Move each original to `{base}/archive/`, preserving relative paths
-3. If legacy directories (`.dof/`, `.conductor/`) are now empty after archiving, note them for removal
 
 **If deleting:**
 1. List each file and ask for confirmation: `Delete {path}? (y/n)`
@@ -219,8 +202,5 @@ Options:
 After cleanup:
 
 ```
-  Legacy directories found:
-    {.dof/ or .conductor/ — can be removed after verifying migration}
-
   Next: Review the organized docs and run /keel:context to load everything.
 ```

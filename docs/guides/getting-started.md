@@ -193,6 +193,3 @@ git add .keel/ .claude/ docs/ CLAUDE.md
 git commit -m "chore: initialize keel"
 ```
 
-## Coming from dof?
-
-If your project has a `.dof/` directory, run `/keel:migrate` instead of `/keel:init`. It will move everything over and fill the gaps.

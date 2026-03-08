@@ -42,7 +42,6 @@ Codebase Analysis:
 
 **Guards:**
 - If `.keel/config.yaml` already exists: asks before reconfiguring
-- If `.dof/` exists: suggests `/keel:migrate` instead
 - Never overwrites `CLAUDE.md` — uses sentinel merge
 - Never overwrites existing `docs/soul.md`
 
@@ -179,7 +178,6 @@ Run on established projects after `/keel:init` to organize scattered documentati
 - Existing ADRs, RFCs, decision records
 - Product specs, PRDs, requirements docs
 - API documentation, runbooks, deployment guides
-- `.dof/` or `.conductor/` legacy content
 
 **Example:**
 ```

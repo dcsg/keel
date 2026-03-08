@@ -25,7 +25,6 @@ ls -la .keel/ 2>/dev/null || echo "No .keel/ directory"
 ```
 
 - If `.keel/config.yaml` already exists, read it and show current configuration. Ask: "Keel is already set up. Want to reconfigure? (y/N)"
-- If `.dof/` or `.conductor/` exists, suggest: "Found legacy config. Run `/keel:migrate` to upgrade."
 
 ### 2. Detect Project Age
 

@@ -115,10 +115,6 @@ ls {base}/product/plans/PLAN-*.md {base}/plans/PLAN-*.md 2>/dev/null
 - `[ok] {n} plans found` — list active ones
 - `[!!] No PLAN-*.md found` — suggest `/keel:plan`
 
-**Legacy directories:**
-- Check for `.dof/` or `.conductor/` directories
-- `[!!]` if found — suggest `/keel:intake` to migrate, then remove
-
 **Auto-memory:**
 ```bash
 ENCODED=$(echo "$PWD" | sed 's|/|-|g')
@@ -160,8 +156,6 @@ Check for SessionStart, Stop, PreCompact hooks in `.claude/settings.json`:
  [ok]   {n} plans found
  [ok]   {n} agents installed in .claude/agents/
  [ok]   Memory: {n} days old, {lines}/200 lines
- [!!]   .dof/ directory found — run /keel:intake to migrate
-
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  {pass_count} passed, {warn_count} warnings, {fail_count} failures
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

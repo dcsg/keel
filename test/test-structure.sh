@@ -26,20 +26,14 @@ assert_file_exists "$PROJECT_ROOT/.keel/config.yaml" ".keel/config.yaml exists"
 assert_file_exists "$PROJECT_ROOT/.keel/soul.md" ".keel/soul.md exists"
 assert_file_exists "$PROJECT_ROOT/templates/rules/_registry.yaml" "Registry exists"
 
-# No old conductor/dof references
+# No legacy tool references
 assert_file_not_contains "$PROJECT_ROOT/CLAUDE.md" "conductor:context" "CLAUDE.md has no conductor: command references"
-assert_file_not_contains "$PROJECT_ROOT/CLAUDE.md" "\.dof" "CLAUDE.md has no .dof references"
 # Note: can't grep for "conductor" because the repo might be in a path containing it
-# Instead check for specific old branding
 assert_file_not_contains "$PROJECT_ROOT/README.md" "conductor:context" "README.md has no conductor: command references"
-assert_file_not_contains "$PROJECT_ROOT/README.md" "\.dof/config" "README.md has no .dof/config references"
 
-# No old directories
+# No legacy directories
 assert_file_not_exists "$PROJECT_ROOT/.conductor/config.yaml" "No .conductor/ directory"
 assert_file_not_exists "$PROJECT_ROOT/.dof/config.yaml" "No .dof/ directory"
-
-# Note: dof:migrate moved to global skills (~/.claude/skills/dof/migrate.md)
-# No longer needed in keel repo
 
 # settings template has both hooks
 assert_file_contains "$PROJECT_ROOT/templates/settings.json.tmpl" "PreToolUse" "settings.json.tmpl has PreToolUse hook"

@@ -67,7 +67,7 @@ Init detects whether a project is greenfield or established:
 - **No 25-command surface** — 11 commands, each with a single outcome
 - **No proprietary formats** — Everything is plain markdown and YAML
 - **No runtime dependencies** — Copy .md files, done
-- **No backward compatibility with dof** — Clean break, migration path provided
+- **No backward compatibility with legacy tools** — Clean break
 
 ## Project Structure (after init)
 
@@ -149,7 +149,7 @@ Building for the lowest common denominator would mean losing everything that mak
 
 ## Consequences
 
-- Existing dof/conductor projects need migration (rename + restructure)
+- Established projects can use `/keel:intake` to organize existing docs into keel's structure
 - Rule templates must be maintained and kept current with language/framework evolution
 - Init intelligence requires good inference logic (can improve over time)
 - ADRs, invariants, and PRDs are first-class artifacts captured via `/keel:adr`, `/keel:invariant`, `/keel:prd`

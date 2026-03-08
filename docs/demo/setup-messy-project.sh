@@ -33,7 +33,7 @@ func main() {
 EOF
 
 # --- Scattered docs (the mess keel:intake will organize) ---
-mkdir -p docs/adr docs/specs notes .dof/architecture/decisions .dof/architecture/invariants
+mkdir -p docs/adr docs/specs notes old/decisions old/invariants
 
 # ADRs in non-standard location
 cat > docs/adr/001-use-stripe.md << 'MD'
@@ -76,21 +76,16 @@ cat > notes/progress.md << 'MD'
 - [ ] Integration tests
 MD
 
-# Legacy .dof content
-cat > .dof/architecture/decisions/ADR-003-idempotency.md << 'MD'
+# Old decisions in non-standard location
+cat > old/decisions/ADR-003-idempotency.md << 'MD'
 # ADR-003: Idempotency Keys
 All payment operations require an idempotency key to prevent double-charges.
 MD
 
-cat > .dof/architecture/invariants/INV-001-no-floats.md << 'MD'
+cat > old/invariants/INV-001-no-floats.md << 'MD'
 # INV-001: No Floating Point for Money
 All monetary amounts stored as integer cents. Never use float64 for money.
 MD
-
-cat > .dof/config.yaml << 'YAML'
-base: docs
-stack: [go]
-YAML
 
 # README at root
 cat > README.md << 'MD'

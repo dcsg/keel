@@ -94,7 +94,6 @@ CLAUDE.md
 | `/keel:plan` | Interview + phased execution plan with dependency tracking |
 | `/keel:status` | Dashboard — plan progress, installed rules, governance health |
 | `/keel:intake` | Scan for scattered docs and organize into keel structure |
-| `/dof:migrate` | Convert `.dof/` projects to keel (global skill) |
 
 ## You don't need to remember commands
 
