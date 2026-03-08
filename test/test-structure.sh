@@ -43,7 +43,7 @@ assert_file_contains "$PROJECT_ROOT/templates/settings.json.tmpl" "Stop" "settin
 assert_file_contains "$PROJECT_ROOT/templates/settings.json.tmpl" "PreCompact" "settings.json.tmpl has PreCompact hook"
 assert_file_contains "$PROJECT_ROOT/templates/settings.json.tmpl" "Write|Edit" "PreToolUse hook targets Write|Edit"
 assert_file_contains "$PROJECT_ROOT/templates/settings.json.tmpl" "PostToolUse" "settings.json.tmpl has PostToolUse hook"
-assert_file_contains "$PROJECT_ROOT/templates/settings.json.tmpl" "git log" "SessionStart hook is git-aware"
+assert_file_contains "$PROJECT_ROOT/templates/hooks/session-start.sh" "git log" "SessionStart hook is git-aware"
 
 # All keel commands exist
 for cmd in init context plan status intake doctor rules-update upgrade adr invariant prd agents mcp team docs sync audit review session; do

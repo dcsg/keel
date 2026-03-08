@@ -2,12 +2,18 @@
 # Test: settings.json.tmpl hook schema and hook command behavior
 set -uo pipefail
 
-PROJECT_ROOT="${1:-.}"
+PROJECT_ROOT="$(cd "${1:-.}" && pwd)"
 source "$(dirname "$0")/helpers.sh"
 
 echo ""
 
 SETTINGS="$PROJECT_ROOT/templates/settings.json.tmpl"
+HOOKS_DIR="$PROJECT_ROOT/templates/hooks"
+
+SESSION_HOOK="$HOOKS_DIR/session-start.sh"
+PRETOOL_HOOK="$HOOKS_DIR/pre-tool-use.sh"
+POSTTOOL_HOOK="$HOOKS_DIR/post-tool-use.sh"
+PRECOMPACT_HOOK="$HOOKS_DIR/pre-compact.sh"
 
 # ============================================================
 # Schema validation — ensure new nested hook format is correct
@@ -107,18 +113,33 @@ else
     fail "PreToolUse has matcher: Write|Edit"
 fi
 
-# Extract commands for behavior tests
-SESSION_CMD=$(python3 -c "
-import json
-s = json.load(open('$SETTINGS'))
-print(s['hooks']['SessionStart'][0]['hooks'][0]['command'])
-")
+# Hook scripts exist in templates/hooks/
+for hook_file in session-start.sh pre-tool-use.sh post-tool-use.sh pre-compact.sh; do
+    if [ -f "$HOOKS_DIR/$hook_file" ]; then
+        pass "Hook script exists: templates/hooks/$hook_file"
+    else
+        fail "Hook script exists: templates/hooks/$hook_file"
+    fi
+done
 
-PRETOOL_CMD=$(python3 -c "
-import json
+# Settings.json.tmpl references .keel/hooks/ scripts (not inline bash)
+if python3 -c "
+import json, sys
 s = json.load(open('$SETTINGS'))
-print(s['hooks']['PreToolUse'][0]['hooks'][0]['command'])
-")
+hooks = s.get('hooks', {})
+for name, entries in hooks.items():
+    for entry in entries:
+        for h in entry.get('hooks', []):
+            if h.get('type') == 'command':
+                cmd = h.get('command', '')
+                if '.keel/hooks/' not in cmd:
+                    print(f'{name}: command does not reference .keel/hooks/: {cmd}')
+                    sys.exit(1)
+" 2>/dev/null; then
+    pass "All command hooks reference \$HOME/.keel/hooks/ scripts"
+else
+    fail "All command hooks reference \$HOME/.keel/hooks/ scripts"
+fi
 
 # ============================================================
 # SessionStart behavior tests
@@ -126,7 +147,7 @@ print(s['hooks']['PreToolUse'][0]['hooks'][0]['command'])
 
 run_session_hook() {
     local dir="$1"
-    (cd "$dir" && bash -c "$SESSION_CMD" 2>/dev/null)
+    (cd "$dir" && bash "$SESSION_HOOK" 2>/dev/null)
 }
 
 # SessionStart: no keel config → silent
@@ -154,7 +175,8 @@ rm -rf "$FRESH"
 # SessionStart: memory exists and is fresh → produces output
 MEM_FRESH=$(mktemp -d)
 mkdir -p "$MEM_FRESH/.keel"
-echo "base: docs" > "$MEM_FRESH/.keel/config.yaml"
+# Use session-start-git: false so the hook doesn't need a git repo
+printf "base: docs\nsession-start-git: false\n" > "$MEM_FRESH/.keel/config.yaml"
 ENCODED=$(echo "$MEM_FRESH" | sed 's|/|-|g')
 MEM_DIR="$HOME/.claude/projects/${ENCODED}/memory"
 mkdir -p "$MEM_DIR"
@@ -174,7 +196,7 @@ rm -rf "$HOME/.claude/projects/${ENCODED}" 2>/dev/null || true
 
 run_pretool_hook() {
     local dir="$1"
-    (cd "$dir" && bash -c "$PRETOOL_CMD" 2>/dev/null)
+    (cd "$dir" && bash "$PRETOOL_HOOK" 2>/dev/null)
 }
 
 # PreToolUse: no keel config → silent
@@ -213,56 +235,56 @@ fi
 rm -rf "$COMPLETE"
 
 # ============================================================
-# SessionStart git-aware hook assertions
+# SessionStart script content assertions
 # ============================================================
 
-# SessionStart hook contains git log (git-aware)
-if echo "$SESSION_CMD" | grep -q 'git log'; then
+# SessionStart hook is git-aware (contains git log)
+if grep -q 'git log' "$SESSION_HOOK"; then
     pass "SessionStart hook is git-aware (contains 'git log')"
 else
     fail "SessionStart hook is git-aware (contains 'git log')"
 fi
 
 # SessionStart hook contains migration domain signal
-if echo "$SESSION_CMD" | grep -q 'migration'; then
+if grep -q 'migration' "$SESSION_HOOK"; then
     pass "SessionStart hook contains 'migration' domain signal"
 else
     fail "SessionStart hook contains 'migration' domain signal"
 fi
 
 # SessionStart hook contains docker domain signal
-if echo "$SESSION_CMD" | grep -q 'docker'; then
+if grep -q 'docker' "$SESSION_HOOK"; then
     pass "SessionStart hook contains 'docker' domain signal"
 else
     fail "SessionStart hook contains 'docker' domain signal"
 fi
 
-# SessionStart hook contains session-start-git disable flag
-if echo "$SESSION_CMD" | grep -q 'session-start-git'; then
+# SessionStart hook respects session-start-git disable flag
+if grep -q 'session-start-git' "$SESSION_HOOK"; then
     pass "SessionStart hook respects session-start-git disable flag"
 else
     fail "SessionStart hook respects session-start-git disable flag"
 fi
 
 # ============================================================
-# PostToolUse hook assertions
+# PostToolUse script content assertions
 # ============================================================
 
-# PreCompact hook contains /keel:session
-if python3 -c "
-import json, sys
-s = json.load(open('$SETTINGS'))
-cmd = s['hooks']['PreCompact'][0]['hooks'][0]['command']
-if '/keel:session' not in cmd:
-    print('PreCompact hook missing /keel:session reference')
-    sys.exit(1)
-" 2>/dev/null; then
-    pass "PreCompact hook contains '/keel:session'"
+# PostToolUse hook has KEEL_FORMAT_SKIP disable guard
+if grep -q 'KEEL_FORMAT_SKIP' "$POSTTOOL_HOOK"; then
+    pass "PostToolUse hook has KEEL_FORMAT_SKIP disable guard"
 else
-    fail "PreCompact hook contains '/keel:session'"
+    fail "PostToolUse hook has KEEL_FORMAT_SKIP disable guard"
 fi
 
-# PostToolUse hook present
+# PostToolUse hook always exits 0
+if grep -q 'exit 0' "$POSTTOOL_HOOK"; then
+    pass "PostToolUse hook always exits 0 (has exit 0 at end)"
+else
+    fail "PostToolUse hook always exits 0 (has exit 0 at end)"
+fi
+
+# PostToolUse hook present in settings.json.tmpl
 if python3 -c "
 import json, sys
 s = json.load(open('$SETTINGS'))
@@ -287,38 +309,15 @@ else
     fail "PostToolUse hook has Write|Edit matcher"
 fi
 
-# PostToolUse has KEEL_FORMAT_SKIP disable guard
-if python3 -c "
-import json, sys
-s = json.load(open('$SETTINGS'))
-entries = s['hooks'].get('PostToolUse', [])
-for entry in entries:
-    for h in entry.get('hooks', []):
-        cmd = h.get('command', '')
-        if 'KEEL_FORMAT_SKIP' in cmd:
-            sys.exit(0)
-sys.exit(1)
-" 2>/dev/null; then
-    pass "PostToolUse hook has KEEL_FORMAT_SKIP disable guard"
-else
-    fail "PostToolUse hook has KEEL_FORMAT_SKIP disable guard"
-fi
+# ============================================================
+# PreCompact script content assertions
+# ============================================================
 
-# PostToolUse hook always exits 0
-if python3 -c "
-import json, sys
-s = json.load(open('$SETTINGS'))
-entries = s['hooks'].get('PostToolUse', [])
-for entry in entries:
-    for h in entry.get('hooks', []):
-        cmd = h.get('command', '')
-        if 'exit 0' in cmd:
-            sys.exit(0)
-sys.exit(1)
-" 2>/dev/null; then
-    pass "PostToolUse hook always exits 0 (has exit 0 at end)"
+# PreCompact hook contains /keel:session
+if grep -q '/keel:session' "$PRECOMPACT_HOOK"; then
+    pass "PreCompact hook contains '/keel:session'"
 else
-    fail "PostToolUse hook always exits 0 (has exit 0 at end)"
+    fail "PreCompact hook contains '/keel:session'"
 fi
 
 # ============================================================
