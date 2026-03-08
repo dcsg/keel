@@ -38,7 +38,7 @@ mkdir -p "${KEEL_HOME}/templates/sdlc"
 mkdir -p "${CLAUDE_COMMANDS}/keel"
 
 # Download keel commands (/keel:init, /keel:context, etc.)
-KEEL_COMMANDS=(init context plan status intake doctor rules-update adr invariant prd agents mcp team docs sync audit review session)
+KEEL_COMMANDS=(init context plan status intake doctor rules-update upgrade adr invariant prd agents mcp team docs sync audit review session)
 info "Installing keel commands..."
 for cmd in "${KEEL_COMMANDS[@]}"; do
   curl -fsSL "${BASE_URL}/commands/${cmd}.md" -o "${CLAUDE_COMMANDS}/keel/${cmd}.md"

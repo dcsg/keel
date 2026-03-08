@@ -46,7 +46,7 @@ assert_file_contains "$PROJECT_ROOT/templates/settings.json.tmpl" "PostToolUse" 
 assert_file_contains "$PROJECT_ROOT/templates/settings.json.tmpl" "git log" "SessionStart hook is git-aware"
 
 # All keel commands exist
-for cmd in init context plan status intake doctor rules-update adr invariant prd agents mcp team docs sync audit review session; do
+for cmd in init context plan status intake doctor rules-update upgrade adr invariant prd agents mcp team docs sync audit review session; do
     assert_file_exists "$PROJECT_ROOT/commands/${cmd}.md" "commands/${cmd}.md exists"
 done
 
@@ -83,6 +83,12 @@ assert_file_contains "$PROJECT_ROOT/commands/plan.md" "no-review" "plan.md suppo
 assert_file_contains "$PROJECT_ROOT/commands/session.md" "context: fork" "session.md has context: fork"
 assert_file_contains "$PROJECT_ROOT/commands/session.md" "SESSION SUMMARY" "session.md has session summary output"
 assert_file_contains "$PROJECT_ROOT/commands/session.md" "keel:adr" "session.md suggests artifact capture"
+
+# upgrade.md checks
+assert_file_contains "$PROJECT_ROOT/commands/upgrade.md" "KEEL UPGRADE" "upgrade.md has upgrade output format"
+assert_file_contains "$PROJECT_ROOT/commands/upgrade.md" "never overwrites" "upgrade.md documents safe upgrade behavior"
+assert_file_contains "$PROJECT_ROOT/commands/upgrade.md" "keel:doctor" "upgrade.md suggests doctor after upgrade"
+assert_file_exists "$PROJECT_ROOT/website/commands/upgrade.md" "website/commands/upgrade.md exists"
 
 # audit.md checks
 assert_file_contains "$PROJECT_ROOT/commands/audit.md" "context: fork" "audit.md has context: fork"

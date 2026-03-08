@@ -155,7 +155,7 @@ cmd = s.get('hooks', {}).get('SessionStart', [{}])[0].get('hooks', [{}])[0].get(
 print('git_aware' if 'git log' in cmd else 'outdated')
 ```
 - `[ok] SessionStart hook is git-aware` if `git log` is present in the command
-- `[!!] SessionStart hook outdated — run /keel:init to reinstall hooks` if not
+- `[!!] SessionStart hook outdated — run /keel:upgrade to update hooks` if not
 
 ### 3. Output Report
 

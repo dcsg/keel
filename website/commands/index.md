@@ -1,6 +1,6 @@
 # Commands
 
-Keel has seventeen commands. Each does exactly one thing. You rarely need to remember them — Claude responds to natural language after init.
+Keel has eighteen commands. Each does exactly one thing. You rarely need to remember them — Claude responds to natural language after init.
 
 ## The commands
 
@@ -23,6 +23,7 @@ Keel has seventeen commands. Each does exactly one thing. You rarely need to rem
 | [`/keel:docs`](/commands/docs) | Review documentation gaps for new routes, env vars, and services |
 | [`/keel:sync`](/commands/sync) | Translate linter configs into Claude rule packs |
 | [`/keel:doctor`](/commands/doctor) | Validate governance setup and report actionable warnings |
+| [`/keel:upgrade`](/commands/upgrade) | Upgrade hooks, agents, and rules to the latest keel version |
 
 ## You don't need to remember them
 
