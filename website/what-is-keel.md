@@ -50,7 +50,7 @@ Claude: // Thin handler, delegates to PaymentService
 
 The rules don't change. The reminders disappear.
 
-## Two things keel installs
+## Three things keel installs
 
 ### Guardrails — `.claude/rules/`
 
@@ -66,13 +66,29 @@ One `.md` file per topic. Path-conditional — Go rules only fire on `.go` files
 └── chi.md                ← **/*.go only
 ```
 
+### Specialist agents — `.claude/agents/`
+
+Role-based agents with defined expertise, domain constraints, and transparent reasoning. Each agent names its role before starting so you know exactly what lens is being applied.
+
+```
+.claude/agents/
+├── principal-architect.md   ← system design, ADRs, trade-offs
+├── staff-engineer.md        ← implementation, code review
+├── staff-security.md        ← OWASP, threat modeling
+├── principal-dba.md         ← schema design, migration safety
+├── staff-qa.md              ← testing strategy, coverage
+└── ...                      ← stack-matched on init
+```
+
 ### Context — `docs/`
 
-Project memory that loads at session start. Claude knows who the project is — not just what files exist.
+Project memory that loads at session start. Claude knows who the project is — not just what files exist. Persisted to auto-memory so it's available without running `/keel:context` every time.
 
 ```
 docs/
 ├── soul.md               ← identity, stack, non-negotiables
+├── decisions/            ← architecture decision records
+├── invariants/           ← hard constraints Claude must never violate
 └── product/
     ├── spec.md           ← what you're building
     ├── prds/             ← feature requirements
@@ -97,8 +113,11 @@ Keel depends on features other tools don't have:
 | Feature | Claude Code | Cursor | Copilot | Windsurf |
 |---------|:-----------:|:------:|:-------:|:--------:|
 | Path-conditional rules | ✓ | ✗ | ✗ | ✗ |
-| Hooks (pre-compact recovery) | ✓ | ✗ | ✗ | ✗ |
+| SessionStart / Stop hooks | ✓ | ✗ | ✗ | ✗ |
+| Pre-compact recovery hook | ✓ | ✗ | ✗ | ✗ |
 | Slash commands | ✓ | ✗ | ✗ | ✗ |
-| Subagents | ✓ | ✗ | ✗ | ✗ |
+| Custom specialist agents | ✓ | ✗ | ✗ | ✗ |
+| Auto-memory persistence | ✓ | ✗ | ✗ | ✗ |
+| MCP server wiring | ✓ | ✗ | ✗ | ✗ |
 
 The knowledge base (soul.md, ADRs, docs) is plain markdown that works anywhere. The guardrail loop only works in Claude Code.

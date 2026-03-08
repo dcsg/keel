@@ -52,9 +52,15 @@ Loads your project's memory into the current session.
 > Ready. What are we working on?
 > ```
 
+## Auto-memory
+
+After running `/keel:context`, keel writes a compact snapshot to Claude's auto-memory (`~/.claude/projects/.../memory/MEMORY.md`). This file is automatically loaded at the start of every future session — so Claude knows the project name, stack, active plan, and hard invariants without you running `/keel:context` first.
+
+The `SessionStart` hook checks if memory is stale (>7 days old) and prompts you to refresh. The memory file is local to your machine, not committed to git.
+
 ## You usually don't need to run this manually
 
-The `PreToolUse` hook installed by `/keel:init` fires before Claude's first Write or Edit in a session. If context hasn't been loaded yet, it reminds Claude to load it before writing any code. Running `/keel:context` explicitly gives you the full visible output — useful when onboarding a teammate or starting a complex session.
+The `SessionStart` hook installed by `/keel:init` fires when you open the project. If auto-memory exists and is fresh, it confirms context is loaded. If memory is missing or stale, it prompts you to run `/keel:context`. Running it explicitly gives you the full visible output — useful when onboarding a teammate or starting a complex session.
 
 ## Natural language triggers
 

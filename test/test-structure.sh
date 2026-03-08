@@ -35,9 +35,20 @@ assert_file_not_contains "$PROJECT_ROOT/README.md" "conductor:context" "README.m
 assert_file_not_exists "$PROJECT_ROOT/.conductor/config.yaml" "No .conductor/ directory"
 assert_file_not_exists "$PROJECT_ROOT/.dof/config.yaml" "No .dof/ directory"
 
-# settings template has both hooks
+# settings template has all four hooks
+assert_file_contains "$PROJECT_ROOT/templates/settings.json.tmpl" "SessionStart" "settings.json.tmpl has SessionStart hook"
 assert_file_contains "$PROJECT_ROOT/templates/settings.json.tmpl" "PreToolUse" "settings.json.tmpl has PreToolUse hook"
+assert_file_contains "$PROJECT_ROOT/templates/settings.json.tmpl" "Stop" "settings.json.tmpl has Stop hook"
 assert_file_contains "$PROJECT_ROOT/templates/settings.json.tmpl" "PreCompact" "settings.json.tmpl has PreCompact hook"
 assert_file_contains "$PROJECT_ROOT/templates/settings.json.tmpl" "Write|Edit" "PreToolUse hook targets Write|Edit"
+
+# All keel commands exist
+for cmd in init context plan status intake doctor rules-update adr invariant prd agents mcp team; do
+    assert_file_exists "$PROJECT_ROOT/commands/${cmd}.md" "commands/${cmd}.md exists"
+done
+
+# Agent templates directory exists
+assert_dir_exists "$PROJECT_ROOT/templates/agents" "templates/agents/ exists"
+assert_file_exists "$PROJECT_ROOT/templates/agents/_registry.yaml" "Agent registry exists"
 
 test_summary

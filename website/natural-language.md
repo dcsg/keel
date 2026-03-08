@@ -80,6 +80,17 @@ You want to start planning a new feature:
 | "what's this project?" | `/keel:context` |
 | "let's plan X" | `/keel:plan` |
 | "create a plan for X" | `/keel:plan` |
+| "save this decision" | `/keel:adr` |
+| "record this choice" | `/keel:adr` |
+| "capture that" | `/keel:adr` |
+| "that's a hard rule" | `/keel:invariant` |
+| "never do X" | `/keel:invariant` |
+| "write a PRD for X" | `/keel:prd` |
+| "document this feature" | `/keel:prd` |
+| "what agents do we have?" | `/keel:agents` |
+| "add the security agent" | `/keel:agents add staff-security` |
+| "setup Linear" | `/keel:mcp add linear` |
+| "validate my environment" | `/keel:team setup` |
 
 These are defined in `.claude/CLAUDE.md` — you can add your own triggers by editing that file.
 

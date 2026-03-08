@@ -82,6 +82,8 @@ That's it. From this point, every Claude session in this project:
 your-project/
 ├── docs/
 │   ├── soul.md                  # project identity
+│   ├── decisions/               # architecture decision records
+│   ├── invariants/              # hard constraints
 │   └── product/
 │       ├── plans/               # execution plans
 │       └── prds/                # feature requirements
@@ -95,12 +97,24 @@ your-project/
     │   ├── error-handling.md
     │   ├── go.md
     │   └── chi.md
-    ├── agents/
-    │   ├── reviewer.md          # run: "review this PR"
-    │   └── debugger.md          # run: "debug this issue"
-    ├── settings.json            # compaction recovery hook
-    └── CLAUDE.md                # loads context automatically
+    ├── agents/                  # specialist agents (stack-matched)
+    │   ├── principal-architect.md
+    │   ├── staff-engineer.md
+    │   ├── senior-backend.md
+    │   ├── principal-dba.md
+    │   └── ...
+    ├── settings.json            # SessionStart + Stop + PreCompact hooks
+    └── CLAUDE.md                # project block + natural language triggers
 ```
+
+**Four hooks installed in `.claude/settings.json`:**
+
+- **SessionStart** — fires when you open the project. Checks if auto-memory is stale (>7 days) and prompts to refresh.
+- **PreToolUse** — warns if setup is incomplete before Claude writes any code.
+- **Stop** — after every Claude response, actively scans for artifact signals and suggests `/keel:adr`, `/keel:invariant`, or `/keel:prd`.
+- **PreCompact** — before context compaction, reminds Claude to update the active plan's progress table.
+
+**Auto-memory:** after running `/keel:context`, keel writes a compact snapshot to Claude's auto-memory (`~/.claude/projects/.../memory/MEMORY.md`). It's auto-loaded at the start of every future session — so Claude always knows the project, stack, and hard constraints without needing to run `/keel:context` manually.
 
 ## What to do next
 

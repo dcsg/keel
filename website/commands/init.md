@@ -70,23 +70,36 @@ Keel generates:
 |------|---------|
 | `.keel/config.yaml` | Source of truth for rules and config |
 | `.claude/rules/*.md` | Installed guardrails (tagged `<!-- keel:generated -->`) |
-| `.claude/settings.json` | Hooks: PreToolUse context gate + PreCompact recovery |
+| `.claude/agents/*.md` | Specialist agents matched to your stack |
+| `.claude/settings.json` | Four lifecycle hooks |
 | `CLAUDE.md` | Project summary block (safe merge — never overwrites existing content) |
-| `.claude/agents/reviewer.md` | Code review agent |
-| `.claude/agents/debugger.md` | Root cause analysis agent |
 | `docs/soul.md` | Project identity |
 | `docs/product/spec.md` | Product spec stub |
 | `docs/decisions/` | Architecture decisions directory |
 | `docs/invariants/` | Hard constraints directory |
 | `.github/pull_request_template.md` | PR template (if opted in) |
 
+### Specialist agents installed
+
+Keel installs role-based agents in `.claude/agents/` based on your detected stack. Each agent has a defined role, domain expertise, and constraints. When invoked, it names its role before starting so you know exactly what lens is applied.
+
+Agents always installed: `principal-architect`, `staff-engineer`, `staff-sre`, `staff-qa`, `senior-pm`, `senior-api`
+
+Stack-matched examples: Go → `senior-backend`, `principal-dba` · React/Next.js → `staff-frontend`, `principal-ux` · security keywords detected → `staff-security`
+
+Manage agents with `/keel:agents`.
+
 ### Hooks installed
 
-Two hooks protect every session:
+Four hooks protect every session:
 
-**PreToolUse (Write/Edit)** — Before Claude writes any code for the first time in a session, it's reminded to load project context: soul, decisions, invariants, and active plan. Fires once per session via a temp file sentinel.
+**SessionStart** — fires when the project opens. Checks if keel auto-memory is stale (>7 days) and prompts to run `/keel:context` to refresh.
 
-**PreCompact** — Before context compaction, Claude is reminded to update the active plan's progress table so nothing is lost.
+**PreToolUse (Write/Edit)** — warns if `docs/soul.md` is missing, indicating init is incomplete.
+
+**Stop** — after every Claude response, scans for artifact signals and prompts Claude to suggest `/keel:adr`, `/keel:invariant`, or `/keel:prd` when appropriate. More reliable than asking Claude to self-audit in CLAUDE.md.
+
+**PreCompact** — before context compaction, Claude is reminded to update the active plan's progress table so nothing is lost.
 
 ## Re-running
 

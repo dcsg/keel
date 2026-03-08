@@ -26,9 +26,9 @@ If keel disappeared tomorrow, all the value would still be there — in files yo
 
 ## Minimal surface area
 
-Six commands. That's the entire interface. Each does exactly one thing well.
+Eleven commands. That's the entire interface. Each does exactly one thing well.
 
-`/keel:init` installs. `/keel:context` loads. `/keel:plan` plans. `/keel:status` shows. `/keel:intake` organizes. `/keel:migrate` converts.
+`/keel:init` installs. `/keel:context` loads. `/keel:plan` plans. `/keel:status` shows. `/keel:intake` organizes. `/keel:agents` manages specialist agents. `/keel:mcp` wires project management tools. `/keel:team` validates team setup. `/keel:adr`, `/keel:invariant`, and `/keel:prd` capture decisions, constraints, and requirements.
 
 No subcommands, no flags, no configuration UI. The right amount of interface for the problem.
 
