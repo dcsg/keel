@@ -168,8 +168,9 @@ stop_prompt = stop.get('prompt', '') if stop.get('type') == 'prompt' else ''
 ```
 - `[ok] SessionStart hook` if command references `.keel/hooks/session-start.sh`
 - `[!!] SessionStart hook outdated (inline bash) — run /keel:upgrade` if command is inline bash
-- `[ok] Stop hook` if prompt contains `"ok": true`
+- `[ok] Stop hook` if prompt contains `"ok": true` AND does not use `"ok": false` for signals
 - `[!!] Stop hook outdated (JSON validation error) — run /keel:upgrade` if prompt uses old free-text format
+- `[!!] Stop hook causes blocking error — run /keel:upgrade` if prompt uses `{"ok": false, "reason":` to deliver signals (causes "Prompt hook condition was not met" error)
 
 ### 3. Output Report
 

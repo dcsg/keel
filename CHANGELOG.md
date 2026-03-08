@@ -1,12 +1,27 @@
 # Keel Changelog
 
-## v3.1 (2026-03-08)
+## v3.2 (2026-03-08)
 
-### Bug fix: Stop hook JSON validation error
+### Bug fix: Stop hook "Prompt hook condition was not met" error
 
-The Stop hook prompt previously asked Claude to "end your next response with..." free text. Claude Code's `type: prompt` hooks require a JSON response (`{"ok": true}` or `{"ok": false, "reason": "..."}`). The prompt has been corrected — signals now appear in the `reason` field and are fed back as context.
+The v3.1 Stop hook fix was incomplete. Using `{"ok": false, "reason": "..."}` to deliver signals causes Claude Code to throw **"Prompt hook condition was not met"** — a blocking error — instead of showing them as helpful hints.
+
+The correct behaviour: always return `{"ok": true}`. If signals are present, output them as plain text **before** the JSON line. They appear as informational output, never as errors.
 
 **Action required:** Run `/keel:upgrade` to apply the fix to your project.
+
+## v3.1 (2026-03-08)
+
+### Hook scripts moved to `~/.keel/hooks/`
+
+All hook logic extracted from inline bash strings in `.claude/settings.json` into readable shell scripts:
+
+- `session-start.sh` — git-aware session summary with domain classification
+- `pre-tool-use.sh` — warns if soul.md is missing
+- `post-tool-use.sh` — auto-formats files after edits
+- `pre-compact.sh` — PreCompact reminder
+
+Your `settings.json` now references these scripts instead of embedding bash.
 
 ### Hook scripts moved to `~/.keel/hooks/`
 

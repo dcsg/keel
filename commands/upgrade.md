@@ -66,13 +66,16 @@ If any `type: command` hook has its logic inline (a long bash string) rather tha
 **Content checks:**
 - `SessionStart`: command should be `$HOME/.keel/hooks/session-start.sh` (or contain `git log` if inline) — if not → outdated
 - `PostToolUse`: must be present with `Write|Edit` matcher — if missing → missing
-- `Stop`: prompt must instruct JSON response (`"ok": true` / `"ok": false`) — if it uses the old "end your next response with" free-text format → outdated (causes JSON validation errors)
+- `Stop`: prompt must always return `{"ok": true}` with signals as plain text before the JSON. Two outdated patterns to detect:
+  1. Old free-text format ("end your next response with...") → outdated (causes JSON validation errors)
+  2. Uses `{"ok": false, "reason": "..."}` for signals → outdated (causes "Prompt hook condition was not met" blocking error)
 - `PreCompact`: command should reference `$HOME/.keel/hooks/pre-compact.sh` or contain `/keel:session` — if not → outdated
 
 For each outdated or missing hook, note what changed in plain English:
 - "SessionStart: inline bash → migrate to `$HOME/.keel/hooks/session-start.sh`"
 - "PostToolUse: missing (now auto-formats files after edits)"
-- "Stop: old free-text format → fix JSON validation error (now returns `{\"ok\": true/false}`)"
+- "Stop: old free-text format → fix JSON validation error (now returns `{\"ok\": true}` always)"
+- "Stop: uses `ok: false` for signals → fix 'Prompt hook condition was not met' error (signals must be plain text before `{\"ok\": true}`)"
 - "PreCompact: inline bash → migrate to `$HOME/.keel/hooks/pre-compact.sh`"
 
 #### 2b. Agent check
@@ -116,7 +119,7 @@ KEEL UPGRADE
 Hooks (.claude/settings.json)
   ⬆  SessionStart   — inline bash → script reference
   ⬆  PostToolUse    — missing, will add auto-format hook
-  ⬆  Stop           — fix JSON validation error (old free-text format)
+  ⬆  Stop           — fix "Prompt hook condition was not met" error (ok:false → ok:true always)
   ⬆  PreCompact     — inline bash → script reference
 
 Agents (.claude/agents/)
