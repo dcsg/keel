@@ -3,8 +3,8 @@ layout: home
 
 hero:
   name: "Keel"
-  text: "The context engine for Claude Code"
-  tagline: Stop hoping Claude remembers your standards. Install them.
+  text: "Your coding standards, enforced. Your decisions, remembered."
+  tagline: No more hoping Claude remembers. No more re-explaining your architecture.
   actions:
     - theme: brand
       text: Get Started

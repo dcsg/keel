@@ -1,22 +1,22 @@
 # Daily Workflow
 
-Keel works best when you follow a consistent session loop. This guide shows the full pattern — from starting a session to wrapping up cleanly.
-
-## The loop
+The problem keel solves is session-to-session drift — Claude forgetting your standards, losing your decisions, starting over every time. The daily workflow is how you prevent that.
 
 ```
-Start session → Load context → Build → Review → End session
+Start session → Load context → Build → Review → Capture → End session
 ```
 
-Every part of this is either automatic (hooks fire without you doing anything) or a single command when you want explicit control.
+Most of this is automatic. The explicit steps are one command each.
 
 ---
 
 ## 1. Starting a session
 
-**What happens automatically:**
+**The problem without keel:** You open Claude Code, start describing what you want to build, and realize five messages in that Claude has no idea about your architecture or patterns.
 
-The `SessionStart` hook fires when you open Claude Code. If keel is set up, it checks what changed in git since your last session and tells you which specialist agents are relevant:
+**What happens automatically with keel:**
+
+The SessionStart hook fires and tells you what changed since last time:
 
 ```
 📋 Keel — since your last session (2d ago):
@@ -25,27 +25,30 @@ The `SessionStart` hook fires when you open Claude Code. If keel is set up, it c
    Run /keel:context to load full project context.
 ```
 
-If nothing changed, it just confirms memory age:
-
+If nothing significant changed:
 ```
 📋 Keel — 2d since last session. Run /keel:context to load context.
 ```
 
-**When to run `/keel:context`:**
+**Then run:**
+```
+/keel:context
+```
 
-Always — especially after a few days away, after a big merge, or when switching tasks. It loads soul, decisions, invariants, and the active plan into Claude's context so it's working with full awareness.
+This loads your soul, active plan, decisions, invariants, and installed rules into Claude's session. After this, Claude knows your project — not just your files.
 
 ---
 
 ## 2. Planning work
 
-For anything non-trivial, run `/keel:plan` before writing code.
+**The problem without keel:** You describe a feature, Claude starts coding, and halfway through you discover the migration is missing a rollback, there's no index on the query column, and the API contract breaks a mobile client.
 
+**With keel:**
 ```
 /keel:plan add webhook delivery with retry logic
 ```
 
-Keel interviews you (3–6 questions), scans the codebase, breaks the work into phases, and — new in v3 — runs a **pre-flight specialist review** on the plan before you execute:
+Keel interviews you (3–6 focused questions), scans the codebase for relevant patterns, breaks work into phases, then runs a pre-flight specialist review before execution:
 
 ```
 PRE-FLIGHT REVIEW
@@ -62,7 +65,7 @@ SENIOR API
 1 critical, 1 warning. Address before executing?
 ```
 
-Fix issues in the plan now, or note them as known risks. Much cheaper than fixing after implementation.
+Fix the migration gap now. It takes 5 minutes. After implementation it takes an hour.
 
 Skip pre-flight for simple tasks:
 ```
@@ -75,36 +78,40 @@ Skip pre-flight for simple tasks:
 
 Just build. Keel works in the background:
 
-- **PostToolUse hook** auto-formats files after every edit (gofmt, prettier, black, rubocop — whatever your stack uses)
-- **Stop hook** watches every response for signals worth capturing — architectural decisions, hard constraints, new feature requirements — and suggests the right command
+**PostToolUse hook** auto-formats after every edit — gofmt, prettier, black, rubocop. No manual formatter runs.
 
-When Claude ends a response with:
-```
-💡 This looks like an ADR — run `/keel:adr` to capture it.
-```
-...that's the Stop hook firing. Run the command to lock in the decision before you move on.
+**Stop hook** watches every response for signals worth capturing:
 
-**Update your plan as you go.** The progress table in the plan file is the persistent state — it survives context compaction. Update it when a phase completes:
+```
+💡 ADR candidate — run /keel:adr to capture it.
+📄 Doc gap: new /webhooks/retry endpoint — run /keel:docs to review.
+🔒 Security-sensitive domain — run /keel:audit before shipping.
+```
+
+When you see one of these, run the command. That decision becomes a permanent record, not a conversation that gets lost.
+
+**Update your plan progress table** as phases complete — it's the state that survives context compaction:
 
 ```
 | Phase | Status | Updated    |
 |-------|--------|------------|
 | 1     | done   | 2026-03-08 |
-| 2     | done   | 2026-03-08 |
+| 2     | in-progress | 2026-03-08 |
 ```
 
 ---
 
 ## 4. Reviewing what you built
 
-After finishing an implementation, run `/keel:review` to get specialist eyes on what changed:
+**The problem without keel:** You push code that has a missing index, a security gap you missed at 6pm, or an API response that breaks an existing client. You find out in code review or production.
 
+**With keel:**
 ```
 /keel:review             ← review last commit
 /keel:review --branch    ← review everything on this branch
 ```
 
-Keel classifies changed files by domain and routes to the right agents automatically — you don't have to know which agents to ask:
+Keel classifies changed files by domain and routes to the right specialists automatically:
 
 ```
 IMPLEMENTATION REVIEW
@@ -122,41 +129,47 @@ SENIOR API
 1 critical. Address before shipping?
 ```
 
-For security-sensitive features, also run `/keel:audit` before pushing. The pre-push hook does a lightweight grep scan automatically, but a full audit is worth it for auth, payments, or PII.
+For security-sensitive features (auth, payments, PII), also run:
+```
+/keel:audit
+```
 
 ---
 
 ## 5. Ending a session
 
+**The problem without keel:** You make three architectural decisions during a session. Context compacts. Next session you can't remember why you chose exponential backoff, what the new endpoint is called, or whether you captured the constraint about idempotency keys.
+
 **What happens automatically:**
 
-The `PreCompact` hook fires before context compaction:
+The PreCompact hook fires before context compression:
 ```
-⚠️ Context compacting. (1) Update your active plan's progress table NOW.
-   (2) Run /keel:session to capture any decisions, constraints, or doc gaps
-   before context is lost.
+⚠️ Context compacting. Update your active plan's progress table NOW.
+   Run /keel:session to capture decisions before context is lost.
 ```
 
-**Run `/keel:session` explicitly** at end of day or before a long break:
+**Run explicitly at end of day:**
+```
+/keel:session
+```
 
 ```
-SESSION SUMMARY — 2026-03-08 17:42
+SESSION SUMMARY — 2026-03-08
 ─────────────────────────────────────────────────────
 Built:    webhook delivery (5 files), DB migration
 Commits:  feat(webhooks): delivery with retry logic
 Updated:  PLAN-007 phase 2 → done
 
 Possible captures:
-  💡 ADR: exponential backoff chosen over fixed intervals
+  💡 ADR: exponential backoff over fixed intervals
      → Run /keel:adr to capture
 
   📄 Doc gap: POST /webhooks/retry — new endpoint
      → Run /keel:docs to review
 ─────────────────────────────────────────────────────
-2 possible captures.
 ```
 
-Capture what matters, skip what doesn't. Context compaction won't erase what you've recorded in files.
+Capture what matters. What you save in `docs/decisions/` is available to Claude in every future session.
 
 ---
 
@@ -166,16 +179,8 @@ Capture what matters, skip what doesn't. Context compaction won't erase what you
 |------|-----------|---------|
 | Session start | SessionStart hook surfaces git changes | `/keel:context` |
 | Planning | — | `/keel:plan` |
-| Pre-flight review | Runs at end of `/keel:plan` | `--no-review` to skip |
-| Building | PostToolUse formats, Stop hook flags signals | `/keel:adr`, `/keel:invariant`, `/keel:prd` |
+| Pre-flight | Runs at end of `/keel:plan` | `--no-review` to skip |
+| Building | PostToolUse formats, Stop hook flags signals | `/keel:adr`, `/keel:invariant` |
 | Review | — | `/keel:review` |
-| Security | Pre-push hook scans on every push | `/keel:audit` |
+| Security | Pre-push hook scans on push | `/keel:audit` |
 | End of session | PreCompact reminds you | `/keel:session` |
-
-## Check governance health anytime
-
-```
-/keel:doctor
-```
-
-Shows what's healthy, what's outdated, and what to fix — in under a second.

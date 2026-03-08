@@ -1,97 +1,161 @@
 # Teams
 
-Keel is designed to be committed — the whole team benefits automatically.
+**The problem:** Your team uses Claude Code. Every engineer gets different output — different error handling, different architectural choices, different levels of quality. The junior engineer writes handlers with DB calls. The new hire doesn't know about the DDD boundaries you established six months ago.
 
-## Commit Everything
+Keel fixes this by making the standards and decisions the same for everyone.
+
+## How it works
+
+One engineer runs `/keel:init`, commits the output, and pushes. Every other engineer gets:
+- The same coding standards enforced automatically — `.claude/rules/`
+- The same specialist agents installed — `.claude/agents/`
+- The same project context at session start — `docs/soul.md`, decisions, invariants
+- The same hooks — git-aware SessionStart, Stop signal detection, PreCompact recovery
 
 ```bash
-git add .claude/ .keel/ docs/soul.md docs/product/ .mcp.json
-git commit -m "chore: add keel context and guardrails"
+git add .claude/ .keel/ docs/soul.md docs/product/ CLAUDE.md
+git commit -m "chore: add keel guardrails and context"
+git push
 ```
 
-Every teammate who opens the project in Claude Code now has:
-- The same coding standards enforced automatically
-- The same specialist agents installed
-- The same project context loaded at session start
-- The same MCP server config (each person adds their own keys locally)
+No per-developer setup. No drift.
 
-No per-developer setup. No drift between teammates.
+## What consistency looks like
 
-## Onboarding New Teammates
+**Before keel — three engineers, three styles:**
 
-New team member clones the repo and opens it in Claude Code. Then:
+```go
+// Engineer 1 (experienced, remembers the patterns)
+func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
+    cmd, err := h.decoder.Decode(r)
+    if err != nil { h.respond.BadRequest(w, err); return }
+    if err := h.userService.Create(r.Context(), cmd); err != nil {
+        h.respond.Error(w, err); return
+    }
+    h.respond.Created(w)
+}
 
+// Engineer 2 (newer, didn't get the memo)
+func CreateUser(w http.ResponseWriter, r *http.Request) {
+    var user User
+    json.NewDecoder(r.Body).Decode(&user)
+    db.Save(&user)
+    w.WriteHeader(201)
+}
+
+// Engineer 3 (different session, different Claude)
+func handleUserCreate(w http.ResponseWriter, r *http.Request) {
+    body, _ := io.ReadAll(r.Body)
+    var req CreateUserRequest
+    json.Unmarshal(body, &req)
+    result := database.CreateUser(req)
+    json.NewEncoder(w).Encode(result)
+}
+```
+
+**After keel — same rules, same output:**
+
+All three engineers get handlers that delegate to the service layer, return errors properly, and follow your DDD boundaries — because they all read the same `.claude/rules/` files.
+
+## Onboarding a new teammate
+
+New engineer clones the repo, opens it in Claude Code, runs:
 ```
 /keel:team setup
 ```
-
-This validates their local environment:
 
 ```
 Keel Team Setup — Orders API
 
   ✅ Git configured (Jane Smith <jane@example.com>)
   ✅ Claude Code v2.1.70
-  ✅ Keel config found
+  ✅ keel_version: 3.1 (installed: 3.1)
   ✅ LINEAR_API_KEY set
   ⚠️  GITHUB_TOKEN not set
       Get a token (repo scope): https://github.com/settings/tokens
       Add to ~/.zshrc: export GITHUB_TOKEN="ghp_..."
 
-1 item needs attention. Fix it, then run /keel:team setup again.
-
-Once all green: run /keel:context to load project context.
+1 item needs attention. Fix it, then run /keel:context to load project context.
 ```
 
-Once all green, they run `/keel:context` and they're productive from the first session.
+Once all green, they run `/keel:context` and they're productive from their first session. No handoff docs. No onboarding checklist. The project teaches itself.
 
-## Connecting to Project Management
+## Shared architectural decisions
 
-Wire Claude to your ticket system:
+Every ADR you capture is available to every engineer:
 
 ```
-/keel:mcp add linear    → adds Linear to .mcp.json
-/keel:mcp add github    → adds GitHub to .mcp.json
-/keel:mcp add jira      → adds Jira to .mcp.json
+docs/decisions/
+├── 001-ddd-bounded-contexts.md    ← why you went DDD
+├── 002-postgresql-over-mongodb.md ← the tradeoffs you evaluated
+├── 003-chi-over-gin.md            ← why Chi for routing
+└── 004-decimal-for-money.md       ← never float64
 ```
 
-`.mcp.json` is committed — everyone inherits the server config. Each person adds their own API keys to their local shell environment (not committed):
+When a new engineer asks Claude "why do we use decimal for money?", Claude already knows — because it read the ADR. The decision doesn't live only in the head of whoever was there when it was made.
+
+## Keeping rules in sync
+
+When keel releases a new version, one engineer upgrades and commits the changes:
+
+```
+/keel:upgrade   ← shows what changed, applies with confirmation
+```
+
+```
+WHAT'S NEW
+─────────────────────────────────────────────────────
+v3.1 — Stop hook JSON fix, hooks migrated to ~/.keel/hooks/ scripts
+
+KEEL UPGRADE
+─────────────────────────────────────────────────────
+Version:  3.0 → 3.1
+Hooks:    2 updated (Stop hook JSON fix, PreCompact migration)
+Agents:   1 updated (staff-security improvements)
+─────────────────────────────────────────────────────
+Apply? (y/n)
+```
 
 ```bash
-# Each team member adds to their ~/.zshrc:
-export LINEAR_API_KEY="lin_api_..."
-export GITHUB_TOKEN="ghp_..."
+git add .claude/ .keel/config.yaml
+git commit -m "chore: upgrade keel to 3.1"
+git push
 ```
 
-Check status at any time:
-```
-/keel:mcp
+The whole team gets the upgrade on next pull.
 
-MCP Servers:
-  linear    ✅ configured, LINEAR_API_KEY set
-  github    ⚠️  GITHUB_TOKEN not set — set: export GITHUB_TOKEN="ghp_..."
-```
+## Shared specialist agents
 
-## Specialist Agents
+Agents committed in `.claude/agents/` are available to everyone. Add one:
 
-Agents installed by `/keel:init` are committed to `.claude/agents/`. Every teammate gets the same role-based specialists — Principal Architect, Staff Engineer, Staff Security, etc. — without any per-person setup.
-
-Add optional agents:
 ```
 /keel:agents add principal-data
-/keel:agents add senior-performance
 ```
 
-Commit the new agent file. The whole team gets it on next pull.
+Commit the file. The whole team gets Principal Data on next pull — no individual setup.
 
-## Keeping Rules in Sync
-
-When you update `.keel/config.yaml` (add a rule, change config), re-run `/keel:init` and commit the updated `.claude/rules/` files. The PR diff shows exactly what changed.
+## Check health across the team
 
 ```
-/keel:rules-update    → check for outdated rule packs
+/keel:doctor
 ```
 
-## Shared Plans
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ KEEL DOCTOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ [ok]   keel 3.1 (installed: 3.1)
+ [ok]   .keel/config.yaml valid
+ [ok]   docs/soul.md exists
+ [ok]   docs/decisions/ — 4 ADRs
+ [ok]   docs/invariants/ — 2 invariants
+ [ok]   .claude/rules/ — 6 packs installed
+ [ok]   SessionStart hook
+ [ok]   Stop hook
+ [ok]   6 agents installed
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 12 passed, 0 warnings, 0 failures
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
 
-Plans in `docs/product/plans/` are committed and shared. Any teammate can run `/keel:status` and see exactly where things stand — what's done, what's in progress, what's next.
+If it's green for you, it's green for your teammates. The governance setup is the same because it's version-controlled.

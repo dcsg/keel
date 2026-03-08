@@ -2,7 +2,7 @@
 
 ## What Is This
 
-Keel is a context engine and guardrail installer for Claude Code. It ensures Claude always has the right architectural context, coding standards, and product knowledge before writing code — producing consistent, production-grade results across any project.
+Keel enforces your coding standards and remembers your architectural decisions so Claude behaves consistently — every session, every engineer on the team. Your standards get installed where Claude reads them automatically. Your decisions get captured so they're never lost to context compaction.
 
 ## Problem It Solves
 
