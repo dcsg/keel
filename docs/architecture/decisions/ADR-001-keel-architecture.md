@@ -28,7 +28,7 @@ Rules are templates shipped with keel, generated into `.claude/rules/` based on 
 
 Provide a framework to capture product context (soul.md, product specs, PRDs) and create phased execution plans. Plans are the persistent state — progress tracked directly in the plan file, surviving context compaction.
 
-### Core Commands (17 total)
+### Core Commands (18 total)
 
 | Command | Purpose |
 |---------|---------|
@@ -43,6 +43,14 @@ Provide a framework to capture product context (soul.md, product specs, PRDs) an
 | `/keel:agents` | List, inspect, and manage specialist agent templates |
 | `/keel:mcp` | Manage MCP server configuration (Linear, GitHub, Jira) |
 | `/keel:team` | Onboard team members and show shared team configuration |
+| `/keel:docs` | Audit documentation gaps for new routes, env vars, and services |
+| `/keel:sync` | Translate linter configs into Claude rule packs |
+| `/keel:doctor` | Validate governance setup and report actionable warnings |
+| `/keel:review` | Post-implementation specialist review — domain-routed agent findings |
+| `/keel:audit` | Security audit — OWASP scan, secret detection, auth coverage |
+| `/keel:session` | End-of-session sweep — surface missed captures before context is lost |
+| `/keel:upgrade` | Upgrade hooks, agents, and rules to the latest keel version |
+| `/keel:rules-update` | Check for outdated rule packs and update them |
 
 ### Proactive Capture Loop
 
@@ -64,7 +72,7 @@ Init detects whether a project is greenfield or established:
 ### What Keel Does NOT Do
 
 - **No execution orchestration** — Claude Code handles worktrees, agents, parallelism natively
-- **No 25-command surface** — 11 commands, each with a single outcome
+- **No 25-command surface** — 18 commands, each with a single outcome
 - **No proprietary formats** — Everything is plain markdown and YAML
 - **No runtime dependencies** — Copy .md files, done
 - **No backward compatibility with legacy tools** — Clean break
