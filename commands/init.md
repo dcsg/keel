@@ -134,22 +134,35 @@ Wait for user confirmation or edits.
 
 ### 4. Ask About SDLC Preferences
 
+Ask each question **one at a time**. Wait for the user's response before asking the next question. Do not present multiple questions in a single message.
+
+**Question 1:** Commit convention?
 ```
-A couple more questions:
-
-1. Commit convention? (conventional/angular/none) [conventional]
-2. Install PR template? (y/n) [y]
-3. Project management tools? (select all that apply)
-   [ ] Linear   — /keel:mcp add linear
-   [ ] GitHub   — /keel:mcp add github
-   [ ] Jira     — /keel:mcp add jira
-   [ ] None
-
-   For each selected: add to .mcp.json and note required env vars in the summary.
-
-4. Team name? (optional — used in /keel:team overview)
-   Press enter to skip.
+Commit convention: conventional | angular | none  [conventional]
 ```
+Wait for response.
+
+**Question 2:** PR template?
+```
+Install a PR template? (y/n)  [y]
+```
+Wait for response.
+
+**Question 3:** Project management tools?
+```
+Project management tools? (select all that apply — type numbers or "none")
+  1. Linear
+  2. GitHub Issues
+  3. Jira
+  4. None
+```
+Wait for response. For each selected: plan to add to `.mcp.json` and note required env vars.
+
+**Question 4:** Team name?
+```
+Team name? (optional — shown in /keel:team overview, press enter to skip)
+```
+Wait for response.
 
 ### 5. Generate Everything
 

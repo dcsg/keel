@@ -71,6 +71,10 @@ assert_file_contains "$PROJECT_ROOT/templates/hooks/pre-push" "exit 0" "pre-push
 assert_file_contains "$PROJECT_ROOT/templates/hooks/pre-push" "pre-push: false" "pre-push hook respects config disable"
 assert_file_contains "$PROJECT_ROOT/templates/hooks/pre-push" "KEEL_SECURITY_SKIP" "pre-push has security skip flag"
 
+# init.md sequential interview check (must ask one question at a time)
+assert_file_contains "$PROJECT_ROOT/commands/init.md" "one at a time" "init.md asks SDLC questions one at a time"
+assert_file_contains "$PROJECT_ROOT/commands/init.md" "Wait for response" "init.md waits for response between questions"
+
 # plan.md pre-flight review checks
 assert_file_contains "$PROJECT_ROOT/commands/plan.md" "PRE-FLIGHT" "plan.md has pre-flight review"
 assert_file_contains "$PROJECT_ROOT/commands/plan.md" "no-review" "plan.md supports --no-review flag"
