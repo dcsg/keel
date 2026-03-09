@@ -206,7 +206,15 @@ Pre-flight: no specialist domains detected — plan looks self-contained.
 ```
 and stop.
 
-For each detected domain, invoke the corresponding advisor agent using the Agent tool as a subagent. Each advisor:
+For each detected domain, use the Agent tool with the matching `subagent_type` to spawn the specialist in parallel:
+- database → `subagent_type: "principal-dba"`
+- infrastructure → `subagent_type: "staff-sre"`
+- security → `subagent_type: "staff-security"`
+- api → `subagent_type: "senior-api"`
+- architecture → `subagent_type: "principal-architect"`
+- performance → `subagent_type: "senior-performance"`
+
+Spawn all applicable agents concurrently (single message, multiple Agent tool calls). Each advisor:
 1. Reads the plan content
 2. Reviews from their domain lens ONLY
 3. Returns findings with severity:

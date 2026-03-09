@@ -26,7 +26,7 @@ Determine the scan scope from `$ARGUMENTS`:
 
 ## Security Agent Instructions
 
-Invoke the `staff-security` agent as an advisor subagent. The agent must:
+Use the Agent tool to spawn the `staff-security` subagent with `subagent_type: "staff-security"`. Pass the full task description including scope as the prompt. The agent must:
 
 ### 1. Discover files in scope
 

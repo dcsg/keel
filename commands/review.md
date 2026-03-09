@@ -51,41 +51,56 @@ File classification rules:
 
 ## Advisor Review
 
-For each detected domain, act as the corresponding specialist advisor and review the diff from that domain's lens only:
+For each detected domain, use the Agent tool to spawn the corresponding specialist subagent in parallel. Pass the diff and scope as context in the prompt.
 
-**Principal DBA** (database domain):
+Domain → subagent_type mapping:
+- database → `principal-dba`
+- infrastructure → `staff-sre`
+- security → `staff-security`
+- api → `senior-api`
+- architecture → `principal-architect`
+- performance → `senior-performance`
+
+Each agent prompt should include:
+1. The git diff (or relevant file contents)
+2. The specific review lens for that domain (see below)
+3. The output format expected (findings with severity)
+
+Spawn all applicable agents concurrently using multiple Agent tool calls in a single message.
+
+**Principal DBA** review lens:
 - Schema correctness and migration safety
 - Query efficiency and N+1 risks
 - Missing indexes on queried columns
 - Transaction boundaries
 - Missing rollback migrations
 
-**Staff SRE** (infrastructure domain):
+**Staff SRE** review lens:
 - Deployment readiness and health checks
 - Rollback capability
 - Observability: logging and metrics coverage
 - Resource limits defined
 
-**Staff Security** (security domain):
+**Staff Security** review lens:
 - OWASP Top 10 scan of changed code
 - Hardcoded secrets or credentials
 - Input validation gaps
 - Auth gaps on new endpoints
 - Exposed sensitive data
 
-**Senior API** (api domain):
+**Senior API** review lens:
 - Contract stability and breaking changes
 - Missing or outdated documentation
 - Versioning strategy
 - Response schema consistency
 
-**Principal Architect** (architecture domain):
+**Principal Architect** review lens:
 - Bounded context violations
 - Dependency direction correctness
 - Pattern consistency with existing codebase
 - Technical debt introduced
 
-**Senior Performance** (performance domain):
+**Senior Performance** review lens:
 - N+1 query patterns introduced
 - Missing caching opportunities
 - Algorithmic complexity concerns
