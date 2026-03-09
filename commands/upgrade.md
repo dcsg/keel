@@ -30,11 +30,13 @@ Keel templates not found. Re-install keel:
   curl -fsSL https://raw.githubusercontent.com/dcsg/keel/main/install.sh | bash
 ```
 
-Read the installed keel version:
+Use the Bash tool to read both versions — do NOT infer or guess them:
 ```bash
-INSTALLED_VERSION=$(cat ~/.keel/VERSION 2>/dev/null | tr -d '[:space:]' || echo "unknown")
-PROJECT_VERSION=$(grep '^keel_version:' .keel/config.yaml | awk '{print $2}' | tr -d '"' || echo "unknown")
+cat ~/.keel/VERSION 2>/dev/null | tr -d '[:space:]'
+grep '^keel_version:' .keel/config.yaml | awk '{print $2}' | tr -d '"'
 ```
+
+Use the actual output of these commands as INSTALLED_VERSION and PROJECT_VERSION.
 
 Show at the top of the output:
 ```
@@ -42,11 +44,13 @@ Installed keel: {INSTALLED_VERSION}
 Project keel:   {PROJECT_VERSION}
 ```
 
-If both versions match AND there are no changes detected in step 2, AND `keel_version` is already set in `.keel/config.yaml`, show:
+If INSTALLED_VERSION == PROJECT_VERSION AND there are no changes detected in step 2 AND `keel_version` is already set in `.keel/config.yaml`, show:
 ```
 ✅ Already up to date (keel {INSTALLED_VERSION}) — nothing to upgrade.
 ```
 and stop.
+
+If INSTALLED_VERSION != PROJECT_VERSION, always proceed with the upgrade — the version difference alone is reason enough.
 
 If `keel_version` is missing from `.keel/config.yaml` (project predates versioning), always proceed — adding the version is itself an upgrade.
 
