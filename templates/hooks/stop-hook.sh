@@ -70,6 +70,14 @@ if [ ${#SIGNALS[@]} -eq 0 ]; then
     exit 0
 fi
 
+# Log signals to session file so /keel:status can show them
+LOG_FILE="$HOME/.keel/session-signals.log"
+mkdir -p "$HOME/.keel" 2>/dev/null || true
+TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date +%Y-%m-%dT%H:%M:%SZ)
+for SIGNAL in "${SIGNALS[@]}"; do
+    echo "${TIMESTAMP} ${SIGNAL}" >> "$LOG_FILE" 2>/dev/null || true
+done
+
 python3 - "${SIGNALS[@]}" <<'PYEOF'
 import json, sys
 signals = sys.argv[1:]

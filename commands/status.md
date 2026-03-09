@@ -56,6 +56,11 @@ ls {base}/decisions/*.md 2>/dev/null | wc -l
 ls {base}/invariants/*.md 2>/dev/null | wc -l
 ```
 
+**Hook activity (this session):**
+```bash
+tail -20 ~/.keel/session-signals.log 2>/dev/null
+```
+
 **Team (only if `.keel/config.yaml` exists):**
 ```bash
 # Count rule packs
@@ -129,6 +134,14 @@ For each plan file, read the Progress table:
 
  Run /keel:team setup to validate your environment.
  Run /keel:team to see full onboarding instructions.
+
+ HOOK ACTIVITY (this session)
+ ────────────────────────────
+ {If ~/.keel/session-signals.log is empty or missing: "No signals fired this session."}
+ {Otherwise, list each line formatted as: "  HH:MM:SSZ  {signal text}"}
+ {e.g.:}
+   14:23:01Z  💡 ADR candidate — run /keel:adr to capture this decision.
+   14:31:44Z  🔒 Security-sensitive change — run /keel:audit before shipping.
 
  WARNINGS
  ────────

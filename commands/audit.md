@@ -14,9 +14,17 @@ allowed-tools:
 
 Run a comprehensive security audit of this codebase using the `staff-security` advisor agent.
 
+## Flags
+
+- `--no-keel` — Run the audit inline (Claude performs the analysis directly, no subagent spawned). Useful when you want Claude to do it itself without delegation.
+
+## Routing
+
+Check `$ARGUMENTS` for `--no-keel`. If present, strip it and use remaining text as scope, then skip to **Inline Audit Mode** below. Otherwise proceed normally (with attribution prefix before spawning the agent).
+
 ## Scope
 
-Determine the scan scope from `$ARGUMENTS`:
+Determine the scan scope from `$ARGUMENTS` (after stripping any flags):
 
 - **No argument**: full codebase scan
 - **`api`**: scan routes and handlers only (files matching `*route*, *handler*, *controller*, *endpoint*, *webhook*`)
@@ -26,7 +34,12 @@ Determine the scan scope from `$ARGUMENTS`:
 
 ## Security Agent Instructions
 
-Use the Agent tool to spawn the `staff-security` subagent with `subagent_type: "staff-security"`. Pass the full task description including scope as the prompt. The agent must:
+Output this line before spawning the agent:
+```
+🪝 keel: routing to staff-security agent...
+```
+
+Then use the Agent tool to spawn the `staff-security` subagent with `subagent_type: "staff-security"`. Pass the full task description including scope as the prompt. The agent must:
 
 ### 1. Discover files in scope
 
@@ -93,6 +106,10 @@ For each public route found:
 - Does it validate/sanitize user input before processing?
 - Are file uploads sanitized?
 - Are SQL queries parameterized (not concatenated)?
+
+## Inline Audit Mode (`--no-keel`)
+
+Skip agent spawning. Use Read, Glob, Grep, and Bash tools to perform all checks in "Security Agent Instructions" directly. Apply the same OWASP checklist, secret detection patterns, and input validation coverage. Output results using the Output Format below.
 
 ## Output Format
 

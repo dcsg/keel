@@ -7,6 +7,13 @@ set -euo pipefail
 # Only run in keel projects
 if [ ! -f '.keel/config.yaml' ]; then exit 0; fi
 
+# Rotate session signals log — archive previous session, start fresh
+mkdir -p "$HOME/.keel" 2>/dev/null || true
+LOG_FILE="$HOME/.keel/session-signals.log"
+if [ -f "$LOG_FILE" ]; then
+    mv "$LOG_FILE" "${LOG_FILE}.prev" 2>/dev/null || true
+fi
+
 ENCODED=$(echo "$PWD" | sed 's|/|-|g')
 MEMORY="$HOME/.claude/projects/${ENCODED}/memory/MEMORY.md"
 

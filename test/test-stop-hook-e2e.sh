@@ -206,4 +206,78 @@ else
     fail "Loop guard: exits silently when stop_hook_active=true" "Got: $OUT"
 fi
 
+# ─── TEST 7: Signal logging — signals written to session log ──────────────────
+
+LOG_TMPDIR=$(mktemp -d)
+mkdir -p "$LOG_TMPDIR/.keel"
+echo "base: docs" > "$LOG_TMPDIR/.keel/config.yaml"
+
+# Override HOME so the log goes to our temp dir
+LOG_PAYLOAD=$(python3 -c "
+import json
+print(json.dumps({
+    'session_id': 'test',
+    'cwd': '$LOG_TMPDIR',
+    'hook_event_name': 'Stop',
+    'transcript_path': '/dev/null',
+    'stop_hook_active': False,
+    'last_assistant_message': 'I added JWT token validation to the payments endpoint. The middleware validates the JWT signature and rejects expired bearer tokens.'
+}))")
+
+HOME="$LOG_TMPDIR" cd "$LOG_TMPDIR" && echo "$LOG_PAYLOAD" | HOME="$LOG_TMPDIR" bash "$STOP_HOOK_SCRIPT" > /dev/null 2>/dev/null
+LOG_FILE="$LOG_TMPDIR/.keel/session-signals.log"
+
+if [ -f "$LOG_FILE" ]; then
+    pass "Signal logging: session-signals.log created after signal fires"
+else
+    fail "Signal logging: session-signals.log created after signal fires" "File not found: $LOG_FILE"
+fi
+
+if [ -f "$LOG_FILE" ] && grep -q "keel:audit\|Security\|security" "$LOG_FILE" 2>/dev/null; then
+    pass "Signal logging: log contains the security signal"
+else
+    fail "Signal logging: log contains the security signal" "Log contents: $(cat "$LOG_FILE" 2>/dev/null || echo 'empty')"
+fi
+
+if [ -f "$LOG_FILE" ] && grep -qE '^[0-9]{4}-[0-9]{2}-[0-9]{2}T' "$LOG_FILE" 2>/dev/null; then
+    pass "Signal logging: log entries have ISO8601 timestamp"
+else
+    fail "Signal logging: log entries have ISO8601 timestamp" "Log: $(cat "$LOG_FILE" 2>/dev/null || echo 'empty')"
+fi
+
+rm -rf "$LOG_TMPDIR"
+
+# ─── TEST 8: Session rotation — log rotated to .prev on session start ──────────
+
+SESSION_TMPDIR=$(mktemp -d)
+mkdir -p "$SESSION_TMPDIR/.keel"
+echo "base: docs" > "$SESSION_TMPDIR/.keel/config.yaml"
+SESSION_LOG="$SESSION_TMPDIR/.keel/session-signals.log"
+echo "2026-03-09T10:00:00Z 💡 previous session signal" > "$SESSION_LOG"
+
+SESSION_HOOK_SCRIPT="$PROJECT_ROOT/templates/hooks/session-start.sh"
+
+# Run session-start hook — it should rotate the log
+(cd "$SESSION_TMPDIR" && HOME="$SESSION_TMPDIR" bash "$SESSION_HOOK_SCRIPT" 2>/dev/null || true)
+
+if [ ! -f "$SESSION_LOG" ]; then
+    pass "Session rotation: current log cleared on new session"
+else
+    fail "Session rotation: current log cleared on new session" "Log still exists with: $(cat "$SESSION_LOG")"
+fi
+
+if [ -f "${SESSION_LOG}.prev" ]; then
+    pass "Session rotation: previous log archived to .prev"
+else
+    fail "Session rotation: previous log archived to .prev" "File not found: ${SESSION_LOG}.prev"
+fi
+
+if grep -q "previous session signal" "${SESSION_LOG}.prev" 2>/dev/null; then
+    pass "Session rotation: .prev contains previous session's signals"
+else
+    fail "Session rotation: .prev contains previous session's signals"
+fi
+
+rm -rf "$SESSION_TMPDIR"
+
 test_summary

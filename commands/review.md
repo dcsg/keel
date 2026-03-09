@@ -12,6 +12,10 @@ allowed-tools:
 
 You are performing a post-implementation specialist review. Your job is to analyze what was built, detect which specialist domains are involved, and produce a consolidated review report.
 
+## Flags
+
+- `--no-keel` — Run all domain reviews inline (Claude does it directly, no subagents). Works without installed agents. Strip this flag before scope detection.
+
 ## Scope Detection
 
 Determine the scope from `$ARGUMENTS`:
@@ -51,7 +55,13 @@ File classification rules:
 
 ## Advisor Review
 
-For each detected domain, use the Agent tool to spawn the corresponding specialist subagent in parallel. Pass the diff and scope as context in the prompt.
+**If `--no-keel` was passed:** Run each detected domain's review inline using the lens descriptions below. Do not spawn agents.
+
+**Otherwise:** Output a routing announcement listing all agents before spawning:
+```
+🪝 keel: routing to {agent-1}, {agent-2}... (parallel)
+```
+Then for each detected domain, use the Agent tool to spawn the corresponding specialist subagent in parallel. Pass the diff and scope as context in the prompt.
 
 Domain → subagent_type mapping:
 - database → `principal-dba`

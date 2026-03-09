@@ -1,5 +1,21 @@
 # Keel Changelog
 
+## v3.8 (2026-03-09)
+
+### feat: attribution prefix, --no-keel flag, session signal log
+
+Three UX improvements to make keel's activity visible and controllable:
+
+**1. Attribution prefix** — `/keel:audit` and `/keel:review` now output `🪝 keel: routing to {agent}...` before spawning subagents, so you always know which specialist agent is handling the work.
+
+**2. `--no-keel` flag** — Pass `--no-keel` to `/keel:audit` or `/keel:review` to bypass agent routing and have Claude perform the analysis inline. Useful when you want direct output without delegation.
+```
+/keel:audit --no-keel auth
+/keel:review --no-keel --staged
+```
+
+**3. Session signal log** — The Stop hook now writes every signal it detects to `~/.keel/session-signals.log` with an ISO8601 timestamp. The log rotates on each new session (previous session archived to `.prev`). `/keel:status` displays the signals fired this session under a new "HOOK ACTIVITY" section.
+
 ## v3.7 (2026-03-08)
 
 ### Fix: Stop hook no longer requires ANTHROPIC_API_KEY — regex-based detection
