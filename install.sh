@@ -89,7 +89,7 @@ mkdir -p "${KEEL_HOME}/templates/hooks"
 mkdir -p "${KEEL_HOME}/hooks"
 
 # Claude Code hook scripts — installed to ~/.keel/hooks/ and referenced from settings.json
-for hook in session-start pre-tool-use post-tool-use pre-compact; do
+for hook in session-start pre-tool-use post-tool-use pre-compact stop-hook; do
   curl -fsSL "${BASE_URL}/templates/hooks/${hook}.sh" -o "${KEEL_HOME}/hooks/${hook}.sh"
   chmod +x "${KEEL_HOME}/hooks/${hook}.sh"
   dim "hooks/${hook}.sh"
