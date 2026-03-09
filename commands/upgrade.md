@@ -86,14 +86,14 @@ For each outdated or missing hook, note what changed in plain English:
 
 List files in `.claude/agents/`. For each, check if a matching template exists in `~/.keel/templates/agents/`.
 
-For each agent that has a keel template, compare modification times:
+For each agent that has a keel template, compare content hashes — NOT modification times (mtimes are unreliable because every global install re-downloads templates with fresh timestamps):
 ```bash
-template_mtime=$(stat -f %m ~/.keel/templates/agents/{slug}.md 2>/dev/null || stat -c %Y ~/.keel/templates/agents/{slug}.md 2>/dev/null)
-installed_mtime=$(stat -f %m .claude/agents/{slug}.md 2>/dev/null || stat -c %Y .claude/agents/{slug}.md 2>/dev/null)
+template_hash=$(md5 -q ~/.keel/templates/agents/{slug}.md 2>/dev/null || md5sum ~/.keel/templates/agents/{slug}.md 2>/dev/null | awk '{print $1}')
+installed_hash=$(md5 -q .claude/agents/{slug}.md 2>/dev/null || md5sum .claude/agents/{slug}.md 2>/dev/null | awk '{print $1}')
 ```
 
-- If template is newer → outdated
-- If installed is newer or same → up to date
+- If hashes differ → outdated
+- If hashes match → up to date
 
 Do NOT touch agents that have no matching template (user-created agents).
 
