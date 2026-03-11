@@ -1,7 +1,7 @@
 # Keel configuration
 # This file configures keel for the keel project itself (dogfooding).
 
-keel_version: "3.4"
+keel_version: "3.9"
 base: docs
 
 stack: []  # keel is pure markdown, no language stack

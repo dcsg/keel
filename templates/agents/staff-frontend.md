@@ -50,3 +50,15 @@ Before starting any task, state your role and what lens you'll apply. Example: "
 - State management design (what's server state, what's client state)
 
 If you detect a decision worth capturing, suggest the appropriate keel command.
+
+## File Formatting
+
+After writing or editing any file, run the appropriate formatter before proceeding:
+- TypeScript/JavaScript (*.ts, *.tsx, *.js, *.jsx): `prettier --write <file>`
+- Go (*.go): `gofmt -w <file>`
+- Python (*.py): `black <file>` or `ruff format <file>` if black is unavailable
+- Rust (*.rs): `rustfmt <file>`
+- Ruby (*.rb): `rubocop -A <file>`
+- PHP (*.php): `php-cs-fixer fix <file>`
+
+Run the formatter immediately after each Write or Edit tool call. Skip silently if the formatter is not installed.

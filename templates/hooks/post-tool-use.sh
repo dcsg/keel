@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 # keel: PostToolUse hook (Write|Edit) — auto-format files after edits
 # Runs the appropriate formatter for the file's language silently.
+#
+# NOTE: This hook only fires for Write/Edit calls in the main Claude session.
+# Subagents spawned via the Agent tool run in a subprocess and do NOT trigger
+# this hook. To compensate, each code-writing agent template (staff-engineer,
+# senior-backend, staff-qa, staff-frontend, debugger) includes an explicit
+# "File Formatting" section instructing the agent to run the formatter itself.
 
 # Disable flags
 if [ "${KEEL_FORMAT_SKIP:-0}" = "1" ]; then exit 0; fi

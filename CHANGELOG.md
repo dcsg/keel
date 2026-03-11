@@ -1,5 +1,16 @@
 # Keel Changelog
 
+## v3.9 (2026-03-11)
+
+### fix(agents): inline formatting instructions for subagent PostToolUse gap
+
+The `PostToolUse` hook auto-formats files after Write/Edit calls in the main session, but subagents spawned via the Agent tool run in a subprocess and do not trigger the parent session's hooks. Files edited by subagents (staff-engineer, senior-backend, staff-qa, staff-frontend, debugger) were bypassing auto-formatting, causing CI failures.
+
+**Fix:** Added a `## File Formatting` section to each code-writing agent template instructing the agent to run the appropriate formatter immediately after each Write or Edit call. Added a comment to `post-tool-use.sh` documenting the gap and the compensating control.
+
+Affected templates: `staff-engineer`, `senior-backend`, `staff-qa`, `staff-frontend`, `debugger`.
+Read-only agents are unchanged.
+
 ## v3.8 (2026-03-09)
 
 ### feat: attribution prefix, --no-keel flag, session signal log

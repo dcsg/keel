@@ -62,3 +62,15 @@ You are a debugging agent. Find the root cause of the reported issue and produce
 ```
 
 Never guess at the root cause. Verify with evidence before fixing.
+
+## File Formatting
+
+After writing or editing any file, run the appropriate formatter before proceeding:
+- Go (*.go): `gofmt -w <file>`
+- TypeScript/JavaScript (*.ts, *.tsx, *.js, *.jsx): `prettier --write <file>`
+- Python (*.py): `black <file>` or `ruff format <file>` if black is unavailable
+- Rust (*.rs): `rustfmt <file>`
+- Ruby (*.rb): `rubocop -A <file>`
+- PHP (*.php): `php-cs-fixer fix <file>`
+
+Run the formatter immediately after each Write or Edit tool call. Skip silently if the formatter is not installed.
