@@ -11,6 +11,8 @@ Key rules:
 - Wrap errors with `fmt.Errorf("context: %w", err)`
 - Interfaces belong in the package that uses them, not the one that implements them
 - Keep goroutines owned — every goroutine has a clear owner responsible for its lifetime
+- Protect shared state with mutexes or channels — never access shared data from multiple goroutines without synchronization
+- NEVER use `ioutil` functions (`ioutil.ReadFile`, `ioutil.WriteFile`, etc.) — use `os` and `io` equivalents (deprecated since Go 1.16)
 - Standard project layout: `cmd/`, `internal/`, `pkg/`
 
 ## typescript

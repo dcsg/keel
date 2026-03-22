@@ -14,7 +14,7 @@ Run once per project to set up keel. Safe to re-run — it will ask before overw
 1. Detects greenfield vs established project
 2. Interviews you (greenfield) or audits the codebase (established)
 3. Shows recommended rule packs with a toggle UI
-4. Generates `.keel/config.yaml`, `.claude/rules/`, `docs/soul.md`, `CLAUDE.md` block, `.claude/settings.json`
+4. Generates `.keel/config.yaml`, `.claude/rules/`, `docs/project-context.md`, `CLAUDE.md` block, `.claude/settings.json`
 
 **Established project output:**
 ```
@@ -43,7 +43,7 @@ Codebase Analysis:
 **Guards:**
 - If `.keel/config.yaml` already exists: asks before reconfiguring
 - Never overwrites `CLAUDE.md` — uses sentinel merge
-- Never overwrites existing `docs/soul.md`
+- Never overwrites existing `docs/project-context.md`
 
 ---
 
@@ -54,7 +54,7 @@ Codebase Analysis:
 Run at the start of a session or after compaction. The PreToolUse hook reminds you automatically.
 
 **What it loads:**
-- `docs/soul.md` — project identity and stack
+- `docs/project-context.md` — project identity and stack
 - Active plan in `docs/product/plans/` — progress table and current phase
 - `docs/product/spec.md` — product vision and roadmap
 - `docs/decisions/*.md` — architecture decisions
@@ -65,7 +65,7 @@ Run at the start of a session or after compaction. The PreToolUse hook reminds y
 ```
 Context loaded for: Invoicer
 
-  Soul:        SaaS invoicing for freelancers. Go + Next.js + Postgres.
+  Context:     SaaS invoicing for freelancers. Go + Next.js + Postgres.
   Plan:        PLAN-billing-engine.md — Phase 3 of 6 active
   Product:     spec.md exists, 4 PRDs
   Decisions:   3 decision records
@@ -154,7 +154,7 @@ Run to see where you are in a plan, what's healthy, and what needs attention.
 
  GOVERNANCE
  ──────────
- Soul:        exists
+ Context:     exists
  Decisions:   3 records
  Invariants:  2 constraints
  Product:     spec.md + 4 PRDs
@@ -252,7 +252,7 @@ Two modes:
 
 **Write a Product Requirements Document.**
 
-Reads `docs/soul.md` and `docs/product/spec.md` for context. Asks clarifying questions if the description is vague.
+Reads `docs/project-context.md` and `docs/product/spec.md` for context. Asks clarifying questions if the description is vague.
 
 **What gets created:** `docs/product/prds/PRD-{NNN}-{slug}.md` with problem, users, goals, requirements, user stories, and acceptance criteria.
 

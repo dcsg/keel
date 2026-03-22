@@ -5,8 +5,22 @@ Review documentation gaps — surfaces new routes, env vars, CLI flags, and serv
 ## Usage
 
 ```
-/keel:docs
+/keel:docs                  ← show pending doc gaps
+/keel:docs audit            ← full sweep with fixes
+/keel:docs audit api        ← API routes vs API docs only
+/keel:docs audit readme     ← env vars, install steps, deps vs README
+/keel:docs audit infra      ← docker-compose, k8s, queues vs infra docs
 ```
+
+## Arguments
+
+| Argument | Description |
+|----------|-------------|
+| (none) | Scan recent changes for public surface changes without doc updates |
+| `audit` | Walk through each gap interactively and draft missing doc sections |
+| `audit api` | Scope to API routes and handlers vs API docs only |
+| `audit readme` | Scope to env vars, install steps, and service deps vs README |
+| `audit infra` | Scope to docker-compose, k8s, and queues vs infrastructure docs |
 
 ## What it does
 

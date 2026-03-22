@@ -6,8 +6,26 @@ Translate linter configs into Claude rule packs — so Claude enforces the same 
 
 ```
 /keel:sync              ← sync all detected linter configs
+/keel:sync golangci     ← sync only golangci-lint rules
+/keel:sync eslint       ← sync only ESLint rules
+/keel:sync ruff         ← sync only Ruff rules
+/keel:sync rubocop      ← sync only RuboCop rules
+/keel:sync biome        ← sync only Biome rules
 /keel:sync --dry-run    ← preview what would be generated
 ```
+
+## Arguments
+
+| Argument | Description |
+|----------|-------------|
+| (none) | Detect all linters and sync rules for all found |
+| `golangci` or `go` | Sync only golangci-lint rules |
+| `eslint` | Sync only ESLint rules |
+| `ruff` or `python` | Sync only Ruff rules |
+| `rubocop` or `ruby` | Sync only RuboCop rules |
+| `biome` | Sync only Biome rules |
+| `--dry-run` | Show what would be generated without writing files |
+| `{linter} --dry-run` | Preview output for a specific linter only |
 
 ## What it does
 

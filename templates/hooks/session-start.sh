@@ -25,7 +25,7 @@ else
 fi
 
 # If git analysis is disabled, fall back to simple age check
-if grep -q 'session-start-git: false' .keel/config.yaml 2>/dev/null; then
+if grep -q 'session-summary: false' .keel/config.yaml 2>/dev/null; then
   if [ ! -f "$MEMORY" ]; then
     echo "📋 Keel project detected. Run /keel:context to load project context before writing code."
   elif [ "$AGE" -gt 7 ]; then
@@ -66,10 +66,10 @@ N_INFRA=$(echo "$CHANGED"     | grep -ciE 'docker|compose|\.tf|helm|k8s|Dockerfi
 N_SECURITY=$(echo "$CHANGED"  | grep -ciE 'auth|jwt|oauth|payment|token|secret' || true)
 N_API=$(echo "$CHANGED"       | grep -ciE 'route|handler|controller|api|endpoint' || true)
 
-[ "$N_MIGRATION" -gt 0 ] && SUMMARY="${SUMMARY}${N_MIGRATION} migration/schema file(s), " && AGENTS="${AGENTS}principal-dba, "
-[ "$N_INFRA" -gt 0 ]     && SUMMARY="${SUMMARY}${N_INFRA} infra file(s), "              && AGENTS="${AGENTS}staff-sre, "
-[ "$N_SECURITY" -gt 0 ]  && SUMMARY="${SUMMARY}${N_SECURITY} security file(s), "        && AGENTS="${AGENTS}staff-security, "
-[ "$N_API" -gt 0 ]       && SUMMARY="${SUMMARY}${N_API} API file(s), "                  && AGENTS="${AGENTS}senior-api, "
+[ "$N_MIGRATION" -gt 0 ] && SUMMARY="${SUMMARY}${N_MIGRATION} migration/schema file(s), " && AGENTS="${AGENTS}dba, "
+[ "$N_INFRA" -gt 0 ]     && SUMMARY="${SUMMARY}${N_INFRA} infra file(s), "              && AGENTS="${AGENTS}sre, "
+[ "$N_SECURITY" -gt 0 ]  && SUMMARY="${SUMMARY}${N_SECURITY} security file(s), "        && AGENTS="${AGENTS}security, "
+[ "$N_API" -gt 0 ]       && SUMMARY="${SUMMARY}${N_API} API file(s), "                  && AGENTS="${AGENTS}api, "
 
 SUMMARY=$(echo "$SUMMARY" | sed 's/, $//')
 AGENTS=$(echo "$AGENTS"   | sed 's/, $//')

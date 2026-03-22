@@ -38,7 +38,7 @@ mkdir -p "${KEEL_HOME}/templates/sdlc"
 mkdir -p "${CLAUDE_COMMANDS}/keel"
 
 # Download keel commands (/keel:init, /keel:context, etc.)
-KEEL_COMMANDS=(init context plan status intake doctor rules-update upgrade adr invariant prd agents mcp team docs sync audit review session)
+KEEL_COMMANDS=(init context plan status intake doctor rules-update upgrade adr invariant prd agents mcp team docs sync audit review review-governance session spec spec-artifacts drift compile)
 info "Installing keel commands..."
 for cmd in "${KEEL_COMMANDS[@]}"; do
   curl -fsSL "${BASE_URL}/commands/${cmd}.md" -o "${CLAUDE_COMMANDS}/keel/${cmd}.md"
@@ -52,7 +52,7 @@ info "Installing rule templates..."
 curl -fsSL "${BASE_URL}/templates/rules/_registry.yaml" -o "${KEEL_HOME}/templates/rules/_registry.yaml"
 
 # Base rules
-for rule in code-quality testing security error-handling frontend architecture; do
+for rule in code-quality testing security error-handling frontend architecture api database observability seo; do
   curl -fsSL "${BASE_URL}/templates/rules/base/${rule}.md" -o "${KEEL_HOME}/templates/rules/base/${rule}.md"
   dim "base/${rule}"
 done
@@ -71,13 +71,13 @@ done
 
 # Download supporting templates
 info "Installing templates..."
-for tmpl in CLAUDE.md.tmpl soul.md.tmpl product-spec.md.tmpl prd.md.tmpl settings.json.tmpl; do
+for tmpl in CLAUDE.md.tmpl project-context.md.tmpl product-spec.md.tmpl prd.md.tmpl settings.json.tmpl; do
   curl -fsSL "${BASE_URL}/templates/${tmpl}" -o "${KEEL_HOME}/templates/${tmpl}"
   dim "${tmpl}"
 done
 
 # Agent templates
-for agent in reviewer debugger principal-architect staff-engineer senior-backend principal-dba staff-security staff-sre staff-qa staff-frontend principal-ux senior-pm senior-api senior-performance principal-data staff-docs; do
+for agent in architect dba security api backend frontend qa sre platform docs pm ux data performance compliance mobile seo gtm; do
   curl -fsSL "${BASE_URL}/templates/agents/${agent}.md" -o "${KEEL_HOME}/templates/agents/${agent}.md"
   dim "agents/${agent}"
 done
@@ -89,9 +89,16 @@ mkdir -p "${KEEL_HOME}/templates/hooks"
 mkdir -p "${KEEL_HOME}/hooks"
 
 # Claude Code hook scripts — installed to ~/.keel/hooks/ and referenced from settings.json
-for hook in session-start pre-tool-use post-tool-use pre-compact stop-hook; do
+# Event logging utility (sourced by other hooks, not executed directly)
+curl -fsSL "${BASE_URL}/templates/hooks/event-log.sh" -o "${KEEL_HOME}/hooks/event-log.sh"
+curl -fsSL "${BASE_URL}/templates/hooks/event-log.sh" -o "${KEEL_HOME}/templates/hooks/event-log.sh"
+dim "hooks/event-log.sh"
+
+for hook in session-start pre-tool-use post-tool-use pre-compact stop-hook user-prompt-submit post-compact subagent-stop instructions-loaded; do
   curl -fsSL "${BASE_URL}/templates/hooks/${hook}.sh" -o "${KEEL_HOME}/hooks/${hook}.sh"
   chmod +x "${KEEL_HOME}/hooks/${hook}.sh"
+  # Also keep in templates/ for upgrade hash comparison
+  curl -fsSL "${BASE_URL}/templates/hooks/${hook}.sh" -o "${KEEL_HOME}/templates/hooks/${hook}.sh"
   dim "hooks/${hook}.sh"
 done
 

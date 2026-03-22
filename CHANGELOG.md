@@ -1,5 +1,115 @@
 # Keel Changelog
 
+## v0.1.0 (2026-03-21)
+
+### First public release — The Agentic Engineering Governance Layer
+
+keel governs the full engineering cycle — from requirements through execution to verification. Standards are enforced, decisions compile into directives, and drift is detected automatically.
+
+**Rule Packs (20 packs, v2.0.0)**
+- Context-engineering optimized: 14-17 instructions per pack (research sweet spot)
+- Domain-specific `<governance_checkpoint>` blocks with pre-action and post-result verification
+- Three-tier system: base (10 language-agnostic), lang (4), framework (6)
+- Deduped: lang/framework packs depend on base packs, no redundant rules
+- EXP-004 validated: 15/15 compliance on invented conventions vs 0/15 without rules (123 eval runs)
+
+**Rule Pack Audit**
+- 47 opinionated best-practice rules removed — architecture opinions belong in ADRs, not rule packs
+- 11 correctness guardrails added: hallucinated API prevention, placeholder code detection, codebase consistency, race conditions, edge cases, timing attack prevention, tautological test detection, deprecated API prevention (Go: `ioutil`), over-engineering prevention, Go data race detection, error exposure ownership
+- Cross-pack ownership clarified: security.md owns error exposure and input validation; seo.md owns alt text; database.md owns index rules; code-quality.md owns handler separation
+- Archway integration: `/keel:init` detects `archway.yaml` and skips the architecture pack — keel defers architecture enforcement to archway when it's present
+
+**Automation Layer**
+- `UserPromptSubmit` hook injects the active plan phase into every prompt — no more losing track after compaction
+- `PostCompact` hook re-injects plan phase + invariants after context compaction — zero-touch recovery
+- `SubagentStop` hook logs specialist agent activity to `session-signals.log`
+- `InstructionsLoaded` hook logs which rule packs load each session
+- `context: fork` on `/keel:doctor`, `/keel:status`, `/keel:docs` — diagnostic commands don't pollute main context
+- `memory: project` on `principal-dba` and `staff-security` — specialists accumulate project-specific knowledge
+
+**Enforcement**
+- Quality gates: configure agents as gates in `.keel/config.yaml` (`gates: [staff-security]`). Critical findings block progression with logged override.
+- Pre-push invariant check: staged files validated against invariants. Violations block the push (exit 1). Override with `KEEL_INVARIANT_SKIP=1`.
+- `/keel:doctor` decision graph validation: ADR contradiction detection, rule-invariant consistency, plan-ADR dependency check, orphan artifact detection, state machine validation.
+- Structured event logging to `~/.keel/events.jsonl` — every gate firing, override, and status change logged with ISO8601 timestamp and git identity.
+
+**Spec Layer**
+- `/keel:spec` — technical specification from an accepted PRD. Codebase-aware interview, outline confirmation, ADR conflict detection, routed through principal-architect.
+- `/keel:spec-artifacts` — implementable artifacts (data model, API contracts, migrations, test strategy) from an accepted spec. Per-artifact agent routing.
+- Artifact status workflow: `draft → accepted → in-progress → implemented → superseded`. State machine enforced — PRD must be accepted before spec, spec before artifacts, artifacts before plan.
+- All artifacts get `created_at`, `references:`, and consistent ID format in frontmatter.
+
+**Drift Detection**
+- `/keel:drift` — compares implementation against the full governance chain (PRD criteria, spec requirements, artifact contracts, ADR compliance, invariant compliance).
+- Severity model with confidence: compliant (high), likely compliant (medium), diverged (high), unknown.
+- Scoping: `--scope=prd|spec|artifacts|adrs` for focused checks.
+- CI support: `--output=json` with exit code 1 on diverged findings.
+- Reports persisted as `drift-YYYY-MM-DD.md` in the spec folder.
+- Integrated with `/keel:review` — drift check appended when spec exists.
+
+**Observability**
+- `/keel:status` rebuilt as a governance dashboard: chain status, gate activity, agent activity, hook activity, detected signals.
+- Stop hook upgraded with ADR dedup — checks if a detected decision already exists before suggesting capture.
+
+**Brand**
+- Positioned as "governance layer for agentic engineering" (retired "context engine")
+- Voice: Precise. Direct. Authoritative. Forward.
+- K monogram logo
+- README rewritten with full governance chain and loop
+
+**Traceability chain:**
+```
+/keel:prd → /keel:spec → /keel:spec-artifacts → /keel:plan → execute → /keel:drift
+```
+
+**Compiled Governance**
+- `/keel:compile` — reads accepted ADRs and active invariants, produces `.claude/rules/governance.md` with short, actionable directives Claude follows automatically. Status-aware: only compiles accepted/active decisions. Contradiction detection blocks compilation until conflicts are resolved. `--check` flag for CI validation. ADRs are the source of truth — no manual edits to the compiled output.
+
+**New Command: `/keel:review-governance`**
+- Scores governance document language on specificity, actionability, phrasing, and testability
+- Document-level checks on compiled output: directive count, phrasing consistency, primacy/recency, redundancy
+- Every finding includes the original text and a concrete rewrite
+- Research-grounded criteria from EXP-004, IFEval++, IFScale, and "lost in the middle"
+
+**Drift Report Redesign**
+- Emoji severity summary (✅ 🟡 ⚠️ ❓) at top for quick read
+- Table shows only non-compliant findings — compliant items stay in the summary line
+- Ends with "Want me to prioritize them?" — user drives priority, not the tool
+
+**Agent Roster Redesign (ADR-007)**
+- 18 specialist agents with flat naming (no principal-/staff-/senior- prefixes)
+- Model selection belongs to the plan phase, not the agent definition
+- Agents: architect, api, backend, dba, docs, frontend, performance, platform, pm, qa, security, sre, ux, data, mobile, compliance, seo, gtm
+
+**Template Redesign**
+- PRD: numbered requirements (FR-001), acceptance criteria (AC-001), NEEDS CLARIFICATION markers
+- ADR: MADR structure with Confirmation section for drift detection
+- Invariant: severity, scope, violation consequences, verification method
+- Spec: non-goals, alternatives considered, risks, numbered acceptance criteria
+
+**Rename: soul.md → project-context.md**
+- Dropped the jargon — "project context" is self-explanatory
+- Keeps the separate file for future multi-tool support (Cursor, Copilot)
+
+**Website (keel.dcsg.me)**
+- Full documentation site with VitePress, custom theme (Space Grotesk, IBM Plex Sans, JetBrains Mono)
+- Guides: solo engineer, teams, multi-project, greenfield, brownfield, monorepo, security, daily workflow
+- Governance section: chain, gates, compile, drift, review-governance
+- Experiments section with EXP-004 write-up
+- Terminal TUI components for code examples
+- SEO: meta tags, sitemap, robots.txt, JSON-LD structured data
+
+**Eval Harness**
+- Reproducible compliance testing: `test/eval/v2/` (60 runs) and `test/eval/v3/` (63 runs)
+- Auto-scoring from files on disk, not output text parsing
+- 3 commands: `setup.sh` → `run.sh` → `score.py`
+
+**New commands:** `/keel:spec`, `/keel:spec-artifacts`, `/keel:drift`, `/keel:compile`, `/keel:review-governance`
+**Total hooks:** 9 (was 5)
+**Total agents:** 18 (was 7)
+**Total rule packs:** 20 (10 base + 4 lang + 6 framework)
+**Experiments:** EXP-001 through EXP-004 (EXP-004 completed with 123 runs)
+
 ## v3.9 (2026-03-11)
 
 ### fix(agents): inline formatting instructions for subagent PostToolUse gap

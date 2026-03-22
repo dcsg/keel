@@ -34,9 +34,10 @@ If it starts with "prefer" or "try to" — it's a rule, not an invariant. Put it
 
 ### 1. Resolve Paths
 
-Read `.keel/config.yaml`. `BASE` = `base:` value (default: `docs`).
+Read `.keel/config.yaml`. Resolve paths from the `paths:` section:
 
-- Invariants go in: `{BASE}/invariants/`
+- Invariants: `paths.invariants` (default: `docs/architecture/invariants`)
+- Template override: check if `.keel/templates/invariant.md` exists — if yes, use it as the output template instead of the built-in template below
 
 ### 2. Load Existing Invariants
 
@@ -66,35 +67,88 @@ An invariant is something that must NEVER be violated — not a preference.
 Describe it: /keel:invariant <constraint>
 ```
 
-### 4. Write the Invariant
+### 4. Draft with Enforcement-Grade Language
+
+Before writing, ensure the invariant's Rule statement and Rationale meet enforcement quality. Invariants compile directly into non-negotiable governance directives — vague language here means vague enforcement.
+
+Rules for writing invariants:
+
+1. **The Rule statement uses MUST or NEVER** (uppercase). Example: "Every command MUST be a plain `.md` file — NEVER compiled code, NEVER a build step."
+2. **Name specific things** — file types, namespaces, tools, patterns. "Code should be well-structured" is not an invariant. "Domain layer classes MUST NOT import from infrastructure packages" is.
+3. **State the consequence in the Rationale** — not "it's important" but "violations cause X specific harm."
+4. **Verification must be concrete** — a command to run, a grep pattern, or explicit review criteria. Not "review the code."
+
+Do NOT write invariants with soft language ("should", "prefer", "try to"). If it's not a hard constraint, it belongs in `docs/guidelines/`.
+
+### 5. Write the Invariant
 
 Create `{BASE}/invariants/INV-{NNN}-{slug}.md`:
 
 ```markdown
+---
+type: invariant
+id: INV-{NNN}
+title: {Title}
+status: active
+severity: critical       # critical | high
+scope: "**/*"            # path glob — what code this applies to
+created_at: {ISO8601 timestamp}
+references:
+  adrs: []
+  specs: []
+  established_by: ""     # ADR, PRD, or incident that created this
+---
+
 # INV-{NNN}: {Title}
 
-{One or two sentences. State the rule clearly. Lead with the constraint, end with the consequence or reason.}
+{One sentence. State the constraint as "X must always be true."}
 
-## What This Means
+## Rationale
 
-- {Concrete example of compliance}
-- {Concrete example of a violation to avoid}
+{Why this is non-negotiable — the specific harm that occurs without it, not just "it's important."}
 
-## Why
+## Scope
 
-{Brief rationale — what goes wrong if this is violated}
+{What parts of the system this applies to. Be specific: all code, only Go files, only the domain layer, only API handlers.}
+
+## Violation Consequences
+
+{What breaks if this is violated. Be concrete: data loss, security breach, CI failure, architectural drift.}
+
+## Verification
+
+How to check compliance:
+- Automated: {command, test, hook, or CI check that verifies this}
+- Manual: {what a reviewer should look for}
+
+## Exceptions
+
+{Can this ever be overridden? If yes, what approval is needed. If no: "No exceptions."}
+
+## Related
+
+{ADRs, specs, or incidents that established this invariant.}
 
 ---
 
 *Captured by keel:invariant — {date}*
 ```
 
-### 5. Confirm
+An invariant is a HARD CONSTRAINT that can never be violated. If there are exceptions, it might be a guideline (put it in `docs/guidelines/` instead). If it describes a preference, it's not an invariant.
+
+---
+
+REMEMBER: An invariant is a HARD CONSTRAINT where violation causes real harm. If it starts with "prefer" or "try to" — it belongs in docs/guidelines/, not in invariants. Every invariant needs a Verification section describing how to check compliance.
+
+### 6. Confirm
 
 ```
 ✅ Invariant captured: {BASE}/invariants/INV-{NNN}-{slug}.md
 
   INV-{NNN}: {Title}
+  Severity: {critical | high}
 
-  This will be loaded in every /keel:context call — Claude will always see it.
+  Run /keel:compile to update governance directives.
+
+  Want architect or security to review this? Say "review this invariant"
 ```

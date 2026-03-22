@@ -1,109 +1,46 @@
 ---
 paths: "**/*.php"
-version: "1.0.0"
+version: "0.1.0"
 ---
 <!-- keel:generated -->
+
+<governance_checkpoint>
+Before modifying any file, pause and verify:
+1. List which rules from this file apply to the change you are about to make.
+2. Check if the change bypasses the service container, skips form validation, or misuses event listeners.
+3. If multiple rules conflict, state the conflict before proceeding.
+After receiving tool results (test output, lint output, build errors), re-check:
+1. Verify the result complies with the rules you identified above.
+2. If it does not, fix the violation before taking any other action.
+3. Do not chain corrections — verify each step against these rules before proceeding.
+</governance_checkpoint>
 
 # Symfony
 
 Rules for building Symfony applications.
 
-## Architecture
+## Critical
 
-- Follow Symfony's directory conventions: `src/Controller/`, `src/Entity/`, `src/Repository/`, `src/Service/`.
-- For complex domains, organize by bounded context: `src/Order/`, `src/Payment/`, etc.
-- Controllers are thin — validate, call service, return response.
-- Use services for business logic. Register them with autowiring.
+- NEVER call `$container->get()` inside a service or controller — that is service location, not dependency injection. It defeats the container's ability to manage dependencies and makes testing impossible without a full container.
+- NEVER check roles directly in business logic. Authorization belongs in voters (`#[IsGranted]` or `$this->denyAccessUnlessGranted()`), not in if/else conditionals inside services.
+- MUST use constructor injection exclusively. Services are autowired by default — let the container wire them.
 
-## Dependency Injection
+## Standards
 
-- Use constructor injection exclusively. Never call the container directly in services.
-- Type-hint interfaces in constructors when multiple implementations exist.
-- Use `#[Autowire]` attribute for scalar parameters or named services.
-- Services are private by default. Only make them public if they must be accessed from the container directly.
+- Type-hint interfaces in constructors when multiple implementations exist. When there is only one implementation, concrete type-hinting is acceptable — don't introduce an interface for one class.
+- Define entities with PHP attributes, not XML or YAML mappings. Attributes keep mapping co-located with the entity definition.
+- Use custom repositories that extend `ServiceEntityRepository`. All query logic lives in repositories — never in controllers or services.
+- Use Doctrine QueryBuilder or DQL for complex queries. Define indexes on columns used in WHERE and ORDER BY clauses.
+- Use `php bin/console make:migration` for ALL schema changes. Never alter the database manually or modify existing migrations that have been deployed.
+- Use Symfony Messenger for async operations (emails, notifications, external API calls). Messages are simple DTOs. Handlers contain the logic. Use `#[AsMessageHandler]`.
 
-```php
-// BAD — service location
-class OrderService {
-    public function __construct(private ContainerInterface $container) {}
+## Practices
 
-    public function process(): void {
-        $mailer = $this->container->get(MailerInterface::class);
-    }
-}
+- Return typed responses: `JsonResponse`, `Response`, `RedirectResponse`. Don't return raw strings.
+- Use `#[MapRequestPayload]` or Form types for request deserialization and validation. Don't manually read from `$request->getContent()` and decode.
+- Use `WebTestCase` for controller tests (HTTP layer). Use `KernelTestCase` for service integration tests. Reset the database between tests with `dama/doctrine-test-bundle`.
 
-// GOOD — constructor injection
-class OrderService {
-    public function __construct(
-        private MailerInterface $mailer,
-        private OrderRepository $orders,
-    ) {}
-}
-```
+## Critical
 
-## Doctrine ORM
-
-- Define entities with PHP attributes, not XML or YAML mappings.
-- Use the repository pattern: custom repositories extend `ServiceEntityRepository`.
-- Always use the `EntityManager` through repositories, not directly in controllers.
-- Use DQL or QueryBuilder for complex queries. Avoid raw SQL unless performance requires it.
-- Define indexes on columns used in WHERE and ORDER BY clauses.
-- Use migrations for ALL schema changes: `php bin/console make:migration`.
-
-## Controllers
-
-- Use PHP attributes for routing: `#[Route('/orders', name: 'order_')]`.
-- Return typed responses: `JsonResponse`, `Response`, `RedirectResponse`.
-- Use `#[MapRequestPayload]` or Form types for request deserialization and validation.
-- Group related routes in one controller. One controller per resource/entity.
-
-```php
-#[Route('/api/orders')]
-class OrderController extends AbstractController
-{
-    #[Route('', methods: ['GET'])]
-    public function list(OrderRepository $orders): JsonResponse
-    {
-        return $this->json($orders->findRecent());
-    }
-
-    #[Route('/{id}', methods: ['GET'])]
-    public function show(Order $order): JsonResponse
-    {
-        return $this->json($order);
-    }
-}
-```
-
-## Validation
-
-- Use Symfony's validator with constraint attributes on entities/DTOs.
-- Validate DTOs, not entities directly when handling external input.
-- Create custom constraints for domain-specific validation rules.
-
-## Events & Messaging
-
-- Use Symfony Messenger for async operations: emails, notifications, external API calls.
-- Messages (commands/events) are simple DTOs. Handlers contain the logic.
-- Use `#[AsMessageHandler]` attribute on handler classes.
-- Configure transports in `messenger.yaml`. Use `sync` transport for development, `doctrine` or `amqp` for production.
-
-## Security
-
-- Use Symfony Security component for authentication and authorization.
-- Define voters for complex authorization logic: `#[IsGranted('ORDER_VIEW', subject: 'order')]`.
-- Never check roles in business logic — use voters and access control.
-
-## Testing
-
-- Use `WebTestCase` for functional tests with the kernel booted.
-- Use `KernelTestCase` for integration tests with the container.
-- Use PHPUnit with Symfony's test utilities.
-- Reset the database between tests with `dama/doctrine-test-bundle` or fixtures.
-- Test through HTTP for controllers, directly for services.
-
-## Configuration
-
-- Use environment variables for environment-specific values.
-- Use `config/packages/` YAML files for service and bundle configuration.
-- Use `#[When(env: 'dev')]` or conditional service loading for environment-specific services.
+- NEVER use service location (`$container->get()`) inside services.
+- NEVER check authorization in business logic — use voters.

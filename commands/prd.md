@@ -18,17 +18,19 @@ Write a Product Requirements Document (PRD) for a feature or change.
 
 ### 1. Resolve Paths
 
-Read `.keel/config.yaml`. `BASE` = `base:` value (default: `docs`).
+Read `.keel/config.yaml`. Resolve paths from the `paths:` section (fall back to defaults if not configured):
 
-- PRDs go in: `{BASE}/product/prds/`
+- PRDs: `paths.prds` (default: `docs/product/prds`)
+- Project Context: `paths.soul` (default: `docs/project-context.md`)
+- Template override: check if `.keel/templates/prd.md` exists — if yes, use it as the output template instead of the built-in template below
 
 ### 2. Load Context
 
 ```bash
-ls {BASE}/product/prds/*.md 2>/dev/null | sort
+ls {prds_path}/*.md 2>/dev/null | sort
 ```
 
-Read `{BASE}/soul.md` for project identity, users, and stack.
+Read `{project_context_path}` for project identity, users, and stack.
 Read `{BASE}/product/spec.md` if it exists — for roadmap context.
 
 The correct next PRD number is provided at the top of this prompt in the `<!-- keel:live -->` block. Use it exactly — do not guess or count files yourself.
@@ -47,20 +49,34 @@ If `$ARGUMENTS` is clear enough, proceed directly.
 Create `{BASE}/product/prds/PRD-{NNN}-{slug}.md`:
 
 ```markdown
+---
+type: prd
+id: PRD-{NNN}
+title: {Feature Title}
+status: draft
+author: {git user.name}
+stakeholders: []
+created_at: {ISO8601 timestamp}
+references:
+  adrs: []
+  invariants: []
+---
+
 # PRD-{NNN}: {Feature Title}
 
 **Status:** draft
 **Date:** {today}
+**Author:** {git user.name}
 
 ---
 
 ## Problem
 
-{What problem this solves. Who has it. How painful it is.}
+{What problem this solves. Who has it. How painful it is. Include evidence if available.}
 
 ## Users
 
-{Who this is for — be specific. Reference soul.md user types.}
+{Who this is for — be specific. Reference project-context.md user types if defined.}
 
 ## Goals
 
@@ -75,26 +91,32 @@ Create `{BASE}/product/prds/PRD-{NNN}-{slug}.md`:
 ## Requirements
 
 ### Must Have
-- {Requirement}
+- FR-001: {Requirement} [MUST]
+- FR-002: {Requirement} [MUST]
 
 ### Should Have
-- {Requirement}
+- FR-003: {Requirement} [SHOULD]
 
 ### Won't Have (v1)
-- {Deferred requirement}
+- FR-004: {Deferred requirement}
 
 ## User Stories
 
-**As a** {user type}, **I want** {action} **so that** {benefit}.
+**P1** — **As a** {user type}, **I want** {action} **so that** {benefit}.
+
+**P2** — **As a** {user type}, **I want** {action} **so that** {benefit}.
 
 ## Acceptance Criteria
 
-- [ ] {Testable criterion}
-- [ ] {Testable criterion}
+- [ ] AC-001: {Testable criterion} — Verify: {how to check — automated test, manual review, or command}
+- [ ] AC-002: {Testable criterion} — Verify: {how to check}
+- [ ] AC-003: {Testable criterion} — Verify: {how to check}
 
 ## Technical Notes
 
-{Constraints, dependencies, integration points — or "TBD"}
+{Constraints, dependencies, integration points — or "TBD".}
+{If anything is unclear, mark it:}
+- NEEDS CLARIFICATION: {question that must be answered before implementation}
 
 ## Open Questions
 
@@ -105,6 +127,10 @@ Create `{BASE}/product/prds/PRD-{NNN}-{slug}.md`:
 *Written by keel:prd — {date}*
 ```
 
+---
+
+REMEMBER: Every requirement needs a numbered ID (FR-NNN) and every acceptance criterion needs a verification method (AC-NNN: criterion — Verify: method). If something is unclear, mark it NEEDS CLARIFICATION — never invent details.
+
 ### 5. Confirm
 
 ```
@@ -113,6 +139,8 @@ Create `{BASE}/product/prds/PRD-{NNN}-{slug}.md`:
   PRD-{NNN}: {Feature Title}
   Status: draft
 
-  Review and change status to "approved" when ready for planning.
-  Run /keel:plan PRD-{NNN} to create an execution plan.
+  Review and change status to "accepted" when ready.
+  Then: "write a spec for PRD-{NNN}"
+
+  Want pm to review this? Say "review this PRD"
 ```

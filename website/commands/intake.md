@@ -26,7 +26,7 @@ Found 7 documents:
   docs/ARCHITECTURE.md      → docs/decisions/architecture-overview.md
   docs/api-spec.md          → docs/product/spec.md
   docs/adr/                 → docs/decisions/ (3 ADRs)
-  README.md (arch section)  → extract to docs/soul.md
+  README.md (arch section)  → extract to docs/project-context.md
   notes/onboarding.md       → docs/reference/onboarding.md
 
 Proceed? (enter to confirm, n to cancel)

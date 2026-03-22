@@ -2,34 +2,32 @@
 layout: home
 
 hero:
-  name: "Keel"
-  text: "Your coding standards, enforced. Your decisions, remembered."
-  tagline: No more hoping Claude remembers. No more re-explaining your architecture.
+  name: "keel"
+  text: "The governance layer for agentic engineering."
+  tagline: Your coding standards, enforced. Your decisions, remembered. Every session, every engineer, every project.
   actions:
     - theme: brand
-      text: Get Started
+      text: Get Started — 5 minutes
       link: /getting-started
     - theme: alt
-      text: View on GitHub
-      link: https://github.com/dcsg/keel
+      text: What is Keel?
+      link: /what-is-keel
 
 features:
-  - icon: 🛡️
-    title: Guardrails that stick
-    details: Coding standards become .claude/rules/ files. Claude enforces them automatically — every session, every file, no reminding required.
-  - icon: 🧠
-    title: Project memory
-    details: Soul, ADRs, product specs, and plans loaded at session start. Claude knows who the project is, not just what the code looks like.
-  - icon: ⚡
-    title: One command to start
-    details: Describe your project in plain language. Keel infers the architecture, picks the rules, and generates everything.
-  - icon: 📐
-    title: Path-conditional rules
-    details: Go rules only fire on .go files. Framework rules only fire on their types. No noise, no false positives.
-  - icon: 🔧
-    title: Fully extensible
-    details: Toggle rules on/off, extend with custom sections, or create new rule topics scoped to any path pattern.
-  - icon: 📄
-    title: Plain markdown
-    details: No build step, no runtime, no proprietary formats. Every file is readable, editable, and version-controlled.
+  - title: Natural language, not commands
+    details: "Say 'what's our status?' and Claude shows the governance dashboard. Say 'write a PRD for X' and Claude generates structured requirements. Say 'does the implementation match the spec?' and Claude runs drift detection. You talk. keel handles the rest."
+  - title: Enforced standards
+    details: "Coding standards install to .claude/rules/ and fire automatically — path-conditional, so Go rules only fire on .go files. No drift between engineers. No reminding. The standard is the same whether it's your best engineer or your newest."
+  - title: Governance chain
+    details: "PRD → spec → artifacts → plan → execute → drift detection. Each step feeds the next. Each must be accepted before the next begins. Each can be verified against the original intent. The full cycle, traceable."
+  - title: Compiled directives
+    details: "Tell Claude 'save this decision' and it captures an ADR. Tell Claude 'compile governance' and it extracts directives into governance.md — auto-loaded every session. Update the decision, recompile. One source of truth."
+  - title: Quality gates
+    details: "Critical findings block progression automatically. A hardcoded JWT secret stops the build until resolved. Overrides are logged with git identity — you see who approved what, on which project. No silent failures."
+  - title: Zero dependencies
+    details: "Every file is .md or .yaml. No build step, no runtime, no daemon, no lock-in. curl | bash to install. If you stop using keel, the files stay — plain markdown you own, read, edit, and version-control."
 ---
+
+Claude has memory. It doesn't have governance. Every session starts without standards — and decisions made yesterday get contradicted today.
+
+**Solo engineers** use keel to stop re-explaining their architecture every session. **Team leads** use it to enforce standards across every engineer's Claude — so code review catches design issues, not formatting. **Consultancies** use it to install their methodology on day one of every client project.

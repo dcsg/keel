@@ -4,14 +4,14 @@
 #
 # NOTE: This hook only fires for Write/Edit calls in the main Claude session.
 # Subagents spawned via the Agent tool run in a subprocess and do NOT trigger
-# this hook. To compensate, each code-writing agent template (staff-engineer,
-# senior-backend, staff-qa, staff-frontend, debugger) includes an explicit
+# this hook. To compensate, each code-writing agent template (backend,
+# frontend, qa, mobile) includes an explicit
 # "File Formatting" section instructing the agent to run the formatter itself.
 
 # Disable flags
 if [ "${KEEL_FORMAT_SKIP:-0}" = "1" ]; then exit 0; fi
 if [ ! -f ".keel/config.yaml" ]; then exit 0; fi
-if grep -q "post-tool-use: false" .keel/config.yaml 2>/dev/null; then exit 0; fi
+if grep -q "auto-format: false" .keel/config.yaml 2>/dev/null; then exit 0; fi
 
 FILE="${CLAUDE_TOOL_INPUT_FILE_PATH:-${CLAUDE_TOOL_INPUT_PATH:-}}"
 if [ -z "$FILE" ] || [ ! -f "$FILE" ]; then exit 0; fi

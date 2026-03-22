@@ -17,90 +17,144 @@ allowed-tools:
 
 Create an optimized execution plan through interview and codebase analysis.
 
+CRITICAL: NEVER write a plan without running the pre-flight specialist review — skip it only if `--no-review` is explicitly passed.
+
 ## Arguments
 
 - `$ARGUMENTS` — Optional ticket ID or task description
 
 ## Instructions
 
-### 1. Load Context
+1. Run `/keel:context` logic to load project context, decisions, product context, and active rules.
 
-Run `/keel:context` logic to load soul, decisions, product context, and active rules. This ensures the plan respects existing architecture.
+2. Determine the task from `$ARGUMENTS`:
+   - Looks like a ticket ID (e.g., `GLO-35`): note it for reference
+   - Is a SPEC identifier (e.g., `SPEC-005`): find the spec folder and use it as primary context
+   - Is a description: use it as the task
+   - Empty: ask "What are you planning? Describe the task or feature."
 
-### 2. Determine Task
+3. If a SPEC identifier was provided or detected, check the governance chain:
+   - Read spec frontmatter for `status:`. If not `accepted`, warn the user.
+   - Check for spec-artifacts in the spec folder. If any have `status: draft`, warn and ask to proceed.
+   - If artifacts exist and are accepted, read them as planning context.
 
-- If `$ARGUMENTS` looks like a ticket ID (e.g., `GLO-35`, `PROJ-123`): note it for reference
-- If `$ARGUMENTS` is a description: use it as the task
-- If empty: ask "What are you planning? Describe the task or feature."
+4. Interview: ask 3-6 targeted questions to clarify requirements. Adapt to task type using the Interview Guidance in the Reference section. Present options where applicable.
 
-### 3. Interview
+5. Analyze the codebase using an Agent:
+   ```
+   Agent(
+     subagent_type: "Explore",
+     prompt: "Find files and patterns relevant to: {task description}. Look for existing implementations, related tests, config files, and dependencies that will be affected.",
+     description: "Scan codebase for plan"
+   )
+   ```
 
-Ask 3-6 targeted questions to clarify requirements. Adapt based on the task type:
+6. Generate phases. For each phase, assign a model, write a detailed prompt, set a completion promise, max iterations, and dependencies. Use the Phase Structure and Model Assignment guide in the Reference section.
 
-```
-Let me ask a few questions to create an optimal plan:
+7. Build the dependency graph. Identify phases with no inter-dependencies and group them into execution waves (Wave 1: no dependencies, Wave 2: depends only on Wave 1, etc.).
 
-1. {Contextual question based on task type}
-   - Option A (Recommended — reason)
-   - Option B
-   - Other: ___
+8. Write the plan file to `docs/product/plans/PLAN-{slug}.md` (or `docs/plans/` if product dir doesn't exist). Use the Plan File Template in the Reference section.
 
-2. {Technical decision question}
+9. Output next steps:
+   ```
+   Plan saved: {path}
 
-3. {Scope/boundary question}
+   Execution Strategy:
+     Wave 1: Phase {n}, {m} (parallel)
+     Wave 2: Phase {x}
+     Wave 3: Phase {y}
 
-4. Anything else I should know?
-```
+   Estimated cost: ${total}
 
-For example:
+   Next steps:
+   1. Review the plan: {path}
+   2. Start Phase 1:
+      - /model {model}
+      - Execute the phase prompt
+
+   To check progress: /keel:status
+   ```
+
+10. Run pre-flight specialist review (skip if `--no-review` in arguments):
+    - Scan the full plan text for domain signals using the Domain Signal table in the Reference section.
+    - If no domains detected, output: `Pre-flight: no specialist domains detected — plan looks self-contained.` and stop.
+    - Spawn all applicable specialist agents concurrently (single message, multiple Agent tool calls) using the domain-to-subagent mapping in the Reference section.
+    - Each agent reads the plan, reviews from their domain lens only, and returns findings with severity.
+    - Output the consolidated pre-flight review using the Pre-Flight Output Format in the Reference section.
+    - If user provides updates, incorporate them into the plan file. If user skips, add a `## Known Risks` section listing outstanding findings.
+
+## Reference
+
+### Interview Guidance
+
 - Feature work: "Should this be behind a feature flag?", "What's the data model?"
 - Refactoring: "What's the migration strategy?", "Can we do it incrementally?"
 - Bug fix: "Can you reproduce it?", "What's the impact?"
 
-### 4. Analyze Codebase
+### Model Assignment
 
-Use an Agent to scan for relevant code:
+| Model | Cost/phase | Best for |
+|---|---|---|
+| Haiku | ~$0.01 | Database migrations, config files, simple CRUD, documentation, scripts |
+| Sonnet | ~$0.08 | Business logic, UI components, API integrations, refactoring, complex tests |
+| Opus | ~$0.80 | Security, algorithms, architecture, complex debugging, novel problems |
 
-```
-Agent(
-  subagent_type: "Explore",
-  prompt: "Find files and patterns relevant to: {task description}. Look for existing implementations, related tests, config files, and dependencies that will be affected.",
-  description: "Scan codebase for plan"
-)
-```
+### Phase Structure
 
-### 5. Generate Phases
-
-Break the task into phases. For each phase, assign:
-
-**Model assignment:**
-- **Haiku** (~$0.01/phase): Database migrations, config files, simple CRUD, documentation, scripts
-- **Sonnet** (~$0.08/phase): Business logic, UI components, API integrations, refactoring, complex tests
-- **Opus** (~$0.80/phase): Security, algorithms, architecture, complex debugging, novel problems
-
-**Phase structure:**
+Each phase requires:
 - Number (e.g., 1, 2, 3)
 - Title
 - Objective (one sentence)
 - Model recommendation with reasoning
-- Detailed prompt (full implementation instructions — be specific)
+- Detailed prompt (full implementation instructions — be specific and self-contained)
 - Completion promise (shell-safe: uppercase, numbers, spaces, dots ONLY)
 - Max iterations (based on complexity)
 - Dependencies (which phases must complete first)
 
-### 6. Parallelism Analysis
+### Completion Promise Rules
 
-After building the dependency graph, identify phases that can run simultaneously:
+Promises are used in automation, so they MUST be shell-safe:
+- ONLY: uppercase letters, numbers, spaces, dots
+- NO: `>`, `<`, `|`, `&`, `$`, backticks, `!`, `'`, `"`, arrows
+- Keep SHORT: 2-4 words max
+- Good: `PHASE 1 COMPLETE`, `MIGRATION DONE`, `API READY`, `TESTS PASSING`
+- Bad: anything with special characters or lowercase
 
-- Phases with no inter-dependencies can run in parallel
-- Group into execution waves:
-  - Wave 1: all phases with no dependencies
-  - Wave 2: phases whose dependencies are all in Wave 1
-  - etc.
+### Domain Signal Detection
 
-### 7. Write Plan File
+| Domain | Signals | Agent |
+|---|---|---|
+| Database | SQL, query, schema, migration, index, database, db, table, foreign key, join, transaction, ORM, Postgres, MySQL, SQLite, MongoDB | `dba` |
+| Infrastructure | deploy, docker, kubernetes, k8s, terraform, helm, CI, CD, infra, container, Dockerfile, compose, nginx, AWS, GCP, Azure, cloud | `sre` |
+| Security | auth, JWT, OAuth, payment, PCI, HIPAA, token, secret, encrypt, credential, password, permission, role, RBAC, CORS, XSS, injection | `security` |
+| API | API, endpoint, REST, GraphQL, route, webhook, contract, openapi, swagger, versioning, breaking change | `api` |
+| Architecture | bounded context, domain, architecture, refactor, pattern, layer, dependency, coupling, abstraction, interface, hexagonal, clean arch | `architect` |
+| Performance | performance, N+1, cache, latency, throughput, slow, optimize, index, query optimization, benchmark | `performance` |
 
-Save to `docs/product/plans/PLAN-{slug}.md` (or `docs/plans/` if product dir doesn't exist):
+### Pre-Flight Severity
+
+- 🔴 Critical: must address before execution (data loss, security breach, broken contract)
+- 🟡 Warning: should address, not blocking
+- 🟢 OK: domain looks healthy
+
+### Pre-Flight Output Format
+
+```
+PRE-FLIGHT REVIEW
+─────────────────────────────────────────────────────
+Domains detected: {list} ({n} of 6 checked)
+
+{AGENT NAME}
+  🔴  {finding}
+  🟡  {finding}
+  🟢  {positive finding}
+
+─────────────────────────────────────────────────────
+{N critical, N warnings}. Address in plan before executing?
+Type your updates now, or press enter to proceed with known risks noted.
+```
+
+### Plan File Template
 
 ```markdown
 # Plan: {Title}
@@ -156,88 +210,3 @@ When complete, output: {COMPLETION PROMISE}
 
 {repeat for each phase}
 ```
-
-### 8. Completion Promise Rules
-
-Promises are used in automation, so they MUST be shell-safe:
-- ONLY: uppercase letters, numbers, spaces, dots
-- NO: `>`, `<`, `|`, `&`, `$`, backticks, `!`, `'`, `"`, arrows
-- Keep SHORT: 2-4 words max
-- Good: `PHASE 1 COMPLETE`, `MIGRATION DONE`, `API READY`, `TESTS PASSING`
-- Bad: anything with special characters or lowercase
-
-### 9. Output Next Steps
-
-```
-Plan saved: {path}
-
-Execution Strategy:
-  Wave 1: Phase {n}, {m} (parallel)
-  Wave 2: Phase {x}
-  Wave 3: Phase {y}
-
-Estimated cost: ${total}
-
-Next steps:
-1. Review the plan: {path}
-2. Start Phase 1:
-   - /model {model}
-   - Execute the phase prompt
-
-To check progress: /keel:status
-```
-
-### 10. Pre-Flight Specialist Review
-
-Skip this step if `$ARGUMENTS` contains `--no-review`.
-
-Otherwise, scan the full plan text (all phase prompts, objectives, titles) for domain signals:
-
-- **Database:** SQL, query, schema, migration, index, database, db, table, foreign key, join, transaction, ORM, Postgres, MySQL, SQLite, MongoDB → `principal-dba`
-- **Infrastructure:** deploy, docker, kubernetes, k8s, terraform, helm, CI, CD, infra, container, Dockerfile, compose, nginx, AWS, GCP, Azure, cloud → `staff-sre`
-- **Security:** auth, JWT, OAuth, payment, PCI, HIPAA, token, secret, encrypt, credential, password, permission, role, RBAC, CORS, XSS, injection → `staff-security`
-- **API:** API, endpoint, REST, GraphQL, route, webhook, contract, openapi, swagger, versioning, breaking change → `senior-api`
-- **Architecture:** bounded context, domain, architecture, refactor, pattern, layer, dependency, coupling, abstraction, interface, hexagonal, clean arch → `principal-architect`
-- **Performance:** performance, N+1, cache, latency, throughput, slow, optimize, index, query optimization, benchmark → `senior-performance`
-
-If no domains detected, output:
-```
-Pre-flight: no specialist domains detected — plan looks self-contained.
-```
-and stop.
-
-For each detected domain, use the Agent tool with the matching `subagent_type` to spawn the specialist in parallel:
-- database → `subagent_type: "principal-dba"`
-- infrastructure → `subagent_type: "staff-sre"`
-- security → `subagent_type: "staff-security"`
-- api → `subagent_type: "senior-api"`
-- architecture → `subagent_type: "principal-architect"`
-- performance → `subagent_type: "senior-performance"`
-
-Spawn all applicable agents concurrently (single message, multiple Agent tool calls). Each advisor:
-1. Reads the plan content
-2. Reviews from their domain lens ONLY
-3. Returns findings with severity:
-   - 🔴 Critical: must address before execution (data loss, security breach, broken contract)
-   - 🟡 Warning: should address, not blocking
-   - 🟢 OK: domain looks healthy
-
-Output the consolidated review using this format:
-
-```
-PRE-FLIGHT REVIEW
-─────────────────────────────────────────────────────
-Domains detected: {list} ({n} of 6 checked)
-
-{AGENT NAME}
-  🔴  {finding}
-  🟡  {finding}
-  🟢  {positive finding}
-
-─────────────────────────────────────────────────────
-{N critical, N warnings}. Address in plan before executing?
-Type your updates now, or press enter to proceed with known risks noted.
-```
-
-If the user provides updates → incorporate them into the plan file.
-If the user skips (presses enter) → add a `## Known Risks` section to the plan file listing the outstanding findings.

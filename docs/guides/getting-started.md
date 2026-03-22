@@ -1,6 +1,6 @@
 # Getting Started with Keel
 
-Keel is a context engine and guardrail installer for Claude Code. It gives Claude the right context and coding standards before it writes a single line — producing consistent, production-grade results.
+Keel is a governance layer for agentic engineering. It enforces your coding standards, persists your architectural decisions, and makes agent behavior reproducible across every session and every engineer.
 
 ## Watch the Workflow in Action
 
@@ -78,7 +78,7 @@ your-project/
 │   │   └── nextjs.md        — App Router, RSC, performance
 │   └── settings.json        — PreCompact + PreToolUse hooks
 ├── docs/
-│   ├── soul.md              — project identity
+│   ├── project-context.md   — project identity
 │   ├── decisions/           — architecture decision records
 │   ├── invariants/          — hard constraints
 │   └── product/

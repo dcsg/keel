@@ -13,7 +13,7 @@ Write a Product Requirements Document for a feature.
 
 A PRD captures a clearly defined feature need: the problem, who it's for, what success looks like, and the acceptance criteria. It's the handoff from "we want this" to "here's what done means."
 
-Keel reads `docs/soul.md` and `docs/product/spec.md` before writing the PRD — so it knows your project context and doesn't repeat what's already decided.
+Keel reads `docs/project-context.md` and `docs/product/spec.md` before writing the PRD — so it knows your project context and doesn't repeat what's already decided.
 
 ## Two modes
 

@@ -14,43 +14,55 @@ Claude runs `/keel:status` automatically.
 
 ## What it shows
 
+The dashboard has six sections:
+
+**Governance health** — rules installed, agents, decisions, compiled directives status, active plan phase.
+
+**Active spec** — if a spec is in progress: its status, artifact acceptance counts, and the last drift report summary.
+
+**Chain status** — the full governance chain for the active spec, e.g. `PRD-005 accepted → SPEC-005 accepted → artifacts 3/3 accepted → PLAN-007 in progress`.
+
+**Gate activity** — any quality gate firings from the current session, including what was found and whether it was resolved or overridden.
+
+**Agent activity** — specialist agents that ran this session, how many times, and in what context (plan pre-flight, review, audit).
+
+**Hook activity** — hook fires by type this session (rule loads, agent invocations, signals detected).
+
+**Signals detected** — ADR candidates, doc gaps, and security signals surfaced by the Stop hook during the session.
+
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- KEEL STATUS — Orders API
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+KEEL STATUS — Orders API
+═══════════════════════════════════════════════
 
- ACTIVE PLAN
- ───────────
- PLAN-bulk-orders  ·  2/4 phases (50%)
+GOVERNANCE HEALTH
+  Rules:        6 active (code-quality  testing  security  error-handling  go  chi)
+  Agents:       8 installed
+  Decisions:    3 ADRs, 2 invariants
+  Compile:      2026-03-20
+  Plan:         PLAN-bulk-orders Phase 3/4 — in progress
 
- | Phase | Title          | Status      |
- |-------|----------------|-------------|
- | 1     | Schema         | done        |
- | 2     | Domain model   | done        |
- | 3     | HTTP handler   | in-progress |
- | 4     | Tests          | -           |
+CHAIN STATUS
+  PRD-005 accepted → SPEC-005 accepted → artifacts 3/3 accepted → PLAN-bulk-orders in progress
 
- WHAT'S NEXT
- ───────────
- Phase 3 — HTTP handler
-   - Wire up POST /orders/bulk endpoint in Chi router
-   - Validate request with domain service
-   - Return 207 multi-status response
+GATE ACTIVITY (this session)
+  ✅ No gate findings this session
 
- RULES
- ─────
- 6 packs installed:
-   code-quality  testing  security  error-handling  go  chi
+AGENT ACTIVITY (this session)
+  No agent activity this session
 
- GOVERNANCE
- ──────────
- Soul:        present
- Decisions:   3 records
- Invariants:  2 constraints
- Product:     spec + 2 PRDs
- Tickets:     Linear (team: eng)
+HOOK ACTIVITY (this session)
+  No hook activity this session
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SIGNALS DETECTED
+  No signals detected this session
+
+WHAT'S NEXT
+  Phase 3 — HTTP handler
+  - Wire up POST /orders/bulk endpoint in Chi router
+  - Validate request with domain service
+  - Return 207 multi-status response
+
+═══════════════════════════════════════════════
 ```
 
 **WHAT'S NEXT** is the most important part — it tells you the concrete next tasks, not just a phase name.

@@ -12,19 +12,35 @@ allowed-tools:
 
 # /keel:audit — Security Audit
 
-Run a comprehensive security audit of this codebase using the `staff-security` advisor agent.
+Run a comprehensive security audit of this codebase using the `security` advisor agent.
 
-## Flags
+CRITICAL: NEVER skip OWASP categories or secret detection patterns — run every check from the Reference section, even if the scope is narrow.
 
-- `--no-keel` — Run the audit inline (Claude performs the analysis directly, no subagent spawned). Useful when you want Claude to do it itself without delegation.
+## Instructions
 
-## Routing
+1. Check `$ARGUMENTS` for `--no-keel`. If present, strip it and use remaining text as scope, then jump to step 6 (Inline Audit Mode).
 
-Check `$ARGUMENTS` for `--no-keel`. If present, strip it and use remaining text as scope, then skip to **Inline Audit Mode** below. Otherwise proceed normally (with attribution prefix before spawning the agent).
+2. Determine scope from `$ARGUMENTS` using the Scope Definitions in the Reference section.
 
-## Scope
+3. Output before spawning agents:
+   ```
+   🪝 keel: routing to security agent...
+   🪝 keel: routing to sre agent...
+   ```
 
-Determine the scan scope from `$ARGUMENTS` (after stripping any flags):
+4. Spawn TWO agents in parallel via the Agent tool:
+   - `security` subagent — OWASP Top 10 scan, secret detection, input validation, auth coverage
+   - `sre` subagent — observability gaps, exposed debug endpoints, missing health checks, logging sensitive data, rate limiting, deployment risks
+
+5. Each agent discovers files in scope and runs their domain-specific checks from the Reference section. Both output results using the Output Format.
+
+6. Consolidate findings from both agents into a single report, grouped by domain (Security, Reliability).
+
+7. **Inline Audit Mode (`--no-keel`):** Use Read, Glob, Grep, and Bash tools to perform all checks directly — same checklists from the Reference section for both security and reliability. Output results using the Output Format.
+
+## Reference
+
+### Scope Definitions
 
 - **No argument**: full codebase scan
 - **`api`**: scan routes and handlers only (files matching `*route*, *handler*, *controller*, *endpoint*, *webhook*`)
@@ -32,22 +48,7 @@ Determine the scan scope from `$ARGUMENTS` (after stripping any flags):
 - **`data`**: scan data access and storage code only (files matching `*.sql, *migration*, *schema*, *repository*, *store*, *model*`)
 - **A file path**: scan that specific file or directory
 
-## Security Agent Instructions
-
-Output this line before spawning the agent:
-```
-🪝 keel: routing to staff-security agent...
-```
-
-Then use the Agent tool to spawn the `staff-security` subagent with `subagent_type: "staff-security"`. Pass the full task description including scope as the prompt. The agent must:
-
-### 1. Discover files in scope
-
-Use Grep and Glob to find files matching the scope. For full codebase, scan all source files. For scoped audits, restrict to matching paths.
-
-### 2. Run OWASP Top 10 scan
-
-Check each area for:
+### OWASP Top 10 Check Definitions
 
 **A01 Broken Access Control**
 - Routes missing authentication middleware
@@ -90,7 +91,7 @@ Check each area for:
 - Passwords or tokens logged
 - Insufficient audit trail for sensitive operations
 
-### 3. Secret detection grep patterns
+### Secret Detection Grep Patterns
 
 Run these patterns on all in-scope files:
 
@@ -100,33 +101,58 @@ Run these patterns on all in-scope files:
 - `secret\s*=\s*["'][^"']{8,}["']`
 - Hardcoded internal IPs: `\b10\.\d+\.\d+\.\d+\b` or `\b192\.168\.\d+\.\d+\b` in non-config files
 
-### 4. Input validation coverage
+### Input Validation Coverage
 
 For each public route found:
 - Does it validate/sanitize user input before processing?
 - Are file uploads sanitized?
 - Are SQL queries parameterized (not concatenated)?
 
-## Inline Audit Mode (`--no-keel`)
+### SRE / Reliability Check Definitions
 
-Skip agent spawning. Use Read, Glob, Grep, and Bash tools to perform all checks in "Security Agent Instructions" directly. Apply the same OWASP checklist, secret detection patterns, and input validation coverage. Output results using the Output Format below.
+**Observability Gaps**
+- Missing health check endpoint (`/health`, `/healthz`, `/ready`)
+- No structured logging (using fmt.Println / console.log instead of structured logger)
+- Missing request ID propagation in HTTP middleware
+- No metrics endpoint or instrumentation
 
-## Output Format
+**Exposed Debug Endpoints**
+- Debug/profiling endpoints enabled without auth (`/debug/pprof`, `/debug/vars`)
+- Verbose error responses exposing internal details in production config
+- Development-only middleware present in production code path
+
+**Logging Risks**
+- PII logged without masking (email, phone, SSN in log statements)
+- Tokens or secrets logged (access tokens, API keys in log output)
+- Log levels too verbose for production (debug/trace level in prod config)
+
+**Deployment Risks**
+- Missing graceful shutdown handling
+- No readiness/liveness probe configuration
+- Missing timeout configuration on HTTP clients/servers
+- No circuit breaker on external service calls
+
+**Rate Limiting**
+- Public endpoints without rate limiting
+- Auth endpoints (login, register, reset) without rate limiting
+- No backpressure mechanism on internal APIs
+
+### Output Format
 
 ```
-SECURITY AUDIT — {date}
+AUDIT REPORT — {date}
 ─────────────────────────────────────────────────────
-Scope: {scope description — e.g., "full codebase" or "auth files (12 files)"}
+Scope: {scope description}
 
-🔴 CRITICAL (must fix before shipping)
+SECURITY
+🔴 CRITICAL
   • {file:line} — {finding} — {why it matters}
 
-🟡 WARNINGS (should fix)
+🟡 WARNINGS
   • {file:line} — {finding}
 
 🟢 CLEAN
-  • Input validation: present on all public routes
-  • No hardcoded secrets detected
+  • {area}: {status}
 
 OWASP Checklist:
   A01 Access Control    ✅/⚠️/❌
@@ -136,13 +162,30 @@ OWASP Checklist:
   A05 Misconfiguration  ✅/⚠️/❌
   A07 Auth Failures     ✅/⚠️/❌
   A09 Logging           ✅/⚠️/❌
+
+RELIABILITY
+🔴 CRITICAL
+  • {file:line} — {finding} — {why it matters}
+
+🟡 WARNINGS
+  • {file:line} — {finding}
+
+🟢 CLEAN
+  • {area}: {status}
+
+Reliability Checklist:
+  Health checks         ✅/⚠️/❌
+  Observability         ✅/⚠️/❌
+  Debug endpoints       ✅/⚠️/❌
+  Logging safety        ✅/⚠️/❌
+  Graceful shutdown     ✅/⚠️/❌
+  Rate limiting         ✅/⚠️/❌
 ─────────────────────────────────────────────────────
-Run /keel:audit {scope} to narrow focus.
 ```
 
 Use ✅ when no issues found, ⚠️ for warnings, ❌ for critical issues.
 
-If no issues found in any category:
+If no issues found:
 ```
-✅ No security issues detected in this scope.
+✅ No security or reliability issues detected in this scope.
 ```

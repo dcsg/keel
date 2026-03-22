@@ -2,7 +2,7 @@
 
 ## What This Project Is
 
-Keel is a context engine and guardrail installer for Claude Code. It ensures Claude always has the right context and coding standards before writing code — producing consistent, production-grade results across any project.
+Keel is a governance layer for agentic engineering. It enforces your coding standards, persists your architectural decisions, and makes agent behavior reproducible across every session and every engineer.
 
 This project dogfoods itself: `.keel/` governs keel's own development.
 
@@ -24,7 +24,7 @@ keel/
 │   ├── sdlc/                 # PR templates, commit conventions
 │   ├── CLAUDE.md.tmpl
 │   ├── settings.json.tmpl
-│   └── soul.md.tmpl
+│   └── project-context.md.tmpl
 ├── test/                     # bash test harness
 ├── docs/
 │   ├── architecture/
@@ -49,7 +49,7 @@ keel/
 1. Read ADR-001 in `docs/architecture/decisions/`
 2. Read INV-001 in `docs/architecture/invariants/`
 3. Read the implementation plan in `docs/plans/PLAN-keel-v1.md`
-4. Read `.keel/soul.md` for project identity
+4. Read `.keel/project-context.md` for project identity
 
 ## Testing
 
@@ -67,12 +67,13 @@ Types: feat | fix | refactor | test | docs | chore
 ## Keel
 
 ### Project
-Keel enforces coding standards and remembers architectural decisions so Claude behaves consistently — every session, every engineer.
+Keel is the governance layer for agentic engineering. It enforces coding standards, persists architectural decisions, and makes agent behavior reproducible across every session and every engineer.
 
 ### Before Writing Code
-1. Read `docs/soul.md` for project context
+1. Read `docs/project-context.md` for project context
 2. Rules are enforced automatically via `.claude/rules/`
 3. If a plan is active, read it in `docs/plans/` — check progress table for current state
+4. If a spec exists, read it in `docs/product/specs/` — the spec and its artifacts are the engineering blueprint
 
 ### Build & Test Commands
 ```
@@ -93,7 +94,13 @@ When the user asks any of the following, run the corresponding command automatic
 | "create a plan", "let's plan this", "plan for X" | `/keel:plan` |
 | "save this decision", "record this", "capture that" | `/keel:adr` |
 | "add an invariant", "that's a hard rule", "never do X" | `/keel:invariant` |
+| "write a PRD", "document this feature" | `/keel:prd` |
+| "write a spec", "technical spec for X" | `/keel:spec` |
+| "generate artifacts", "create the data model" | `/keel:spec-artifacts` |
+| "check drift", "did we build what we decided?" | `/keel:drift` |
+| "compile governance", "update directives" | `/keel:compile` |
+| "review governance", "are our ADRs well written?", "check governance quality" | `/keel:review-governance` |
 
 ### After Compaction
-If context was compacted, re-read the active plan file in `docs/plans/`. The progress table is the persistent state — it tells you what's done and what's next.
+If context was compacted, the PostCompact hook will re-inject the active plan phase and invariants automatically. If you need full context, run `/keel:context`.
 <!-- keel:end -->

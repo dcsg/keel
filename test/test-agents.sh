@@ -44,14 +44,14 @@ if missing:
 python3 -c "
 import yaml, sys
 reg = yaml.safe_load(open('$REGISTRY'))
-required = ['always', 'all']
+required = ['always', 'common']
 for cat in required:
     if cat not in reg:
         print(f'Registry missing required category: {cat}')
         sys.exit(1)
-# always must include principal-architect and staff-engineer
+# always must include architect and qa
 always = reg.get('always', [])
-for slug in ['principal-architect', 'staff-engineer']:
+for slug in ['architect', 'qa']:
     if slug not in always:
         print(f'always category missing: {slug}')
         sys.exit(1)
@@ -64,19 +64,24 @@ for slug in ['principal-architect', 'staff-engineer']:
 # ============================================================
 
 EXPECTED_AGENTS=(
-    principal-architect
-    staff-engineer
-    senior-backend
-    principal-dba
-    staff-security
-    staff-sre
-    staff-qa
-    staff-frontend
-    principal-ux
-    senior-pm
-    senior-api
-    senior-performance
-    principal-data
+    architect
+    dba
+    security
+    api
+    backend
+    frontend
+    qa
+    sre
+    platform
+    docs
+    pm
+    ux
+    data
+    performance
+    compliance
+    mobile
+    seo
+    gtm
 )
 
 FOUND=0
@@ -93,7 +98,7 @@ for slug in "${EXPECTED_AGENTS[@]}"; do
         && pass "Has frontmatter: ${slug}.md" \
         || fail "Has frontmatter: ${slug}.md"
 
-    # Has name field in frontmatter
+    # Has required frontmatter fields (no model: field — ADR-007)
     python3 -c "
 import sys
 content = open('$FILE').read()
@@ -103,32 +108,70 @@ if len(parts) < 3:
     sys.exit(1)
 import yaml
 fm = yaml.safe_load(parts[1])
-for field in ['name', 'description', 'model', 'tools']:
+for field in ['name', 'description', 'tools']:
     if field not in fm:
         print(f'Missing frontmatter field: {field}')
         sys.exit(1)
+if 'model' in fm:
+    print('Agent has model: field — should not per ADR-007')
+    sys.exit(1)
 " 2>/dev/null \
-        && pass "Has required frontmatter fields: ${slug}.md" \
-        || fail "Has required frontmatter fields: ${slug}.md"
+        && pass "Has required frontmatter (no model): ${slug}.md" \
+        || fail "Has required frontmatter (no model): ${slug}.md"
 
-    # Body contains role identity statement
-    grep -q "You are a" "$FILE" \
-        && pass "Has role identity statement: ${slug}.md" \
-        || fail "Has role identity statement: ${slug}.md"
+    # Body contains role identity
+    grep -q "specialist\|You are\|expert" "$FILE" \
+        && pass "Has role identity: ${slug}.md" \
+        || fail "Has role identity: ${slug}.md"
 
-    # Body mentions keel command suggestion
-    grep -q "keel" "$FILE" \
-        && pass "References keel commands: ${slug}.md" \
-        || fail "References keel commands: ${slug}.md"
+    # Body has REMEMBER block (recency reinforcement)
+    grep -q "REMEMBER:" "$FILE" \
+        && pass "Has REMEMBER block: ${slug}.md" \
+        || fail "Has REMEMBER block: ${slug}.md"
 done
 
 pass "Found $FOUND/${#EXPECTED_AGENTS[@]} expected agent templates"
 
 # ============================================================
-# Legacy agent templates still exist
+# Specific agent checks
 # ============================================================
 
-assert_file_exists "$AGENTS_DIR/reviewer.md" "Legacy reviewer.md still present"
-assert_file_exists "$AGENTS_DIR/debugger.md" "Legacy debugger.md still present"
+# dba and security should have memory: project
+assert_file_contains "$AGENTS_DIR/dba.md" "memory: project" "dba.md has memory: project"
+assert_file_contains "$AGENTS_DIR/security.md" "memory: project" "security.md has memory: project"
+
+# Write-capable agents should have Write and Edit tools
+for writer in backend frontend qa mobile; do
+    assert_file_contains "$AGENTS_DIR/${writer}.md" "Write" "${writer}.md has Write tool"
+    assert_file_contains "$AGENTS_DIR/${writer}.md" "Edit" "${writer}.md has Edit tool"
+done
+
+# Write-capable agents should have File Formatting section
+for writer in backend frontend qa mobile; do
+    assert_file_contains "$AGENTS_DIR/${writer}.md" "File Formatting" "${writer}.md has File Formatting section"
+done
+
+# Read-only agents should NOT have Write tool
+for reader in architect dba security api sre platform docs ux data performance compliance seo gtm; do
+    if grep -q "^  - Write$" "$AGENTS_DIR/${reader}.md" 2>/dev/null; then
+        fail "${reader}.md should be read-only but has Write tool"
+    else
+        pass "${reader}.md is read-only (no Write tool)"
+    fi
+done
+
+# Description includes "proactively" for auto-routing
+for slug in "${EXPECTED_AGENTS[@]}"; do
+    assert_file_contains "$AGENTS_DIR/${slug}.md" "proactively\|Use proactively" "${slug}.md has proactive routing trigger"
+done
+
+# Old agent files should NOT exist
+for old in principal-architect principal-dba principal-ux principal-data staff-engineer staff-security staff-frontend staff-qa staff-sre staff-docs senior-api senior-backend senior-pm senior-performance reviewer debugger; do
+    if [ -f "$AGENTS_DIR/${old}.md" ]; then
+        fail "Old agent file should be removed: ${old}.md"
+    else
+        pass "Old agent removed: ${old}.md"
+    fi
+done
 
 test_summary

@@ -1,108 +1,48 @@
 ---
 paths: "**/*.go"
-version: "1.0.0"
+version: "0.1.0"
 ---
 <!-- keel:generated -->
+
+<governance_checkpoint>
+Before modifying any file, pause and verify:
+1. List which rules from this file apply to the change you are about to make.
+2. Check if the change discards errors, starts unmanaged goroutines, or misuses interfaces.
+3. If multiple rules conflict, state the conflict before proceeding.
+After receiving tool results (test output, lint output, build errors), re-check:
+1. Verify the result complies with the rules you identified above.
+2. If it does not, fix the violation before taking any other action.
+3. Do not chain corrections — verify each step against these rules before proceeding.
+</governance_checkpoint>
 
 # Go
 
 Rules for writing idiomatic, production-grade Go code.
 
-## Error Handling
+## Critical
 
-- Always check errors. Never use `_` to discard an error return.
-- Wrap errors with context using `fmt.Errorf("operation failed: %w", err)`.
-- Use `errors.Is()` and `errors.As()` for error comparison, not string matching.
-- Define sentinel errors or custom error types for errors callers need to handle differently.
-- Return errors, don't panic. Reserve `panic` for truly unrecoverable programmer errors.
+- NEVER use `_` to discard an error return — always check errors. If an error is genuinely ignorable, add a comment explaining why.
+- NEVER start a goroutine without a plan for how it stops. Use `context.Context` for cancellation and `sync.WaitGroup` or `errgroup` to wait for completion.
+- MUST use `fmt.Errorf("operation context: %w", err)` when wrapping errors — this preserves the error chain for `errors.Is` and `errors.As`.
 
-```go
-// BAD
-result, _ := doSomething()
+## Standards
 
-// BAD — no context
-if err != nil { return err }
+- Use `errors.Is()` and `errors.As()` for error comparison, never string matching. Define sentinel errors (`var ErrNotFound = errors.New(...)`) or custom error types for errors callers need to differentiate.
+- Follow Go naming: `MixedCaps` for exported, `mixedCaps` for unexported. No underscores in names except test files. Receivers: 1-2 letters, consistent across the type's methods — `(o *Order)` not `(order *Order)`.
+- Interfaces: single-method interfaces use method name + "er" suffix (`Reader`, `Writer`). Packages: short, lowercase, singular — `order` not `orders`, `user` not `userService`. No stutter: `order.Order` is fine, `order.OrderService` is not.
+- Define interfaces where they are USED, not where they are implemented. Keep interfaces to 1-2 methods — compose larger ones from smaller. Don't define an interface until you have two implementations or need one for testing.
+- `context.Context` is always the first parameter. Never store context in a struct. Use it for cancellation and deadlines, not for passing business data (request IDs in middleware are the rare accepted exception).
+- Use pointer receivers when the method mutates, when the struct is large, or for consistency. Don't mix pointer and value receivers on the same type. Initialize structs with field names: `User{Name: "alice"}` not `User{"alice"}`.
+- NEVER write to a map, slice, or struct field from multiple goroutines without a sync.Mutex, sync.RWMutex, or channel. Use `go test -race` on all packages — a data race is a bug, not a warning.
+- NEVER use deprecated stdlib functions — use `io.ReadAll` not `ioutil.ReadAll`, `os.ReadFile` not `ioutil.ReadFile`, `os.MkdirTemp` not `ioutil.TempDir`. The `ioutil` package is deprecated since Go 1.16.
 
-// GOOD
-result, err := doSomething()
-if err != nil {
-    return fmt.Errorf("processing order %s: %w", orderID, err)
-}
-```
+## Practices
 
-## Naming
+- Prefer channels for communication between goroutines. Use `errgroup.Group` for concurrent operations that need error collection.
+- `internal/` for packages that must not be imported outside the module. Keep the exported API surface minimal.
+- Consider `defer cancel()` immediately after creating a context with deadline or timeout — don't let the cancel call get separated from its creation.
 
-- Follow Go conventions: `MixedCaps` for exported, `mixedCaps` for unexported. No underscores in names.
-- Receivers: short (1-2 letters), consistent across methods of the same type. `(o *Order)` not `(order *Order)`.
-- Interfaces: single-method interfaces use the method name + "er" suffix (`Reader`, `Writer`, `Closer`).
-- Packages: short, lowercase, singular. `order` not `orders`, `user` not `userService`.
-- Avoid stutter: `order.Order` is fine, `order.OrderService` stutters.
+## Critical
 
-## Package Design
-
-- Each package has a single, clear purpose described by its name.
-- No `utils`, `helpers`, `common`, or `base` packages.
-- Avoid circular imports — if two packages need each other, extract the shared concept into a third.
-- Keep the public API surface small. Only export what other packages need.
-- `internal/` for packages that should not be imported outside the module.
-
-## Interfaces
-
-- Define interfaces where they are USED, not where they are implemented.
-- Keep interfaces small — one or two methods. Compose larger interfaces from smaller ones.
-- Accept interfaces, return concrete types.
-- Don't define an interface until you have two or more implementations, or need it for testing.
-
-```go
-// BAD — interface defined next to implementation, too large
-type UserStore interface {
-    Create(u *User) error
-    Update(u *User) error
-    Delete(id string) error
-    FindByID(id string) (*User, error)
-    FindByEmail(email string) (*User, error)
-    List(opts ListOpts) ([]*User, error)
-}
-
-// GOOD — small interface, defined where used
-type UserFinder interface {
-    FindByID(id string) (*User, error)
-}
-```
-
-## Concurrency
-
-- Don't start goroutines without a plan for how they stop. Use `context.Context` for cancellation.
-- Always use `sync.WaitGroup` or channels to wait for goroutines to complete.
-- Never share memory between goroutines without synchronization. Prefer channels for communication.
-- Use `errgroup.Group` for running multiple operations concurrently and collecting errors.
-- If a function starts goroutines, document it. Callers need to know about concurrent behavior.
-
-## Structs & Methods
-
-- Use pointer receivers when the method modifies the receiver, when the struct is large, or for consistency across the type's method set.
-- Use value receivers for small, immutable types.
-- Don't mix pointer and value receivers on the same type.
-- Initialize structs with field names: `User{Name: "alice", Age: 30}` not `User{"alice", 30}`.
-
-## Context
-
-- `context.Context` is always the first parameter. Never store it in a struct.
-- Propagate context through the call chain. Don't create new contexts in the middle.
-- Use context for cancellation and deadlines, not for passing business data (with rare exceptions like request IDs and auth tokens in middleware).
-
-## Testing
-
-- Use table-driven tests for functions with multiple input/output combinations.
-- Use `testify/assert` or `testify/require` for readable assertions.
-- Name test cases descriptively: `"returns error when order not found"`.
-- Use `t.Helper()` in test helper functions so failure line numbers point to the caller.
-- Test files live in the same package for white-box tests, or `_test` package for black-box tests.
-
-## Project Layout
-
-Follow the standard Go project layout conventions:
-- `cmd/` — main applications (one dir per binary)
-- `internal/` — private packages
-- `pkg/` — public libraries (only if building a reusable library)
-- Don't create `pkg/` unless the code is genuinely intended for external use.
+- NEVER discard error returns with `_`.
+- NEVER start a goroutine without a cancellation and completion strategy.

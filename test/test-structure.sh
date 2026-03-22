@@ -26,7 +26,7 @@ assert_file_exists "$PROJECT_ROOT/README.md" "README.md exists"
 assert_file_exists "$PROJECT_ROOT/VERSION" "VERSION file exists"
 assert_file_exists "$PROJECT_ROOT/CHANGELOG.md" "CHANGELOG.md exists"
 assert_file_exists "$PROJECT_ROOT/.keel/config.yaml" ".keel/config.yaml exists"
-assert_file_exists "$PROJECT_ROOT/.keel/soul.md" ".keel/soul.md exists"
+assert_file_exists "$PROJECT_ROOT/.keel/project-context.md" ".keel/project-context.md exists"
 assert_file_exists "$PROJECT_ROOT/templates/rules/_registry.yaml" "Registry exists"
 
 # VERSION file contains a semver-like version
@@ -83,7 +83,7 @@ assert_file_contains "$PROJECT_ROOT/commands/prd.md" "keel:live" "prd.md injects
 # Agent templates directory exists
 assert_dir_exists "$PROJECT_ROOT/templates/agents" "templates/agents/ exists"
 assert_file_exists "$PROJECT_ROOT/templates/agents/_registry.yaml" "Agent registry exists"
-assert_file_exists "$PROJECT_ROOT/templates/agents/staff-docs.md" "staff-docs agent exists"
+assert_file_exists "$PROJECT_ROOT/templates/agents/docs.md" "docs agent exists"
 
 # Git hook template exists
 assert_file_exists "$PROJECT_ROOT/templates/hooks/pre-push" "pre-push hook template exists"
@@ -92,9 +92,9 @@ assert_file_contains "$PROJECT_ROOT/templates/hooks/pre-push" "exit 0" "pre-push
 assert_file_contains "$PROJECT_ROOT/templates/hooks/pre-push" "pre-push: false" "pre-push hook respects config disable"
 assert_file_contains "$PROJECT_ROOT/templates/hooks/pre-push" "KEEL_SECURITY_SKIP" "pre-push has security skip flag"
 
-# init.md sequential interview check (must ask one question at a time)
-assert_file_contains "$PROJECT_ROOT/commands/init.md" "one at a time" "init.md asks SDLC questions one at a time"
-assert_file_contains "$PROJECT_ROOT/commands/init.md" "Wait for response" "init.md waits for response between questions"
+# init.md combined configuration view
+assert_file_contains "$PROJECT_ROOT/commands/init.md" "single combined view" "init.md uses combined config view"
+assert_file_contains "$PROJECT_ROOT/commands/init.md" "One screen, one confirmation" "init.md confirms in one step"
 
 # plan.md pre-flight review checks
 assert_file_contains "$PROJECT_ROOT/commands/plan.md" "PRE-FLIGHT" "plan.md has pre-flight review"
@@ -127,12 +127,12 @@ assert_file_contains "$PROJECT_ROOT/commands/init.md" "keel_version" "init.md wr
 # audit.md checks
 assert_file_contains "$PROJECT_ROOT/commands/audit.md" "context: fork" "audit.md has context: fork"
 assert_file_contains "$PROJECT_ROOT/commands/audit.md" "OWASP" "audit.md covers OWASP"
-assert_file_contains "$PROJECT_ROOT/commands/audit.md" "staff-security" "audit.md routes to staff-security"
+assert_file_contains "$PROJECT_ROOT/commands/audit.md" "security" "audit.md routes to security agent"
 
 # review.md checks
 assert_file_contains "$PROJECT_ROOT/commands/review.md" "context: fork" "review.md has context: fork"
 assert_file_contains "$PROJECT_ROOT/commands/review.md" "IMPLEMENTATION REVIEW" "review.md has review output format"
-assert_file_contains "$PROJECT_ROOT/commands/review.md" "principal-dba" "review.md routes to principal-dba"
+assert_file_contains "$PROJECT_ROOT/commands/review.md" "dba" "review.md routes to dba"
 
 # website pages exist for all v3 commands
 assert_file_exists "$PROJECT_ROOT/website/commands/review.md" "website/commands/review.md exists"

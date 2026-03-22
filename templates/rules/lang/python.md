@@ -1,111 +1,49 @@
 ---
 paths: "**/*.py"
-version: "1.0.0"
+version: "0.1.0"
 ---
 <!-- keel:generated -->
+
+<governance_checkpoint>
+Before modifying any file, pause and verify:
+1. List which rules from this file apply to the change you are about to make.
+2. Check if the change uses mutable defaults, bare excepts, or violates PEP conventions.
+3. If multiple rules conflict, state the conflict before proceeding.
+After receiving tool results (test output, lint output, build errors), re-check:
+1. Verify the result complies with the rules you identified above.
+2. If it does not, fix the violation before taking any other action.
+3. Do not chain corrections — verify each step against these rules before proceeding.
+</governance_checkpoint>
 
 # Python
 
 Rules for writing clean, idiomatic Python code.
 
-## Type Hints
+## Critical
 
-- Add type hints to all function signatures (parameters and return types).
-- Use `from __future__ import annotations` for modern annotation syntax.
-- Use `typing` module types: `Optional`, `Union`, `list[str]`, `dict[str, int]`.
-- Run a type checker (mypy, pyright) in CI. Type hints without checking are documentation, not safety.
+- NEVER use bare `except:` or `except Exception:` without re-raising — it swallows every exception including KeyboardInterrupt and SystemExit. Catch the specific exception type you expect.
+- NEVER use `from module import *` — it pollutes the namespace and makes the source of names impossible to trace.
+- MUST add type hints to all function signatures (parameters and return types). Run mypy or pyright in CI — hints without a checker are documentation, not safety.
 
-```python
-# BAD
-def get_user(user_id):
-    ...
+## Standards
 
-# GOOD
-def get_user(user_id: str) -> User | None:
-    ...
-```
+- Catch specific exceptions, not broad ones. If you need to catch broad exceptions (e.g., at a top-level handler), log and re-raise.
+- Use context managers (`with`) for all resource management: files, connections, locks. Don't manually call `.close()`.
+- Use `dataclasses` or Pydantic `BaseModel` for structured data — not plain dicts. Use `frozen=True` on dataclasses for immutable value objects. Use Pydantic for data from external sources.
+- Follow PEP 8: `snake_case` for functions and variables, `PascalCase` for classes, `UPPER_SNAKE` for constants. Boolean names use `is_`, `has_`, `can_` prefixes.
+- Import order: standard library, third-party, local — separated by blank lines. Use absolute imports. Never use relative imports for top-level packages.
+- Use `asyncio` for I/O-bound concurrency. NEVER call blocking I/O inside an async function — use `asyncio.to_thread()`. Use `asyncio.gather()` or `asyncio.TaskGroup()` (3.11+) for concurrent tasks.
 
-## Error Handling
+## Practices
 
-- Catch specific exceptions, never bare `except:` or `except Exception:` without re-raising.
-- Use custom exception classes for domain-specific errors.
-- Use context managers (`with`) for resource management (files, connections, locks).
-- Don't use exceptions for flow control. Check conditions before operating.
-
-```python
-# BAD
-try:
-    process(data)
-except:
-    pass
-
-# GOOD
-try:
-    process(data)
-except ValidationError as e:
-    logger.warning("invalid data", extra={"error": str(e)})
-    raise
-```
-
-## Naming
-
-- Follow PEP 8: `snake_case` for functions and variables, `PascalCase` for classes, `UPPER_SNAKE` for constants.
-- Modules and packages: short, lowercase, no underscores where possible.
-- Private attributes: single underscore prefix `_internal_method`. Avoid double underscore (name mangling) unless necessary.
-- Boolean variables and functions: use `is_`, `has_`, `can_` prefixes.
-
-## Imports
-
-- Order: standard library, third-party, local. Separate with blank lines.
-- Use absolute imports over relative imports.
-- Import modules, not individual names (unless it's a common pattern in the codebase).
-- Never use `from module import *`.
-
-```python
-import os
-from pathlib import Path
-
-import requests
-from sqlalchemy import select
-
-from myapp.models import User
-from myapp.services import OrderService
-```
-
-## Data Classes & Models
-
-- Use `dataclasses` or Pydantic `BaseModel` for structured data — not plain dicts.
-- Use `frozen=True` on dataclasses for immutable value objects.
-- Use Pydantic for data that comes from external sources (API requests, config files, environment).
-
-```python
-# BAD
-user = {"name": "alice", "email": "alice@example.com"}
-
-# GOOD
-@dataclass(frozen=True)
-class User:
-    name: str
-    email: str
-```
-
-## Async
-
-- Use `asyncio` for I/O-bound concurrent operations. Don't use threads for HTTP calls.
-- Never call blocking I/O inside an async function without `asyncio.to_thread()`.
-- Use `async with` and `async for` for async context managers and iterators.
-- Use `asyncio.gather()` for concurrent tasks, `asyncio.TaskGroup()` (3.11+) for structured concurrency.
-
-## Testing
-
-- Use `pytest` with descriptive test names: `test_rejects_empty_email`.
-- Use `pytest.fixture` for shared setup, not `setUp`/`tearDown`.
-- Use `pytest.mark.parametrize` for table-driven tests.
-- Mock external dependencies with `unittest.mock.patch`, but prefer dependency injection where possible.
-
-## Project Structure
-
+- Use `from __future__ import annotations` for forward references and modern annotation syntax on Python 3.9 and earlier.
+- Use `pyproject.toml` for project configuration — not `setup.py` or `setup.cfg`.
+- Keep `__init__.py` minimal. It defines the public API — import what should be public, leave internals private. Don't put logic in it.
 - One concern per module. Don't put models, views, and utilities in the same file.
-- Use `__init__.py` to define public API. Import what should be public, leave internals private.
-- Keep `__init__.py` minimal — don't put logic in it.
-- Use `pyproject.toml` for project configuration (not `setup.py` or `setup.cfg`).
+- Use `pytest.mark.parametrize` for table-driven tests. Use `pytest.fixture` for shared setup.
+- Consider `typing.Protocol` over abstract base classes for structural subtyping — it removes the inheritance requirement for callers.
+
+## Critical
+
+- NEVER use bare `except:` — always catch the specific exception type.
+- MUST type-hint all function signatures and run a type checker in CI.

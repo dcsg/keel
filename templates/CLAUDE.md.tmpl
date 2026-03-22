@@ -7,9 +7,11 @@
 
 ### Before Writing Code
 
-1. Read `docs/soul.md` for project context
+1. Read `{{project_context_path}}` for project context
 2. Rules are enforced automatically via `.claude/rules/`
-3. If a plan is active, read it in `docs/product/plans/` — check the progress table for current state
+3. If a plan is active, read it in `{{plans_path}}/` — check progress table for current state
+4. If a spec exists, read it in `{{specs_path}}/` — the spec and its artifacts are the engineering blueprint
+5. All paths are configurable in `.keel/config.yaml` under `paths:`
 
 ### Build & Test Commands
 
@@ -26,7 +28,7 @@
 
 ### Keel Commands
 
-When the user asks any of the following, run the corresponding command automatically — do not ask for confirmation:
+When the user asks any of the following, run the corresponding command automatically:
 
 | If the user asks... | Run |
 |---------------------|-----|
@@ -37,10 +39,14 @@ When the user asks any of the following, run the corresponding command automatic
 | "save this decision", "record this", "capture that" | `/keel:adr` |
 | "add an invariant", "that's a hard rule", "never do X" | `/keel:invariant` |
 | "write a PRD", "document this feature", "requirements for X" | `/keel:prd` |
+| "write a spec", "technical spec for X" | `/keel:spec` |
+| "generate artifacts", "create the data model" | `/keel:spec-artifacts` |
+| "check drift", "did we build what we decided?" | `/keel:drift` |
+| "compile governance", "update directives" | `/keel:compile` |
 
 ### After Compaction
 
-If context was compacted, re-read the active plan file in `docs/product/plans/`. The progress table is the persistent state — it tells you what's done and what's next.
+If context was compacted, the PostCompact hook will re-inject the active plan phase and invariants automatically. If you need full context, run `/keel:context`.
 
 ### Commit Convention
 

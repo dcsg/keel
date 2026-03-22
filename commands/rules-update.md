@@ -44,13 +44,17 @@ For each `.claude/rules/*.md` file:
 
 1. Read the installed file's YAML frontmatter to get `version:`
 2. Check for `<!-- keel:generated -->` marker
-3. Look up the pack name (filename without `.md`) in the registry
-4. Categorize:
+3. Check if a project override exists at `.keel/rules/{name}.md` — if yes, this pack is overridden (skip)
+4. Check if the config has an `extend:` for this pack under `rules.{name}.extend` — note for later
+5. Look up the pack name (filename without `.md`) in the registry
+6. Categorize:
+   - **Overridden:** `.keel/rules/{name}.md` exists (project owns this pack — skip)
    - **Outdated:** installed version < registry version
    - **Up to date:** installed version == registry version
    - **Manually edited:** no `keel:generated` marker (skip by default)
    - **No version:** file has no `version:` frontmatter (predates versioning)
    - **Custom:** pack name not in registry (user-created, skip)
+   - **Extended:** config has `extend:` — base pack updates normally, extension file is untouched
 
 ### 4. Display Summary
 

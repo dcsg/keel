@@ -1,102 +1,43 @@
 ---
 paths: "**/*.rb"
-version: "1.0.0"
+version: "0.1.0"
 ---
 <!-- keel:generated -->
+
+<governance_checkpoint>
+Before modifying any file, pause and verify:
+1. List which rules from this file apply to the change you are about to make.
+2. Check if the change bypasses Active Record conventions, skips strong parameters, or misuses callbacks.
+3. If multiple rules conflict, state the conflict before proceeding.
+After receiving tool results (test output, lint output, build errors), re-check:
+1. Verify the result complies with the rules you identified above.
+2. If it does not, fix the violation before taking any other action.
+3. Do not chain corrections — verify each step against these rules before proceeding.
+</governance_checkpoint>
 
 # Ruby on Rails
 
 Rules for building Rails applications.
 
-## Architecture
+## Critical
 
-- Follow Rails conventions. Don't fight the framework.
-- Models: business logic and validations. Keep them focused — extract service objects when models exceed 200 lines.
-- Controllers: thin. Validate params, call model/service, render response.
-- For complex domains: `app/services/` for service objects, `app/queries/` for complex queries, `app/presenters/` for view logic.
+- NEVER use `params.permit!` — it permits all parameters and bypasses strong parameter protection entirely. Always enumerate permitted params explicitly.
+- NEVER use `raw` or `html_safe` on user-provided content — Rails escapes output by default, using these overrides re-opens XSS vulnerabilities.
+- NEVER store plaintext passwords. Use `has_secure_password` or Devise. Never roll your own password hashing.
 
-## Models & ActiveRecord
+## Standards
 
-- Define validations in models. Don't validate in controllers.
-- Use scopes for reusable queries: `scope :active, -> { where(active: true) }`.
-- Eager load associations to avoid N+1: `includes(:orders)`, `preload(:items)`.
-- Use `strong_parameters` in controllers. Never use `permit!`.
-- Add database indexes for columns used in WHERE, ORDER BY, and foreign keys.
+- Eager load associations to avoid N+1 queries: `includes(:orders)`, `preload(:items)`. Never lazy-load in loops. Use the Bullet gem in development to detect N+1s automatically.
+- Stick to RESTful actions: `index`, `show`, `new`, `create`, `edit`, `update`, `destroy`. If you need non-REST actions, extract a new resource.
+- Define validations in models, not controllers. Use scopes for reusable query logic.
+- Migrations MUST be reversible. Define both `up`/`down` or use `change` with reversible methods. Use `null: false` and defaults where appropriate. Add foreign key constraints.
 
-```ruby
-# BAD
-User.all.each { |u| puts u.orders.count } # N+1
+## Practices
 
-# GOOD
-User.includes(:orders).each { |u| puts u.orders.count }
-```
+- Jobs MUST be idempotent. Set `retry_on` and `discard_on` for error handling. Use `deliver_later` for all emails — never `deliver_now` in a controller action.
+- Use `credentials.yml.enc` for secrets. Never commit unencrypted secrets. Access via `Rails.application.credentials.key`.
 
-## Controllers
+## Critical
 
-- Use `before_action` for shared logic (authentication, loading resources).
-- Stick to RESTful actions: `index`, `show`, `new`, `create`, `edit`, `update`, `destroy`.
-- If a controller needs non-REST actions, consider extracting a new resource.
-- Use `respond_to` for format handling in controllers that serve multiple formats.
-
-## Service Objects
-
-Use service objects for operations that:
-- Involve multiple models
-- Interact with external services
-- Have complex business logic
-- Don't fit naturally in a single model
-
-```ruby
-# app/services/place_order.rb
-class PlaceOrder
-  def initialize(user:, cart:, payment_method:)
-    @user = user
-    @cart = cart
-    @payment_method = payment_method
-  end
-
-  def call
-    order = Order.create!(user: @user, items: @cart.items)
-    ProcessPayment.new(order: order, method: @payment_method).call
-    OrderMailer.confirmation(order).deliver_later
-    order
-  end
-end
-```
-
-## Database & Migrations
-
-- Always use migrations for schema changes. Never modify the database manually.
-- Migrations must be reversible. Define both `up` and `down`, or use `change` with reversible methods.
-- Add indexes in migrations, not after the fact.
-- Use `null: false` and default values where appropriate.
-- Use foreign key constraints: `add_foreign_key`.
-
-## Background Jobs
-
-- Use ActiveJob (backed by Sidekiq, GoodJob, etc.) for anything that doesn't need to complete during the request.
-- Jobs must be idempotent. Running the same job twice produces the same result.
-- Set `retry_on` and `discard_on` for error handling. Don't let jobs fail silently.
-- Use `deliver_later` for all emails.
-
-## Testing
-
-- Use RSpec or Minitest — follow the project's existing choice.
-- Use FactoryBot for test data, not fixtures (unless the project already uses fixtures).
-- Test models: validations, scopes, business logic.
-- Test controllers: through request specs, not controller specs.
-- Test services: directly with unit tests.
-- Use `database_cleaner` or transactional tests for database isolation.
-
-## Security
-
-- Use `params.require(:order).permit(:item_id, :quantity)` — never `params.permit!`.
-- Use `has_secure_password` for password handling. Never store plaintext passwords.
-- Escape output in views (Rails does this by default — don't use `raw` or `html_safe` without reason).
-- Use CSRF protection (enabled by default). Don't skip it.
-
-## Configuration
-
-- Use `credentials.yml.enc` for secrets. Never commit unencrypted secrets.
-- Use environment variables for environment-specific configuration.
-- Use `config_for` to load custom YAML config files.
+- NEVER use `params.permit!`.
+- NEVER use `raw` or `html_safe` on user-provided content.

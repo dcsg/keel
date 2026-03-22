@@ -12,9 +12,20 @@ Security audit — OWASP scan, secret detection, auth coverage, and vulnerabilit
 /keel:audit src/payments/       ← specific directory
 ```
 
+## Arguments
+
+| Argument | Description |
+|----------|-------------|
+| (none) | Full codebase scan |
+| `api` | Routes and handlers only |
+| `auth` | Authentication and authorization code only |
+| `data` | Data access and storage code only |
+| A file path | Scan a specific file or directory |
+| `--no-keel` | Run all checks inline without spawning specialist agents |
+
 ## What it does
 
-Invokes the `staff-security` agent to audit the specified scope against OWASP Top 10, scan for hardcoded secrets, and check input validation coverage. The audit is deliberate — run it before shipping a security-sensitive feature.
+Routes to the `security` and `sre` agents to audit the specified scope. The `security` agent covers OWASP Top 10, hardcoded secrets, and input validation. The `sre` agent covers deployment configuration, exposed ports, and infrastructure misconfigurations. The audit is deliberate — run it before shipping a security-sensitive feature.
 
 For lighter continuous security checks, keel also adds a pre-push git hook that greps for obvious patterns (hardcoded credentials, SQL concatenation, unresolved security TODOs) and warns before every push.
 

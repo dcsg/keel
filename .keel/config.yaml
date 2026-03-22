@@ -1,16 +1,32 @@
 # Keel configuration
 # This file configures keel for the keel project itself (dogfooding).
 
-keel_version: "3.9"
+keel_version: "0.1.0"
 base: docs
 
 stack: []  # keel is pure markdown, no language stack
 
+paths:
+  decisions: docs/architecture/decisions
+  invariants: docs/architecture/invariants
+  plans: docs/plans
+  specs: docs/product/specs
+  prds: docs/product/prds
+  guidelines: docs/guidelines
+  reports: docs/reports
+  soul: docs/project-context.md
+
 rules: {}  # no rules needed for a markdown-only project
+
+# Toggle optional behaviors. All default to true.
+# The governance core (rules, compile, drift, review-governance) is always on.
+features:
+  auto-format: true        # format files after every edit (PostToolUse)
+  session-summary: true    # git-aware "since your last session" on start
+  signal-detection: true   # detect ADR/invariant candidates on stop
+  plan-injection: true     # inject active plan phase on every prompt
+  quality-gates: true      # block on critical findings from gate agents
 
 sdlc:
   commit-convention: conventional
   pr-template: false
-
-plans:
-  dir: docs/plans

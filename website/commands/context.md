@@ -14,7 +14,7 @@ Loads your project's memory into the current session.
 
 | Source | What Claude learns |
 |--------|--------------------|
-| `docs/soul.md` | Project identity, stack, non-negotiables |
+| `docs/project-context.md` | Project identity, stack, non-negotiables |
 | `docs/product/spec.md` | What you're building and why |
 | `docs/product/prds/` | Active feature requirements |
 | `docs/product/plans/` | Current plan + phase progress |
@@ -32,7 +32,7 @@ Loads your project's memory into the current session.
 > ```
 > Loaded context for Orders API:
 >
->   Soul:      Go REST API for order management
+>   Project:   Go REST API for order management
 >              DDD with bounded contexts (orders, inventory, billing)
 >              Chi router · PostgreSQL · Hexagonal architecture
 >
@@ -61,6 +61,17 @@ The `SessionStart` hook checks if memory is stale (>7 days old) and prompts you 
 ## You usually don't need to run this manually
 
 The `SessionStart` hook installed by `/keel:init` fires when you open the project. If auto-memory exists and is fresh, it confirms context is loaded. If memory is missing or stale, it prompts you to run `/keel:context`. Running it explicitly gives you the full visible output — useful when onboarding a teammate or starting a complex session.
+
+## Arguments
+
+| Argument | Description |
+|----------|-------------|
+| (none) | Load full context (default) |
+| `--depth=full` | Everything: project context, all decisions, all invariants, product, PRDs, plans, rules |
+| `--depth=focused` | Project context, current plan phase, relevant decisions, all invariants, rule names |
+| `--depth=minimal` | Project context, current plan phase title + tasks, all invariants only |
+
+`--depth=full` is the default. On large projects (>15 ADRs or >5 PRDs), keel suggests `--depth=focused` before proceeding.
 
 ## Natural language triggers
 

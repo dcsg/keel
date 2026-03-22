@@ -1,13 +1,13 @@
 # Commands
 
-Keel has eighteen commands. Each does exactly one thing. You rarely need to remember them — Claude responds to natural language after init.
+Keel has 24 commands. Each does exactly one thing. You rarely need to remember them — Claude responds to natural language after init.
 
 ## The commands
 
 | Command | What it does |
 |---------|-------------|
 | [`/keel:init`](/commands/init) | Detect project, infer architecture, install rules, agents, and context |
-| [`/keel:context`](/commands/context) | Load soul, plans, ADRs, and product docs into current session |
+| [`/keel:context`](/commands/context) | Load project context, plans, ADRs, and product docs into current session |
 | [`/keel:plan`](/commands/plan) | Interview + phased execution plan with pre-flight specialist review |
 | [`/keel:status`](/commands/status) | Dashboard — plan progress, rules, what's next |
 | [`/keel:intake`](/commands/intake) | Scan scattered docs and organize into keel structure |
@@ -17,11 +17,17 @@ Keel has eighteen commands. Each does exactly one thing. You rarely need to reme
 | [`/keel:adr`](/commands/adr) | Capture an architecture decision record |
 | [`/keel:invariant`](/commands/invariant) | Define a hard constraint that must never be violated |
 | [`/keel:prd`](/commands/prd) | Write a product requirement document |
-| [`/keel:review`](/commands/review) | Post-implementation specialist review — routes to relevant domain agents |
+| [`/keel:spec`](/commands/spec) | Technical specification from an accepted PRD |
+| [`/keel:spec-artifacts`](/commands/spec-artifacts) | Data model, contracts, migrations from an accepted spec |
+| [`/keel:compile`](/commands/compile) | Compile ADRs + invariants into governance directives |
+| [`/keel:drift`](/commands/drift) | Verify implementation matches spec, PRD, and ADRs |
+| [`/keel:review`](/commands/review) | Post-implementation specialist review — routes to domain agents |
+| [`/keel:review-governance`](/commands/review-governance) | Review governance doc language for enforceability and clarity |
 | [`/keel:audit`](/commands/audit) | Security audit — OWASP scan, secret detection, auth coverage |
 | [`/keel:session`](/commands/session) | End-of-session sweep — surface missed captures before context is lost |
 | [`/keel:docs`](/commands/docs) | Review documentation gaps for new routes, env vars, and services |
 | [`/keel:sync`](/commands/sync) | Translate linter configs into Claude rule packs |
+| [`/keel:rules-update`](/commands/rules-update) | Check for outdated rule packs and update them |
 | [`/keel:doctor`](/commands/doctor) | Validate governance setup and report actionable warnings |
 | [`/keel:upgrade`](/commands/upgrade) | Upgrade hooks, agents, and rules to the latest keel version |
 

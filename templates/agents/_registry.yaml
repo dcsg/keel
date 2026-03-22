@@ -2,84 +2,117 @@
 # Format: category: [agent-slugs]
 #
 # Used by keel:init to select which agents to install based on detected stack.
+# Agent templates are at templates/agents/{slug}.md
+# No agent has a model: field — model is per plan phase (ADR-007).
 
 # Always installed for every project
 always:
-  - principal-architect
-  - staff-engineer
-  - staff-docs
+  - architect
+  - docs
+  - qa
+
+# Installed for most non-trivial projects
+common:
+  - sre
+  - security
+  - pm
+  - api
 
 # Installed when these languages/frameworks are detected
 go:
-  - senior-backend
-  - principal-dba
-  - staff-qa
+  - backend
+  - dba
 
 typescript:
-  - staff-frontend
-  - senior-backend
-  - staff-qa
+  - frontend
+  - backend
 
 python:
-  - senior-backend
-  - principal-dba
-  - staff-qa
+  - backend
+  - dba
 
 php:
-  - senior-backend
-  - staff-qa
+  - backend
 
 ruby:
-  - senior-backend
-  - staff-qa
+  - backend
 
 java:
-  - senior-backend
-  - principal-dba
-  - staff-qa
+  - backend
+  - dba
 
+rust:
+  - backend
+
+# Frontend frameworks
 react:
-  - staff-frontend
-  - principal-ux
+  - frontend
+  - ux
 
 nextjs:
-  - staff-frontend
-  - principal-ux
+  - frontend
+  - ux
+  - seo
 
 vue:
-  - staff-frontend
-  - principal-ux
+  - frontend
+  - ux
 
 angular:
-  - staff-frontend
-  - principal-ux
+  - frontend
+  - ux
 
-# Installed when soul.md or stack implies these concerns
-api:
-  - senior-api
+svelte:
+  - frontend
+  - ux
 
-data:
-  - principal-data
+# Mobile
+react-native:
+  - mobile
+  - ux
 
-performance:
-  - senior-performance
+flutter:
+  - mobile
+  - ux
 
-# Installed when soul.md mentions payment/auth/compliance/HIPAA/PCI/sensitive data
+swift:
+  - mobile
+
+kotlin:
+  - mobile
+
+# Infrastructure triggers
+docker:
+  - platform
+
+kubernetes:
+  - platform
+  - sre
+
+terraform:
+  - platform
+
+# Content/web triggers
+web:
+  - seo
+  - gtm
+
+# Data triggers
+data-pipeline:
+  - data
+
+# Installed when project-context.md mentions these keywords
 security-keywords:
-  - staff-security
+  - security
 
-# Installed for all projects with infrastructure/deployment
-infrastructure:
-  - staff-sre
-
-# Always available for all projects
-all:
-  - staff-sre
-  - staff-qa
-  - senior-pm
-  - senior-api
+compliance-keywords:
+  - compliance
 
 # Available but not auto-installed — add with /keel:agents add {slug}
 optional:
-  - senior-performance
-  - principal-data
+  - performance
+  - data
+  - compliance
+  - mobile
+  - seo
+  - gtm

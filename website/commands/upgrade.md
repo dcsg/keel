@@ -24,6 +24,8 @@ When you install a new version of keel (`curl ... | bash`), your global template
 
 **Agent templates** (`.claude/agents/`)
 - Updates keel-managed agents to latest template versions
+- Never touches agents marked with `<!-- keel:custom -->` in the file
+- Never touches agents listed under `agents.custom` in `.keel/config.yaml`
 - Never touches user-created agents (no matching keel template)
 
 **Rule packs** (`.claude/rules/`)
@@ -39,6 +41,34 @@ When you install a new version of keel (`curl ... | bash`), your global template
 - **Never removes user-added hooks** — only updates keel-managed hook entries
 - **Additive for missing hooks** — if PostToolUse is missing, it's added without touching the rest
 
+## Protecting customized agents
+
+Two mechanisms tell upgrade to skip an agent:
+
+**File marker** — add `<!-- keel:custom -->` anywhere in the agent file:
+
+```yaml
+---
+name: dba
+description: "..."
+<!-- keel:custom -->
+tools:
+  - Read
+  - Grep
+---
+```
+
+**Config** — list agents in `.keel/config.yaml`:
+
+```yaml
+agents:
+  custom:
+    - dba              # skip on upgrade
+    - my-team-reviewer # not from keel templates
+```
+
+Config takes precedence over the file marker. Both protect the agent from upgrade.
+
 ## Output
 
 ```
@@ -50,8 +80,9 @@ Hooks (.claude/settings.json)
   ✓  PreToolUse     — up to date
 
 Agents (.claude/agents/)
-  ⬆  principal-dba.md   — template updated
-  ✓  principal-architect.md — up to date
+  ⬆  dba.md        — template updated
+  ✓  architect.md  — up to date
+  —  security.md   — custom, skipped
 
 Rule packs (.claude/rules/)
   ⬆  go.md          1.0 → 1.2
@@ -60,6 +91,19 @@ Rule packs (.claude/rules/)
 ─────────────────────────────────────────────────────
 Apply these upgrades? (y/n/select)
 ```
+
+## What's new
+
+After every upgrade, keel shows the release notes for the new version — the relevant section from the changelog — so you know what changed without having to look it up:
+
+```
+WHAT'S NEW in 0.2.0
+─────────────────────────────────────────────────────
+{changelog content for this release}
+─────────────────────────────────────────────────────
+```
+
+This appears whether or not actual changes were applied — if the project was already up to date, you still see the notes for the current version.
 
 ## Sharing upgrades with your team
 

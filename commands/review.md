@@ -12,118 +12,106 @@ allowed-tools:
 
 You are performing a post-implementation specialist review. Your job is to analyze what was built, detect which specialist domains are involved, and produce a consolidated review report.
 
-## Flags
+CRITICAL: NEVER spawn agents for domains not detected from the changed files — only route to specialists where the file patterns match. ALWAYS output the routing announcement before spawning agents.
 
-- `--no-keel` — Run all domain reviews inline (Claude does it directly, no subagents). Works without installed agents. Strip this flag before scope detection.
+## Instructions
 
-## Scope Detection
+1. Check `$ARGUMENTS` for `--no-keel`. If present, strip it and note inline mode (no agents).
 
-Determine the scope from `$ARGUMENTS`:
-- No argument: `git diff HEAD~1` — review last commit
-- `--staged`: `git diff --staged` — review staged changes
-- `--branch`: `git diff main...HEAD` (or `master...HEAD`) — review full branch
-- A file path: review just that file or directory
+2. Determine scope from `$ARGUMENTS` using the Scope Definitions in the Reference section. Run the appropriate git diff command to get the changed file list and full diff.
 
-Run the appropriate git diff command:
+3. If no git is available or no changes detected, output: `No changes detected to review.` and stop.
 
-```bash
-# Default: last commit
-git diff HEAD~1 --name-only 2>/dev/null
+4. Classify changed files by path and name patterns using the Domain Detection table in the Reference section. Only route to domains with at least one matching file.
 
-# Get the actual diff for analysis
-git diff HEAD~1 2>/dev/null
-```
+5. If `--no-keel` was passed: run each detected domain's review inline using the Reviewer Lenses in the Reference section. Do not spawn agents. Output results using the Output Format in the Reference section.
 
-If no git is available or no changes detected, output: `No changes detected to review.`
+6. Otherwise, output the routing announcement before spawning:
+   ```
+   🪝 keel: routing to {agent-1}, {agent-2}... (parallel)
+   ```
 
-## Domain Detection from Changed Files
+7. Spawn all applicable specialist agents concurrently in a single message (multiple Agent tool calls). Each agent prompt must include: the git diff or relevant file contents, the specific review lens for that domain from the Reference section, and the expected output format with severities.
 
-Classify changed files by path and name patterns:
+8. After specialist review, check if an active spec exists:
+   ```bash
+   ls {specs_dir}/SPEC-*/spec.md 2>/dev/null | head -1
+   ```
+   If a spec exists, run drift detection using `/keel:drift` logic with `--scope=spec` and append findings under a "DRIFT CHECK" section. If no spec exists, skip silently.
 
-```
-File classification rules:
-- *.sql, *migration*, *schema*             → database (principal-dba)
-- docker-compose*, Dockerfile*, *.tf,
-  k8s/*, helm/*                            → infrastructure (staff-sre)
-- *auth*, *jwt*, *oauth*, *payment*,
-  *token*, *security*                      → security (staff-security)
-- *route*, *handler*, *controller*,
-  *api*, *endpoint*, *webhook*             → api (senior-api)
-- *architect*, *domain*, *bounded*         → architecture (principal-architect)
-- *perf*, *benchmark*, *cache*, *optimize* → performance (senior-performance)
-```
+9. Consolidate all agent findings and output using the Output Format in the Reference section.
 
-## Advisor Review
+## Reference
 
-**If `--no-keel` was passed:** Run each detected domain's review inline using the lens descriptions below. Do not spawn agents.
+### Scope Definitions
 
-**Otherwise:** Output a routing announcement listing all agents before spawning:
-```
-🪝 keel: routing to {agent-1}, {agent-2}... (parallel)
-```
-Then for each detected domain, use the Agent tool to spawn the corresponding specialist subagent in parallel. Pass the diff and scope as context in the prompt.
+| Argument | Command | Description |
+|---|---|---|
+| (none) | `git diff HEAD~1` | Review last commit |
+| `--staged` | `git diff --staged` | Review staged changes |
+| `--branch` | `git diff main...HEAD` | Review full branch |
+| A file path | Read that path | Review specific file or directory |
 
-Domain → subagent_type mapping:
-- database → `principal-dba`
-- infrastructure → `staff-sre`
-- security → `staff-security`
-- api → `senior-api`
-- architecture → `principal-architect`
-- performance → `senior-performance`
+### Domain Detection Table
 
-Each agent prompt should include:
-1. The git diff (or relevant file contents)
-2. The specific review lens for that domain (see below)
-3. The output format expected (findings with severity)
+| File pattern | Domain | Agent |
+|---|---|---|
+| `*.sql`, `*migration*`, `*schema*` | database | `dba` |
+| `docker-compose*`, `Dockerfile*`, `*.tf`, `k8s/*`, `helm/*` | infrastructure | `sre` |
+| `*auth*`, `*jwt*`, `*oauth*`, `*payment*`, `*token*`, `*security*` | security | `security` |
+| `*route*`, `*handler*`, `*controller*`, `*api*`, `*endpoint*`, `*webhook*` | api | `api` |
+| `*architect*`, `*domain*`, `*bounded*` | architecture | `architect` |
+| `*perf*`, `*benchmark*`, `*cache*`, `*optimize*` | performance | `performance` |
 
-Spawn all applicable agents concurrently using multiple Agent tool calls in a single message.
+### Reviewer Lenses
 
-**Principal DBA** review lens:
+**Principal DBA**
 - Schema correctness and migration safety
 - Query efficiency and N+1 risks
 - Missing indexes on queried columns
 - Transaction boundaries
 - Missing rollback migrations
 
-**Staff SRE** review lens:
+**Staff SRE**
 - Deployment readiness and health checks
 - Rollback capability
 - Observability: logging and metrics coverage
 - Resource limits defined
 
-**Staff Security** review lens:
+**Staff Security**
 - OWASP Top 10 scan of changed code
 - Hardcoded secrets or credentials
 - Input validation gaps
 - Auth gaps on new endpoints
 - Exposed sensitive data
 
-**Senior API** review lens:
+**Senior API**
 - Contract stability and breaking changes
 - Missing or outdated documentation
 - Versioning strategy
 - Response schema consistency
 
-**Principal Architect** review lens:
+**Principal Architect**
 - Bounded context violations
 - Dependency direction correctness
 - Pattern consistency with existing codebase
 - Technical debt introduced
 
-**Senior Performance** review lens:
+**Senior Performance**
 - N+1 query patterns introduced
 - Missing caching opportunities
 - Algorithmic complexity concerns
 - Benchmark-worthy hot paths
 
-## Severity Model
+### Severity Model
 
-Each finding uses:
 - 🔴 Critical: must address before shipping (data loss, security breach, broken contract)
 - 🟡 Warning: should address, not blocking
 - 🟢 OK: domain looks healthy
 
-## Output Format
+**Agent header summary MUST list ALL non-zero severity counts.** If an agent has 1 critical and 1 warning, the header says `🔴 1 🟡 1` — never omit a level. The footer totals ALL 🔴 and 🟡 across all agents.
+
+### Output Format
 
 ```
 IMPLEMENTATION REVIEW — {date}
@@ -131,18 +119,27 @@ IMPLEMENTATION REVIEW — {date}
 Scope: {n} files changed ({scope description})
 Domains: {detected domains}
 
-{AGENT NAME}              {severity summary}
+{AGENT NAME}              {severity counts: 🔴 N 🟡 N 🟢 N — list ALL non-zero levels}
   🔴  {finding — specific, actionable, with file reference}
   🟡  {finding}
   🟢  {area that looks good}
 
 ─────────────────────────────────────────────────────
-{N critical, N warnings}
+{total: N critical, N warnings — count ALL 🔴 and 🟡 across all agents}
 {If critical: "Address before shipping?"}
 {If all clean: "✅ All domains clear — looks good to ship."}
 ```
 
-If a relevant agent is not installed, note:
+If a relevant agent is not installed:
 ```
-PRINCIPAL DBA — not installed (run /keel:agents add principal-dba)
+PRINCIPAL DBA — not installed (run /keel:agents add dba)
+```
+
+### Drift Check Output Format
+
+```
+DRIFT CHECK — SPEC-005
+  ✅ 6 requirements compliant
+  ⚠️  1 diverged: agent memory on security missing
+  Action: add memory:project to security.md
 ```

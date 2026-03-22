@@ -73,7 +73,7 @@ plans:
   dir: docs/plans
 YAML
 
-cat > docs/soul.md << 'MD'
+cat > docs/project-context.md << 'MD'
 # TaskBoard
 
 A task management API for small teams.
@@ -216,7 +216,7 @@ cat > CLAUDE.md << 'MD'
 
 <!-- keel:start -->
 ## Before Writing Code
-1. Read `docs/soul.md` for project context
+1. Read `docs/project-context.md` for project context
 2. Rules are enforced automatically via `.claude/rules/`
 3. If a plan is active, check `docs/plans/` for current phase
 <!-- keel:end -->

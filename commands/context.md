@@ -21,9 +21,9 @@ Load project context into the current session. Shows what was loaded for transpa
 
 | Depth | Loads | Best for |
 |-------|-------|----------|
-| `full` | Everything: soul, all decisions, all invariants, product, PRDs, plans, rules | Small/medium projects, first time on a project |
-| `focused` | Soul, current plan phase, relevant decisions, all invariants, rule names | Day-to-day work on large projects |
-| `minimal` | Soul, current plan phase title + tasks, all invariants | Quick tasks, tight context windows |
+| `full` | Everything: project context, all decisions, all invariants, product, PRDs, plans, rules | Small/medium projects, first time on a project |
+| `focused` | Project context, current plan phase, relevant decisions, all invariants, rule names | Day-to-day work on large projects |
+| `minimal` | Project context, current plan phase title + tasks, all invariants | Quick tasks, tight context windows |
 
 Default is `full`. If no `--depth` flag is provided and the project has more than 15 ADRs or more than 5 PRDs, suggest focused mode before proceeding:
 
@@ -47,9 +47,9 @@ Read the config to determine `base:` directory (default: `docs`).
 
 Parse `$ARGUMENTS` for `--depth=` flag. Default to `full` if not provided.
 
-### 2. Load Soul (all depths)
+### 2. Load Project Context (all depths)
 
-Read `{base}/soul.md`. If it exists, summarize the key points. If not, note it's missing.
+Read `{base}/project-context.md`. If it exists, summarize the key points. If not, note it's missing.
 
 ### 3. Load Active Plan
 
@@ -122,9 +122,9 @@ Read `.keel/config.yaml` for a `ticket:` section. If configured, note the system
 ### 9. Output Summary
 
 ```
-Context loaded for: {project name from soul.md} (depth: {depth})
+Context loaded for: {project name from project-context.md} (depth: {depth})
 
-  Soul:        {one-line summary}
+  Project:     {one-line summary}
   Plan:        {active plan name and current phase, or "None active"}
   Product:     {spec status, or "No product spec"}
   Decisions:   {count loaded}/{count total} decision records
@@ -139,9 +139,9 @@ Then output each section based on depth:
 **full:**
 ```
   ─────────────────────────────────────────
-  SOUL
+  PROJECT CONTEXT
   ─────────────────────────────────────────
-  {soul.md summary — what this project is, stack, architecture}
+  {project-context.md summary — what this project is, stack, architecture}
 
   ─────────────────────────────────────────
   ACTIVE PLAN
@@ -167,9 +167,9 @@ Then output each section based on depth:
 **focused:**
 ```
   ─────────────────────────────────────────
-  SOUL
+  PROJECT CONTEXT
   ─────────────────────────────────────────
-  {soul.md summary}
+  {project-context.md summary}
 
   ─────────────────────────────────────────
   CURRENT PHASE
@@ -191,9 +191,9 @@ Then output each section based on depth:
 **minimal:**
 ```
   ─────────────────────────────────────────
-  SOUL
+  PROJECT CONTEXT
   ─────────────────────────────────────────
-  {soul.md summary}
+  {project-context.md summary}
 
   ─────────────────────────────────────────
   CURRENT PHASE
@@ -212,7 +212,7 @@ If anything is missing or stale, note it:
 
 ```
   Warnings:
-  - No soul.md found — run /keel:init
+  - No project-context.md found — run /keel:init
   - Plan "PLAN-xyz.md" has no progress updates in 7+ days
   - Rule pack "go.md" was manually edited (no keel:generated marker) — customizations preserved
 ```
@@ -232,12 +232,12 @@ mkdir -p "$MEMORY_DIR"
 Write the following to `$MEMORY_FILE` (keep under 150 lines):
 
 ```markdown
-# {Project Name from soul.md} — Keel Memory
+# {Project Name from project-context.md} — Keel Memory
 
 _Last updated: {YYYY-MM-DD} via /keel:context_
 
-## Soul
-{2-3 sentence summary from soul.md}
+## Project Context
+{2-3 sentence summary from project-context.md}
 
 ## Stack
 {stack from config.yaml}
@@ -259,7 +259,7 @@ _Last updated: {YYYY-MM-DD} via /keel:context_
 
 ## Key Files
 - Config: .keel/config.yaml
-- Soul: docs/soul.md
+- Project Context: docs/project-context.md
 - Plans: docs/product/plans/ (or docs/plans/)
 - Decisions: docs/decisions/
 - Invariants: docs/invariants/

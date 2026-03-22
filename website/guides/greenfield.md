@@ -28,7 +28,7 @@ Keel infers:
 - **Stack:** Go, Chi, TypeScript, React
 - **Rules to install:** code-quality, testing, security, error-handling, architecture, go, chi, typescript
 
-Shows you a toggle list. Confirm or adjust. Done.
+Shows all available rules and agents with recommended items checked. Toggle by name or say "looks good" to proceed.
 
 ## What changes immediately
 
@@ -70,7 +70,7 @@ The handler delegates. Errors are returned. Business logic lives in the service 
 ```
 your-project/
 ├── docs/
-│   ├── soul.md              # seeded from your description
+│   ├── project-context.md   # seeded from your description
 │   ├── decisions/           # ready for your first ADR
 │   ├── invariants/          # hard constraints
 │   └── product/

@@ -55,6 +55,18 @@ If patterns are found, it warns before the push completes:
 KEEL_SECURITY_SKIP=1 git push
 ```
 
+To also skip the invariant check in the same push:
+
+```bash
+KEEL_INVARIANT_SKIP=1 git push
+```
+
+Both flags can be combined:
+
+```bash
+KEEL_SECURITY_SKIP=1 KEEL_INVARIANT_SKIP=1 git push
+```
+
 ### Disable permanently
 
 ```yaml
@@ -76,7 +88,7 @@ For features that touch security-sensitive domains, run a full audit before ship
 /keel:audit src/payments/ ← specific directory
 ```
 
-This invokes the `staff-security` agent for a thorough review:
+This invokes the `security` agent for a thorough review:
 
 **OWASP Top 10 coverage:**
 - A01 Broken Access Control
@@ -136,10 +148,10 @@ OWASP Checklist:
 
 ## Pre-flight security review in plans
 
-When you run `/keel:plan` and the plan mentions auth, payments, tokens, RBAC, or similar, the `staff-security` agent automatically reviews the plan before execution:
+When you run `/keel:plan` and the plan mentions auth, payments, tokens, RBAC, or similar, the `security` agent automatically reviews the plan before execution:
 
 ```
-STAFF SECURITY
+SECURITY
   🟡  JWT secret storage not specified — clarify storage mechanism in phase 2
   🟢  Auth middleware scoping looks correct
 ```
@@ -148,12 +160,12 @@ Catching security issues in the plan is far cheaper than catching them in code r
 
 ---
 
-## The staff-security agent
+## The security agent
 
-All security checks in keel route through the `staff-security` specialist agent. You can invoke it directly for anything security-related — threat modeling, reviewing a specific pattern, checking a library's security posture:
+All security checks in keel route through the `security` specialist agent. You can invoke it directly for anything security-related — threat modeling, reviewing a specific pattern, checking a library's security posture:
 
 ```
-Ask staff-security to review our OAuth implementation
+Ask security to review our OAuth implementation
 ```
 
-The agent is installed automatically on projects where the soul.md description mentions payments, auth, HIPAA, PCI, compliance, or security.
+The agent is installed automatically on projects where the project-context.md description mentions payments, auth, HIPAA, PCI, compliance, or security.

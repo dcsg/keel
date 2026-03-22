@@ -17,7 +17,19 @@ Or describe the task inline:
 ```
 /keel:plan add bulk order creation endpoint
 /keel:plan CON-42
+/keel:plan SPEC-005
+/keel:plan add bulk order creation endpoint --no-review
 ```
+
+## Arguments
+
+| Argument | Description |
+|----------|-------------|
+| (none) | Asks for task description interactively |
+| A task description | Uses it as the plan task |
+| A ticket ID (e.g. `CON-42`) | References the ticket as the task |
+| `SPEC-NNN` | Uses the spec and its accepted artifacts as primary planning context |
+| `--no-review` | Skip the pre-flight specialist review after the plan is written |
 
 ## What happens
 

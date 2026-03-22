@@ -68,34 +68,53 @@ For each hook type, check two things: (1) is the content correct, and (2) is it 
 If any `type: command` hook has its logic inline (a long bash string) rather than referencing `$HOME/.keel/hooks/*.sh`, it is outdated regardless of content. Note: "using inline bash — migrate to script reference".
 
 **Content checks:**
-- `SessionStart`: command should be `$HOME/.keel/hooks/session-start.sh` (or contain `git log` if inline) — if not → outdated
+- `SessionStart`: command should reference `$HOME/.keel/hooks/session-start.sh` — if not → outdated
+- `PreToolUse`: must be present with `Write|Edit` matcher — if missing → missing
 - `PostToolUse`: must be present with `Write|Edit` matcher — if missing → missing
-- `Stop`: prompt must always return `{"ok": true}` with signals as plain text before the JSON. Two outdated patterns to detect:
-  1. Old free-text format ("end your next response with...") → outdated (causes JSON validation errors)
-  2. Uses `{"ok": false, "reason": "..."}` for signals → outdated (causes "Prompt hook condition was not met" blocking error)
-- `PreCompact`: command should reference `$HOME/.keel/hooks/pre-compact.sh` or contain `/keel:session` — if not → outdated
+- `Stop`: must be type:command referencing `$HOME/.keel/hooks/stop-hook.sh` — if type:prompt or inline → outdated
+- `PreCompact`: command should reference `$HOME/.keel/hooks/pre-compact.sh` — if not → outdated
+- `UserPromptSubmit`: must be present — if missing → missing (v4: injects active plan phase)
+- `PostCompact`: must be present — if missing → missing (v4: re-injects context after compaction)
+- `SubagentStop`: must be present — if missing → missing (v4: logs agent activity + quality gates)
+- `InstructionsLoaded`: must be present — if missing → missing (v4: logs rule pack loading)
 
 For each outdated or missing hook, note what changed in plain English:
 - "SessionStart: inline bash → migrate to `$HOME/.keel/hooks/session-start.sh`"
-- "PostToolUse: missing (now auto-formats files after edits)"
-- "Stop: old free-text format → fix JSON validation error"
-- "Stop: uses plain text before `{\"ok\": true}` for signals → fix JSON validation error (signals must be encoded in `{\"ok\": false, \"reason\": \"...\"}` JSON)"
+- "PostToolUse: missing (auto-formats files after edits)"
+- "UserPromptSubmit: missing (v4 — injects active plan phase into every prompt)"
+- "PostCompact: missing (v4 — re-injects plan + invariants after compaction)"
+- "SubagentStop: missing (v4 — logs agent activity, quality gates)"
+- "InstructionsLoaded: missing (v4 — logs which rule packs load)"
+- "Stop: outdated format (may cause JSON validation error) → migrate to `$HOME/.keel/hooks/stop-hook.sh`"
 - "PreCompact: inline bash → migrate to `$HOME/.keel/hooks/pre-compact.sh`"
 
 #### 2b. Agent check
 
 List files in `.claude/agents/`. For each, check if a matching template exists in `~/.keel/templates/agents/`.
 
-For each agent that has a keel template, compare content hashes — NOT modification times (mtimes are unreliable because every global install re-downloads templates with fresh timestamps):
+**Skip customized agents.** An agent is customized if:
+1. It contains `<!-- keel:custom -->` anywhere in the file, OR
+2. It is listed in `.keel/config.yaml` under `agents.custom`
+
+```yaml
+# .keel/config.yaml
+agents:
+  custom:
+    - dba       # skip on upgrade — team has customized this agent
+    - my-team-reviewer    # not from keel templates
+```
+
+For each agent that is NOT customized and has a keel template, compare content hashes — NOT modification times:
 ```bash
 template_hash=$(md5 -q ~/.keel/templates/agents/{slug}.md 2>/dev/null || md5sum ~/.keel/templates/agents/{slug}.md 2>/dev/null | awk '{print $1}')
 installed_hash=$(md5 -q .claude/agents/{slug}.md 2>/dev/null || md5sum .claude/agents/{slug}.md 2>/dev/null | awk '{print $1}')
 ```
 
+- If customized → skip (note as "custom — skipped")
 - If hashes differ → outdated
 - If hashes match → up to date
 
-Do NOT touch agents that have no matching template (user-created agents).
+Do NOT touch agents that have no matching template (user-created agents) or that are marked as custom.
 
 #### 2c. Rule packs check
 
@@ -121,9 +140,9 @@ Hooks (.claude/settings.json)
   ⬆  PreCompact     — inline bash → script reference
 
 Agents (.claude/agents/)
-  ⬆  principal-dba.md   — template updated
-  ⬆  staff-security.md  — template updated
-  ✓  principal-architect.md  — up to date
+  ⬆  dba.md   — template updated
+  ⬆  security.md  — template updated
+  ✓  architect.md  — up to date
 
 Rule packs (.claude/rules/)
   ⬆  go.md          1.0 → 1.2

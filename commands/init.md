@@ -9,12 +9,13 @@ allowed-tools:
   - Glob
   - Grep
   - Agent
-  - AskUserQuestion
 ---
 
 # keel:init
 
-Set up keel for a project: detect project type, interview the user, infer architecture and rules, generate everything.
+Set up keel governance for a project. Detects what exists, confirms with the user, and generates everything.
+
+CRITICAL: NEVER guess or invent project details. If something is unclear, ask. If an artifact detection is uncertain, skip it and tell the user how to import it manually.
 
 ## Instructions
 
@@ -24,556 +25,480 @@ Set up keel for a project: detect project type, interview the user, infer archit
 ls -la .keel/ 2>/dev/null || echo "No .keel/ directory"
 ```
 
-- If `.keel/config.yaml` already exists, read it and show current configuration. Ask: "Keel is already set up. Want to reconfigure? (y/N)"
+**If `.keel/config.yaml` exists**, determine the scenario:
 
-### 2. Detect Project Age
+- **Team member joining** (rules, agents, hooks already in `.claude/`): verify local setup matches config. Check for gaps (missing rule files, missing hooks, version mismatch). If everything matches:
+  ```
+  Keel is set up and matches your config. Nothing to do.
 
-Determine if this is a greenfield or established project:
+  Run /keel:status to see governance dashboard.
+  ```
+  If gaps exist:
+  ```
+  Keel config exists but your local setup needs sync:
+    - 2 rule packs missing from .claude/rules/
+    - Hooks not installed in .claude/settings.json
 
+  Sync your local setup? (Y/n)
+  ```
+  Sync only fills gaps — never overwrites existing files.
+
+- **Reconfigure** (user explicitly wants to change settings): Before any file generation, scan existing `.claude/rules/*.md` for the `<!-- keel:generated -->` tag. Files WITHOUT this tag have been manually customized. Show a change summary:
+  ```
+  Reconfiguring keel.
+
+  Will update:  3 rule packs (from templates)
+  Will create:  2 new rule packs
+  Will skip:    1 customized file (security.md — manually edited)
+  Will preserve: CLAUDE.md (sentinel merge), settings.json (hook merge)
+
+  Proceed? (y/N)
+  ```
+  Never overwrite files that lack the `<!-- keel:generated -->` tag.
+
+### 2. Scan the Project
+
+Show a step indicator:
+```
+[1/3] Scanning project...
+```
+
+Run these scans in parallel:
+
+**Code:**
 ```bash
-# Check git history
-git log --oneline 2>/dev/null | wc -l | tr -d ' '
-# Check file count
-find . -type f -not -path './.git/*' -not -path './node_modules/*' -not -path './vendor/*' | wc -l | tr -d ' '
+ls go.mod package.json composer.json Gemfile pyproject.toml requirements.txt Cargo.toml 2>/dev/null
+find . -type f -not -path './.git/*' -not -path './node_modules/*' -not -path './vendor/*' | wc -l
+git log --oneline 2>/dev/null | wc -l
 ```
 
-- **Greenfield**: no `.git/` or fewer than 5 commits AND fewer than 20 source files
-- **Established**: existing git history with 5+ commits OR 20+ source files
-
-### 3A. Greenfield Flow
-
-Ask a single open-ended question:
-
-```
-What are you building? Describe it in a few sentences.
-(Include what it does, who it's for, and any technical constraints you know.)
+**Build/Test/Lint:**
+```bash
+ls Makefile package.json Taskfile.yml justfile 2>/dev/null
+ls .golangci-lint.yaml .golangci.yaml .eslintrc* eslint.config.* ruff.toml .rubocop.yml biome.json .prettierrc* 2>/dev/null
+ls .github/workflows/*.yml .gitlab-ci.yml 2>/dev/null
 ```
 
-From the user's description, **infer**:
-
-1. **Architecture complexity**: Does this have multiple bounded contexts (DDD) or is it simpler (CRUD/API/CLI)?
-2. **Stack**: What languages and frameworks are mentioned or implied?
-3. **Security concerns**: Does it handle payments, auth, sensitive data, external APIs?
-4. **Frontend**: Is there a UI component?
-5. **Domain concepts**: What are the main bounded contexts or modules?
-
-Then show inferred selections:
-
-```
-Based on your description:
-
-  Project:      {one-line summary}
-  Architecture: {Simple | DDD recommended (N bounded contexts detected)}
-  Stack:        {detected languages and frameworks}
-
-  Rules:
-  1. [x] code-quality     — SOLID, naming, structure
-  2. [x] testing          — TDD, mock anti-patterns
-  3. [x] security         — {reason if specific, e.g., "payment handling detected"}
-  4. [x] error-handling   — typed errors, no silent catches
-  5. [ ] frontend         — {on if frontend detected}
-  6. [ ] architecture     — {on if DDD recommended, with detected contexts listed}
-  7. [x] {lang}           — {detected language}
-  8. [x] {framework}      — {detected framework, if any}
-
-  Type numbers to toggle (e.g. "5 6"), or press enter to accept:
+**AI Config:**
+```bash
+ls CLAUDE.md .cursorrules .github/copilot-instructions.md .windsurfrules 2>/dev/null
+ls .claude/rules/*.md 2>/dev/null
 ```
 
-Wait for user confirmation or edits.
-
-### 3B. Established Project Flow
-
-Run a codebase audit using an Agent:
-
-```
-Agent(
-  subagent_type: "Explore",
-  prompt: """
-  Analyze this codebase and report:
-  1. Languages used (check file extensions, go.mod, package.json, composer.json, Gemfile, pyproject.toml, requirements.txt)
-  2. Frameworks detected (check imports, dependencies, config files)
-  3. Directory structure pattern (flat, layered, domain-driven, feature-based)
-  4. Test setup (testing framework, test file locations, coverage config)
-  5. CI/CD setup (GitHub Actions, GitLab CI, etc.)
-  6. Existing linting/formatting config (.eslintrc, .prettierrc, golangci-lint, etc.)
-  7. Number of source files and approximate lines of code
-  8. Git history: number of commits, age of oldest commit
-
-  Return a structured summary. Be specific about versions and exact tools found.
-  """,
-  description: "Audit codebase for keel init"
-)
+**Existing docs:**
+```bash
+find . -maxdepth 3 -name "ADR-*" -o -name "adr-*" -o -name "*decision*" 2>/dev/null | grep -v .git | grep '\.md$'
+ls docs/adr/ docs/decisions/ docs/architecture/decisions/ 2>/dev/null
+find . -maxdepth 3 -name "SPEC*" -o -name "spec*" -o -name "PRD*" -o -name "prd*" -o -name "design*.md" 2>/dev/null | grep -v .git | grep '\.md$'
+ls docs/project-context.md docs/about.md docs/overview.md 2>/dev/null
+ls .env.example .env.sample 2>/dev/null
 ```
 
-Show findings and recommendations:
-
-```
-Codebase Analysis:
-
-  Stack:       {languages with versions, frameworks}
-  Structure:   {pattern detected}
-  Tests:       {count} test files, using {framework}
-  CI:          {detected or "None"}
-  Linting:     {detected tools or "None"}
-  Age:         ~{months}, {commits} commits
-
-  Recommended rules:
-  1. [x] code-quality
-  2. [x] testing          — {test framework} detected
-  3. [x] security         — {reason, e.g., "DB access detected"}
-  4. [x] error-handling
-  5. [ ] frontend         — {on/off with reason}
-  6. [ ] architecture     — {suggestion based on structure}
-  7. [x] {lang}           — {language} detected
-  8. [x] {framework}      — {framework} detected (if any)
-
-  Type numbers to toggle (e.g. "5 6"), or press enter to accept:
+**Archway detection:**
+```bash
+ls archway.yaml .archway/ 2>/dev/null
 ```
 
-Wait for user confirmation or edits.
-
-### 4. Ask About SDLC Preferences
-
-Ask each question **one at a time**. Wait for the user's response before asking the next question. Do not present multiple questions in a single message.
-
-**Question 1:** Commit convention?
+**Commit convention detection:**
+```bash
+git log --oneline -20 2>/dev/null
 ```
-Commit convention: conventional | angular | none  [conventional]
-```
-Wait for response.
 
-**Question 2:** PR template?
-```
-Install a PR template? (y/n)  [y]
-```
-Wait for response.
+Present findings — same format for both established and greenfield:
 
-**Question 3:** Project management tools?
+**Established project:**
 ```
-Project management tools? (select all that apply — type numbers or "none")
-  1. Linear
-  2. GitHub Issues
-  3. Jira
-  4. None
+[1/3] Scanning project...
+
+  Code:       Go project, 142 files
+              Chi framework, PostgreSQL
+  Build:      make build
+  Test:       make test
+  Lint:       golangci-lint (.golangci-lint.yaml)
+  AI config:  CLAUDE.md (34 lines)
+  Docs:       3 ADRs in docs/decisions/
+  Commits:    conventional commits detected (feat/fix/chore)
 ```
-Wait for response. For each selected: plan to add to `.mcp.json` and note required env vars.
 
-**Question 4:** Team name?
+**Greenfield (no code detected):**
 ```
-Team name? (optional — shown in /keel:team overview, press enter to skip)
+[1/3] Scanning project...
+
+  Code:       no source files detected
+  Build:      —
+  Test:       —
+  Lint:       —
+  AI config:  none
+  Docs:       none
 ```
-Wait for response.
 
-### 5. Generate Everything
+Then ask:
+```
+What are you building?
 
-Based on confirmed selections, generate all files:
+  Example: "A multi-tenant SaaS for restaurant inventory.
+  Go + Chi, PostgreSQL, DDD with bounded contexts."
 
-#### 5.1 — `.keel/config.yaml`
+Describe yours in a few sentences:
+```
 
-Read `~/.keel/VERSION` to get the installed keel version (default to `unknown` if not found).
+If the description is missing stack info, ask ONE follow-up:
+```
+What language/framework? (e.g., Go + Chi, TypeScript + Next.js)
+```
+
+### 3. Configure
+
+Show a step indicator:
+```
+[2/3] Configuring...
+```
+
+**Archway integration:** If `archway.yaml` was detected in step 2, show:
+```
+  archway detected — architecture enforcement handled by archway.
+  Skipping architecture rule pack. For full architecture governance,
+  see https://archway.dev
+```
+Do NOT include `architecture` in the rules list when archway is present. Archway owns architecture enforcement via its guide, component dependencies, and anti-pattern detectors.
+
+If archway is NOT detected and the user's description or codebase suggests complex architecture (DDD, hexagonal, multiple bounded contexts), recommend archway in the summary.
+
+Present rules, agents, and SDLC in a single combined view. Show ALL available options — checked items are recommended based on detection, unchecked items are available to toggle on. Infer defaults from the scan or description.
+
+**Rules** — read the registry at `~/.keel/templates/rules/` to get the full list. Group by tier:
+
+```
+Rules (✓ = recommended for your stack):
+
+  Base:
+    [x] code-quality       — naming, structure, size limits
+    [x] testing            — TDD, mock boundaries
+    [x] security           — input validation, no hardcoded secrets
+    [x] error-handling     — typed errors, context wrapping
+    [ ] api                — REST conventions, pagination, versioning
+    [ ] architecture       — layer boundaries, DDD, bounded contexts
+    [ ] database           — migrations, indexes, N+1 prevention
+    [ ] frontend           — components, state, accessibility
+    [ ] observability      — structured logging, metrics, tracing
+    [ ] seo                — meta tags, structured data, performance
+
+  Language:
+    [x] go                 — error handling, interfaces, goroutines
+    [ ] typescript         — strict types, no any, async patterns
+    [ ] python             — type hints, PEP 8, pytest
+    [ ] php                — strict types, PSR-12, no @ suppression
+
+  Framework:
+    [x] chi                — thin handlers, middleware chains
+    [ ] nextjs             — App Router, Server Components
+    [ ] django             — ORM, views, migrations
+    [ ] laravel            — Eloquent, Form Requests, Jobs
+    [ ] rails              — Active Record, strong params
+    [ ] symfony            — DI, Doctrine, Messenger
+```
+
+**Agents** — read the registry at `~/.keel/templates/agents/` to get the full list:
+
+```
+Agents (✓ = matched to your stack):
+
+    [x] architect          — architecture review
+    [x] backend            — Go patterns
+    [x] dba                — PostgreSQL
+    [x] docs               — documentation
+    [x] qa                 — test strategy
+    [ ] api                — API design, contracts
+    [ ] compliance         — regulatory requirements
+    [ ] data               — data pipelines, warehousing
+    [ ] frontend           — UI components, state
+    [ ] gtm                — go-to-market strategy
+    [ ] mobile             — iOS/Android patterns
+    [ ] performance        — profiling, optimization
+    [ ] platform           — infra, deployment, CI/CD
+    [ ] pm                 — product management
+    [ ] security           — OWASP, auth, secrets
+    [ ] seo                — search optimization
+    [ ] sre                — reliability, observability
+    [ ] ux                 — user experience
+```
+
+**SDLC:**
+
+```
+SDLC:
+  Commits:    conventional commits (detected from git log)
+  PR template: yes (GitHub repo detected)
+  Tickets:    none detected
+```
+
+```
+Toggle items by name (e.g. "add api", "remove chi", "add security"),
+adjust SDLC (e.g. "tickets linear"), or say "looks good" to proceed:
+```
+
+One screen, one confirmation. If the user makes changes, re-display and confirm again.
+
+**Ticket system selection — prerequisite check:**
+
+If the user adds a ticket system (linear/github/jira), immediately check for the required environment variable:
+
+```
+Linear selected — needs LINEAR_API_KEY.
+  Set it:  export LINEAR_API_KEY="lin_api_..."
+  Get one: https://linear.app/settings/api
+
+  I'll add the config. The connection activates once the key is set.
+```
+
+### 4. Generate
+
+Show a step indicator and progress during generation:
+```
+[3/3] Installing...
+```
+
+Generate all files, showing each as it completes:
+
+```
+  ✓ Config          .keel/config.yaml
+  ✓ Project context docs/project-context.md
+  ✓ Rules           6 packs → .claude/rules/
+  ✓ Agents          5 specialists → .claude/agents/
+  ✓ Hooks           .claude/settings.json (9 behaviors)
+  ✓ CLAUDE.md       updated (sentinel merge)
+  ✓ Directories     docs/architecture/, docs/plans/, docs/product/
+  {if PR template}: ✓ PR template    .github/pull_request_template.md
+  {if ticket sys}:  ✓ Tickets        .mcp.json (Linear)
+  {if linters}:     ✓ Linter sync    .claude/rules/linter-golangci.md
+```
+
+#### File generation details
+
+**`.keel/config.yaml`** — Read `~/.keel/VERSION` for version.
 
 ```yaml
 # .keel/config.yaml — generated by keel:init
-keel_version: {version from ~/.keel/VERSION}
+keel_version: {version}
 base: docs
 
-stack: [{detected stack}]
+stack: [{detected or stated stack}]
+
+paths:
+  decisions: {adapted or default: docs/architecture/decisions}
+  invariants: {adapted or default: docs/architecture/invariants}
+  plans: docs/plans
+  specs: docs/product/specs
+  prds: docs/product/prds
+  guidelines: docs/guidelines
+  reports: docs/reports
+  soul: docs/project-context.md
 
 rules:
-  # Base (language-agnostic)
-  code-quality: { include: all }
-  testing: { include: all }
-  security: { include: all }
-  error-handling: { include: all }
-  # frontend: { include: all }
-  # architecture: { include: all }
+  {name}: { include: all }
 
-  # Language
-  # {lang}: { include: all }
-
-  # Framework
-  # {framework}: { include: all }
-
-  # Custom topics — add your own:
-  # my-rules:
-  #   type: custom
-  #   source: docs/rules/my-rules.md
-  #   paths: "**/*"
-
-  # Extend built-in topics:
-  # custom:
-  #   - path: docs/rules/extra.md
-  #     topic: code-quality
+# Toggle optional behaviors. All default to true.
+# The governance core (rules, compile, drift, review-governance) is always on.
+features:
+  auto-format: true        # format files after every edit
+  session-summary: true    # git-aware "since your last session" on start
+  signal-detection: true   # detect ADR/invariant candidates on stop
+  plan-injection: true     # inject active plan phase on every prompt
+  quality-gates: true      # block on critical findings from gate agents
 
 sdlc:
-  commit-convention: {choice}
+  commit-convention: {choice or "none"}
   pr-template: {true/false}
-
-# {If team name provided:}
-# team:
-#   name: "{team-name}"
-
-# Ticket system (uncomment to enable):
-# ticket:
-#   system: linear
-#   team: my-team
 ```
 
-If a team name was provided in step 4, add it to the config (uncommented):
+**`docs/project-context.md`** — Seed from description or codebase analysis. Never overwrite if it already exists.
 
-```yaml
-team:
-  name: "{team-name}"
+**`.claude/rules/`** — For each enabled rule, use these EXACT paths. Do NOT search or explore — read directly:
+
+```bash
+# Rule template paths (~ = $HOME):
+# Base rules:      ~/.keel/templates/rules/base/{name}.md
+# Language rules:  ~/.keel/templates/rules/lang/{name}.md
+# Framework rules: ~/.keel/templates/rules/framework/{name}.md
+#
+# Example: to install the "go" rule pack:
+#   Read: ~/.keel/templates/rules/lang/go.md
+#   Write to: .claude/rules/go.md
+#
+# Example: to install the "code-quality" rule pack:
+#   Read: ~/.keel/templates/rules/base/code-quality.md
+#   Write to: .claude/rules/code-quality.md
 ```
 
-Uncomment the rules that the user confirmed. Leave others commented as examples.
+For each enabled rule:
+1. Check for project override at `.keel/templates/{name}.md` — use it if exists
+2. Otherwise Read the template from the exact path above (base/lang/framework tier)
+3. Write to `.claude/rules/{name}.md`
 
-#### 5.2 — `docs/soul.md`
+Tier mapping:
+- Base: code-quality, testing, security, error-handling, api, architecture, database, frontend, observability, seo
+- Lang: go, typescript, python, php
+- Framework: chi, nextjs, django, laravel, rails, symfony
 
-Seed from the user's description (greenfield) or from codebase analysis (established):
+If the template file doesn't exist at the expected path:
+```
+Rule template not found: ~/.keel/templates/rules/{tier}/{name}.md
+Install keel globally: curl -fsSL https://raw.githubusercontent.com/dcsg/keel/main/install.sh | bash
+```
+
+**`CLAUDE.md`** — Read the template from `~/.keel/templates/CLAUDE.md.tmpl`. Sentinel merge using `<!-- keel:start -->` / `<!-- keel:end -->`. Fill template variables from config. If CLAUDE.md exists without keel block, append. If keel block exists, replace between sentinels only. Never Write the whole file — use Read + Edit.
+
+**`.claude/settings.json`** — Generate hook config referencing `$HOME/.keel/hooks/`. If settings.json exists, merge hooks — preserve existing non-keel settings.
+
+**PR template** — Only install `.github/pull_request_template.md` if it does NOT already exist. Never overwrite.
+
+**`.mcp.json`** — If ticket system selected, add MCP server config. If `.mcp.json` exists, merge.
+
+**Directories** — Create all directories from paths config. Add a minimal README.md to each governance directory:
 
 ```markdown
-# {Project Name} — Soul
+<!-- docs/architecture/decisions/README.md -->
+# Architecture Decisions
 
-## What This Is
+Capture decisions with: "save this decision" or /keel:adr
 
-{User's description, cleaned up into 2-3 sentences}
+Format: ADR-NNN-title.md
+```
 
-## Stack
+```markdown
+<!-- docs/architecture/invariants/README.md -->
+# Invariants
 
-{Detected or stated stack}
+Capture hard constraints with: "that's a hard rule" or /keel:invariant
 
-## Architecture
+Format: INV-NNN-title.md
+```
 
-{Simple / DDD with bounded contexts listed}
+```markdown
+<!-- docs/plans/README.md -->
+# Plans
 
-## Users
+Create execution plans with: "let's plan this" or /keel:plan
 
-{From description if mentioned, or "TBD"}
+Format: PLAN-NNN-title.md
+```
+
+```markdown
+<!-- docs/product/prds/README.md -->
+# Product Requirements
+
+Write PRDs with: "write a PRD for X" or /keel:prd
+
+Format: PRD-NNN-title.md
+```
+
+```markdown
+<!-- docs/product/specs/README.md -->
+# Technical Specifications
+
+Write specs with: "write a spec for X" or /keel:spec
+
+Format: SPEC-NNN-title/spec.md
+```
+
+**Specialist agents** — Use these EXACT paths. Do NOT search or explore:
+
+```bash
+# Agent template path: ~/.keel/templates/agents/{name}.md
+# Write to: .claude/agents/{name}.md
+#
+# Example: to install the "architect" agent:
+#   Read: ~/.keel/templates/agents/architect.md
+#   Write to: .claude/agents/architect.md
+```
+
+For each enabled agent from step 3, Read the template and Write to `.claude/agents/{name}.md`.
+
+**Linter sync** — If linter configs were found, run `/keel:sync` logic.
+
+**Import existing artifacts** — For findings from step 2:
+- **Confident** (clear ADRs, Makefile commands, .cursorrules): act on them
+- **Uncertain** (ambiguous docs): skip with a hint showing the exact prompt to import later
+
+### 5. Summary
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ KEEL INITIALIZED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Rules:   6 packs — code-quality, testing, security,
+           error-handling, go, chi
+  Agents:  5 specialists — architect, qa, backend, dba, docs
+  Hooks:   auto-format on edit, context on session start,
+           plan injection on every prompt, compaction recovery,
+           decision detection on session end
+
+  {If imported}: Imported: 3 ADRs from docs/decisions/
+
+What just changed:
+
+  Before keel, Claude writes code with no project standards,
+  no architecture awareness, and forgets everything between sessions.
+
+  Now Claude reads your 6 rule packs before writing any code.
+  Try it — ask Claude to write a function and watch it follow
+  your project's error handling and testing patterns.
+
+  Commit .keel/, .claude/, and docs/ to git — your team gets
+  identical governance automatically.
+
+  To undo: git checkout . && rm -rf .keel/ (before committing)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+Key formatting rules for the summary:
+- Name behaviors, not mechanisms ("auto-format on edit" not "PostToolUse hook")
+- One concrete before/after to demonstrate the transformation
+- Single next step: start building. No list of 4 equal alternatives.
+- Undo instructions for safety
+- Commit reminder for teams
 
 ---
 
-*Initialized by keel: {date}*
-```
+REMEMBER: NEVER guess project details or invent content. If uncertain, skip and tell the user the exact prompt to handle it manually. The init must feel trustworthy — every action should be explainable. Show progress throughout — the user should always know where they are and how much is left.
 
-#### 5.3 — `docs/product/spec.md`
+## Reference
 
-Create a product spec stub from the template. If `docs/product/spec.md` already exists, skip — do not overwrite.
+### MCP Server Configs
 
-```markdown
-# {Project Name} — Product Spec
-
-## Identity
-
-{One-line product description}
-
-## Users
-
-{Who this is for, from description or "TBD"}
-
-## Problems We Solve
-
--
-
-## Features (Roadmap)
-
-| Feature | Status | PRD |
-|---------|--------|-----|
-|         | planned |    |
-
-## Market Context
-
-{Competitors, alternatives, positioning — or "TBD"}
-
----
-
-*Initialized by keel: {date}*
-```
-
-#### 5.4 — `.claude/rules/` — rule packs
-
-For each enabled rule pack:
-
-1. Read the template from keel's templates directory (either `~/.keel/templates/rules/` for global install, or check the keel repo location)
-2. Copy the full template content to `.claude/rules/{name}.md` — this preserves `paths:` and `version:` frontmatter from the source template
-3. Do not strip or modify the frontmatter — the `version:` field enables `keel:doctor` to detect stale packs
-
-If keel templates are not found locally, output:
-
-```
-Templates not found. To generate rules, install keel globally:
-  curl -fsSL https://raw.githubusercontent.com/.../install.sh | bash
-
-Or manually copy rule templates from the keel repo to .claude/rules/
-```
-
-#### 5.5 — `CLAUDE.md` (root) — safe merge
-
-**Never overwrite an existing CLAUDE.md.** Use sentinel comments to manage the keel section safely.
-
-The keel-managed block looks like this:
-
-```markdown
-<!-- keel:start — managed by keel, do not edit manually -->
-## Keel
-
-### Project
-{one-line from soul.md}
-
-### Before Writing Code
-1. Read `docs/soul.md` for project context
-2. Rules are enforced automatically via `.claude/rules/`
-3. If a plan is active, read it in `docs/product/plans/` — check progress table for current state
-
-### Build & Test Commands
-```
-# Build
-{detected build command or "# TODO: add build command"}
-
-# Test
-{detected test command or "# TODO: add test command"}
-
-# Lint
-{detected lint command or "# TODO: add lint command"}
-```
-
-### Keel Commands
-When the user asks any of the following, run the corresponding command automatically:
-
-| If the user asks... | Run |
-|---------------------|-----|
-| "what's our status?", "where are we?", "project status" | `/keel:status` |
-| "what's next?", "what should we do next?", "next steps" | `/keel:status` |
-| "load context", "remind yourself", "what's this project?" | `/keel:context` |
-| "create a plan", "let's plan this", "plan for X" | `/keel:plan` |
-| "save this decision", "record this", "capture that" | `/keel:adr` |
-| "add an invariant", "that's a hard rule", "never do X" | `/keel:invariant` |
-| "write a PRD", "document this feature", "requirements for X" | `/keel:prd` |
-
-### After Compaction
-If context was compacted, re-read the active plan file in `docs/product/plans/`. The progress table is the persistent state — it tells you what's done and what's next.
-<!-- keel:end -->
-```
-
-**Logic:**
-
-- **No CLAUDE.md exists** → create it with just the keel block (no wrapper heading needed)
-- **CLAUDE.md exists, no keel block** → append the keel block at the bottom
-- **CLAUDE.md exists, keel block present** → replace only the content between `<!-- keel:start -->` and `<!-- keel:end -->`, leave everything else untouched
-
-Use a Read + Edit approach — never Write the whole file. Find the markers with grep, replace only between them.
-
-#### 5.5 — `.claude/settings.json` (hooks)
-
-Generate four hooks:
-
-**SessionStart** — fires at the start of every session. Detects keel project, checks memory staleness, and summarizes what changed in git since the last session with relevant agent suggestions. If memory is >7d old, warns to refresh. Supports disabling git analysis via `hooks: { session-start-git: false }` in `.keel/config.yaml`.
-
-**PreToolUse** — fires before Write or Edit. If `docs/soul.md` is missing, warns that init is incomplete.
-
-**Stop** — fires after every Claude response. Actively scans the response for artifact signals (ADR/invariant/PRD) and prompts Claude to surface them.
-
-**PreCompact** — fires before context compaction. Reminds Claude to update the active plan's progress table.
-
+**Linear:**
 ```json
-{
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if [ -f '.keel/config.yaml' ]; then ENCODED=$(echo \"$PWD\" | sed 's|/|-|g'); MEMORY=\"$HOME/.claude/projects/${ENCODED}/memory/MEMORY.md\"; if [ -f \"$MEMORY\" ]; then AGE=$(( ($(date +%s) - $(date -r \"$MEMORY\" +%s 2>/dev/null || stat -f %m \"$MEMORY\" 2>/dev/null || echo 0)) / 86400 )); if [ \"$AGE\" -gt 7 ]; then echo \"⚠️  Keel memory is ${AGE} days old. Run /keel:context to refresh.\"; else echo \"📋 Keel project detected — memory loaded (${AGE}d old). Run /keel:context to reload if needed.\"; fi; else echo \"📋 Keel project detected. Run /keel:context to load project context before writing code.\"; fi; fi"
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if [ -f '.keel/config.yaml' ] && [ ! -f 'docs/soul.md' ]; then echo '⚠️  Keel: docs/soul.md not found. Run /keel:init to complete setup.'; fi"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "Review your last response. Did it contain: (1) a significant technical choice with trade-offs — database selection, architectural pattern, API design, infrastructure decision; (2) a hard constraint that must NEVER be violated — data integrity rule, security boundary, domain purity requirement; or (3) a clearly defined new feature or user need with enough detail to act on? If yes to any, end your next response with ONE of these on its own line: '💡 This looks like an ADR — run `/keel:adr` to capture it.' OR '💡 This is an invariant — run `/keel:invariant` to capture it.' OR '💡 This looks like a PRD — run `/keel:prd` to capture it.' Only suggest if the signal is strong. Skip for preferences, style choices, implementation details, and refactoring notes."
-          }
-        ]
-      }
-    ],
-    "PreCompact": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo '⚠️  Context compacting. If a plan is active, update its progress table NOW before context is lost.'"
-          }
-        ]
-      }
-    ]
+"linear": {
+  "type": "http",
+  "url": "https://mcp.linear.app/sse",
+  "authorization_token": "${LINEAR_API_KEY}"
+}
+```
+Required: `LINEAR_API_KEY` — https://linear.app/settings/api
+
+**GitHub Issues:**
+```json
+"github": {
+  "type": "stdio",
+  "command": "npx",
+  "args": ["-y", "@modelcontextprotocol/server-github"],
+  "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}" }
+}
+```
+Required: `GITHUB_TOKEN`
+
+**Jira:**
+```json
+"jira": {
+  "type": "stdio",
+  "command": "npx",
+  "args": ["-y", "mcp-atlassian"],
+  "env": {
+    "JIRA_URL": "${JIRA_URL}",
+    "JIRA_USERNAME": "${JIRA_USERNAME}",
+    "JIRA_API_TOKEN": "${JIRA_API_TOKEN}"
   }
 }
 ```
-
-**Important:** If `.claude/settings.json` already exists, merge all hooks — don't overwrite existing settings.
-
-#### 5.6 — SDLC Files
-
-If PR template enabled:
-
-`.github/pull_request_template.md`:
-```markdown
-## Summary
-
-<!-- What does this PR do? Keep it brief. -->
-
-## Changes
-
--
-
-## Testing
-
-- [ ] Tests added/updated
-- [ ] Manually tested
-
-## Notes
-
-<!-- Anything reviewers should know? -->
-```
-
-#### 5.7 — `.mcp.json` — MCP server configuration
-
-For each project management tool selected in step 4:
-
-- **Linear**: add the following entry to `.mcp.json` under `mcpServers`:
-  ```json
-  "linear": {
-    "type": "http",
-    "url": "https://mcp.linear.app/sse",
-    "authorization_token": "${LINEAR_API_KEY}"
-  }
-  ```
-  Required env var: `LINEAR_API_KEY`
-
-- **GitHub**: add:
-  ```json
-  "github": {
-    "type": "stdio",
-    "command": "npx",
-    "args": ["-y", "@modelcontextprotocol/server-github"],
-    "env": {
-      "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
-    }
-  }
-  ```
-  Required env var: `GITHUB_TOKEN`
-
-- **Jira**: add:
-  ```json
-  "jira": {
-    "type": "stdio",
-    "command": "npx",
-    "args": ["-y", "mcp-atlassian"],
-    "env": {
-      "JIRA_URL": "${JIRA_URL}",
-      "JIRA_USERNAME": "${JIRA_USERNAME}",
-      "JIRA_API_TOKEN": "${JIRA_API_TOKEN}"
-    }
-  }
-  ```
-  Required env vars: `JIRA_URL`, `JIRA_USERNAME`, `JIRA_API_TOKEN`
-
-If `.mcp.json` already exists, read it and merge — preserve existing entries. If "None" was selected, skip this step.
-
-#### 5.9 — Directory structure
-
-```bash
-mkdir -p docs/product/prds
-mkdir -p docs/product/plans
-mkdir -p docs/decisions
-mkdir -p docs/invariants
-mkdir -p docs/reference
-```
-
-#### 5.10 — Specialist agents
-
-Install specialist agent templates based on detected stack:
-
-1. Check if `~/.keel/templates/agents/` exists. If not, skip with a note (same pattern as rules).
-2. Read `~/.keel/templates/agents/_registry.yaml`.
-3. Build the agent list:
-   - Always include: `always` agents (`principal-architect`, `staff-engineer`)
-   - Match detected stack (from config.yaml) against registry keys
-   - Include `all` agents (`staff-sre`, `staff-qa`, `senior-pm`, `senior-api`)
-   - If soul.md description mentions payment/auth/HIPAA/PCI/compliance/security → add `staff-security`
-4. Create `.claude/agents/` directory
-5. Copy each selected agent template to `.claude/agents/{slug}.md`
-6. Note: `optional` agents in the registry are available via `/keel:agents add {slug}` but not auto-installed
-
-### 5.10 — Linter-aware rules (established projects only)
-
-If this is an established project and linter configs were found during the codebase audit (step 3B), run `/keel:sync` automatically:
-
-```
-Linter configs detected: {list of found configs}
-Running keel:sync to generate linter-aware AI rules...
-```
-
-Execute the keel:sync logic to detect, translate, and write to `.claude/rules/linter-*.md`. This produces rules that reinforce what the linter already enforces, so Claude never writes violations in the first place.
-
-If no linter configs found, skip silently.
-
-### 6. Offer Intake for Established Projects
-
-If this is an established project:
-
-```
-Found existing docs in the codebase. Run /keel:intake to organize them into keel's structure.
-```
-
-### 7. Output Summary
-
-```
-Keel initialized!
-
-  Config:     .keel/config.yaml
-  Soul:       docs/soul.md
-  Rules:      .claude/rules/ ({count} packs installed)
-  Agents:     .claude/agents/ ({count} specialist agents installed)
-  CLAUDE.md:  CLAUDE.md
-  Hooks:      .claude/settings.json
-  MCP:        .mcp.json ({n} servers configured)
-              Each member needs: {list of required env vars, or "No env vars required"}
-  Team:       {team-name} (or "Not configured — run /keel:team init")
-
-  Rules installed:
-    {list each rule pack with one-line description}
-
-  Agents installed:
-    {list each agent with name and one-line description}
-
-  Next steps:
-  1. Review docs/soul.md and edit if needed
-  2. Review .keel/config.yaml for additional options
-  3. Start working — rules and agents are active automatically
-  4. Run /keel:plan to create an execution plan for your first task
-
-  Capture artifacts as you work:
-    /keel:adr        — record an architectural decision
-    /keel:invariant  — define a hard constraint
-    /keel:prd        — write a product requirement
-
-  Manage agents:
-    /keel:agents           — list installed and available agents
-    /keel:agents add {slug} — install an additional specialist agent
-
-  Commit .keel/, .claude/, and .mcp.json to git — your team gets the same guardrails.
-```
+Required: `JIRA_URL`, `JIRA_USERNAME`, `JIRA_API_TOKEN`

@@ -16,12 +16,12 @@ Most of this is automatic. The explicit steps are one command each.
 
 **What happens automatically with keel:**
 
-The SessionStart hook fires and tells you what changed since last time:
+The session refresh fires automatically and tells you what changed since last time:
 
 ```
 📋 Keel — since your last session (2d ago):
    3 migration/schema files changed
-   Relevant agents: principal-dba
+   Relevant agents: dba
    Run /keel:context to load full project context.
 ```
 
@@ -35,7 +35,7 @@ If nothing significant changed:
 /keel:context
 ```
 
-This loads your soul, active plan, decisions, invariants, and installed rules into Claude's session. After this, Claude knows your project — not just your files.
+This loads your project context, active plan, decisions, invariants, and installed rules into Claude's session. After this, Claude knows your project — not just your files.
 
 ---
 
@@ -55,11 +55,11 @@ PRE-FLIGHT REVIEW
 ─────────────────────────────────────────────────────
 Domains detected: database, api
 
-PRINCIPAL DBA
+DBA
   🔴  Migration has no rollback — add DOWN migration
   🟡  No index on webhooks.status — queried in retry loop
 
-SENIOR API
+API
   🟢  Endpoint contract looks stable
 ─────────────────────────────────────────────────────
 1 critical, 1 warning. Address before executing?
@@ -78,9 +78,9 @@ Skip pre-flight for simple tasks:
 
 Just build. Keel works in the background:
 
-**PostToolUse hook** auto-formats after every edit — gofmt, prettier, black, rubocop. No manual formatter runs.
+**Auto-format** runs after every edit — gofmt, prettier, black, rubocop. No manual formatter runs.
 
-**Stop hook** watches every response for signals worth capturing:
+**Signal detection** watches every response for decisions worth capturing:
 
 ```
 💡 ADR candidate — run /keel:adr to capture it.
@@ -119,11 +119,11 @@ IMPLEMENTATION REVIEW
 Scope: 5 files changed
 Domains: database, api
 
-PRINCIPAL DBA
+DBA
   🔴  Missing index on webhooks.delivered_at
   🟢  Transaction boundaries look correct
 
-SENIOR API
+API
   🟢  No breaking changes detected
 ─────────────────────────────────────────────────────
 1 critical. Address before shipping?

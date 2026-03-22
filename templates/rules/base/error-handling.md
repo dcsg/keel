@@ -1,97 +1,40 @@
 ---
-paths: "**/*"
-version: "1.0.0"
+paths: "**/*.{go,ts,tsx,js,jsx,py,rb,php,rs,java,kt}"
+version: "0.1.0"
 ---
 <!-- keel:generated -->
 
+<governance_checkpoint>
+Before modifying any file, pause and verify:
+1. List which rules from this file apply to the change you are about to make.
+2. Check if the change silently swallows errors, loses context, or mixes error strategies.
+3. If multiple rules conflict, state the conflict before proceeding.
+After receiving tool results (test output, lint output, build errors), re-check:
+1. Verify the result complies with the rules you identified above.
+2. If it does not, fix the violation before taking any other action.
+3. Do not chain corrections — verify each step against these rules before proceeding.
+</governance_checkpoint>
+
 # Error Handling
 
-Rules for handling errors consistently and safely.
+Rules for handling errors consistently and safely across all layers.
 
-## Never Silently Swallow Errors
+## Critical
 
-Every catch/except/recover block must do ONE of:
-1. Handle the error (retry, fallback, user-facing message)
-2. Re-throw/propagate with added context
-3. Log with sufficient context for debugging
+- NEVER silently swallow errors. Every catch/except/recover block MUST do one of: handle the error (retry, fallback, user message), propagate with added context, or log with sufficient context for debugging. Empty catch blocks are never acceptable.
 
-Empty catch blocks are never acceptable. If you genuinely need to ignore an error, add a comment explaining why.
+## Standards
 
-```
-// BAD
-try { sendEmail(user) } catch (e) {}
+- When propagating errors, wrap with context describing what operation failed: `failed to process order %s: %w`. The goal is that someone reading the log can trace the failure without opening the code.
+- Define specific error types for different failure categories: `ValidationError`, `NotFoundError`, `AuthorizationError`. Don't throw generic exceptions for known failure modes — callers need to differentiate.
+- Detect errors as early as possible. Check preconditions at function entry, return immediately if they fail. Don't let invalid state propagate through layers.
+- External-facing errors: clear, actionable, no internal details. Internal errors (logs): full context, stack trace, correlation ID.
 
-// BAD — logs but loses context
-try { sendEmail(user) } catch (e) { console.log("error") }
+## Practices
 
-// GOOD — handles with context
-try {
-  sendEmail(user)
-} catch (e) {
-  logger.warn("failed to send welcome email", { userId: user.id, error: e })
-  // non-critical, continue without email
-}
-```
+- Reserve panic/crash for truly unrecoverable states (corrupted data, violated invariants). Return errors for recoverable failures — not found, validation failed, permission denied.
+- If an empty catch block is genuinely correct, add a comment explaining why — the next reader will assume it's a bug.
 
-## Add Context When Propagating
+## Critical
 
-When re-throwing or wrapping errors, add context about what operation was being attempted. The goal: someone reading the error in logs can trace what happened without looking at code.
-
-```
-// BAD — original error with no context
-throw err
-
-// GOOD — wrapped with operation context
-throw new Error(`failed to process order ${orderId}: ${err.message}`, { cause: err })
-```
-
-## Use Typed/Structured Errors
-
-- Define specific error types for different failure categories (ValidationError, NotFoundError, AuthorizationError, etc.).
-- Don't throw generic Error/Exception with string messages for known failure modes.
-- Error types enable callers to handle different failures differently.
-
-```
-// BAD
-throw new Error("not found")
-throw new Error("invalid email")
-
-// GOOD
-throw new NotFoundError("order", orderId)
-throw new ValidationError("email", "invalid format")
-```
-
-## Validate at System Boundaries Only
-
-- Validate at entry points: HTTP handlers, CLI parsers, message consumers, public API methods.
-- Trust internal code. If a private function receives data that already passed validation, don't re-validate.
-- Don't add defensive checks for scenarios that can't happen given the code path.
-
-## Fail Fast
-
-- Detect errors as early as possible. Don't let invalid state propagate through multiple layers before failing.
-- Check preconditions at function entry. Return/throw immediately if they're not met.
-- Prefer returning errors over panic/crash for recoverable situations. Reserve panics for truly unrecoverable states (corrupted data, violated invariants).
-
-## Error Responses
-
-- External-facing errors (API responses, user messages): clear, actionable, no internal details.
-- Internal errors (logs, monitoring): detailed, with full context, stack traces, and correlation IDs.
-- Never expose: stack traces, SQL queries, internal file paths, or configuration details to external clients.
-
-```
-// To the client
-{ "error": "Order not found", "code": "ORDER_NOT_FOUND" }
-
-// To the logs
-{ "error": "order not found", "orderId": "abc-123", "userId": "user-456", "stack": "..." }
-```
-
-## Result Types (Where Available)
-
-In languages that support it (Go, Rust, TypeScript with libraries), prefer Result/Either types over throwing exceptions for expected failure modes:
-
-- Exceptions for truly exceptional situations (out of memory, disk full, programming errors)
-- Result types for expected failures (not found, validation failed, permission denied)
-
-This makes error handling explicit in the type signature — callers can't accidentally ignore errors.
+- NEVER silently swallow errors — every catch block must handle, propagate, or log.

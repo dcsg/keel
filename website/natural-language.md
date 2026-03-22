@@ -47,7 +47,7 @@ You come back after the weekend and want Claude to catch up:
 > ```
 > Loaded context for Orders API:
 >
->   Soul:      Go REST API, DDD, Chi, PostgreSQL
+>   Project:   Go REST API, DDD, Chi, PostgreSQL
 >   Plan:      PLAN-bulk-orders (Phase 3 in progress)
 >   Rules:     code-quality, testing, security, error-handling, go, chi
 >   Decisions: 3 ADRs (hexagonal arch, error strategy, auth pattern)
@@ -88,7 +88,7 @@ You want to start planning a new feature:
 | "write a PRD for X" | `/keel:prd` |
 | "document this feature" | `/keel:prd` |
 | "what agents do we have?" | `/keel:agents` |
-| "add the security agent" | `/keel:agents add staff-security` |
+| "add the security agent" | `/keel:agents add security` |
 | "setup Linear" | `/keel:mcp add linear` |
 | "validate my environment" | `/keel:team setup` |
 

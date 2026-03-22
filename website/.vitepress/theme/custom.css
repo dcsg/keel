@@ -1,0 +1,406 @@
+/*
+ * keel — Visual Identity Tokens
+ * Direction: Structural Authority
+ * Voice: Precise. Direct. Authoritative. Forward.
+ *
+ * Brand colors:
+ *   Slate #2D3748 (primary)
+ *   Stone #A0936D (secondary)
+ *   Teal  #0D9488 (accent — interactive only)
+ *
+ * Typography:
+ *   Headings: Space Grotesk
+ *   Body: IBM Plex Sans
+ *   Code: JetBrains Mono
+ *
+ * Constraints:
+ *   No emoji, no gradients, max border-radius 6px
+ *   Teal for interactive elements only
+ */
+
+/* ============================================================
+   CSS Custom Properties — Light Mode
+   ============================================================ */
+:root {
+  /* Brand */
+  --keel-slate: #2D3748;
+  --keel-stone: #A0936D;
+  --keel-teal: #0D9488;
+  --keel-deep-slate: #0F172A;
+
+  /* VitePress overrides — brand color */
+  --vp-c-brand-1: #0D9488;
+  --vp-c-brand-2: #0F766E;
+  --vp-c-brand-3: #115E59;
+  --vp-c-brand-soft: rgba(13, 148, 136, 0.14);
+
+  /* Text */
+  --vp-c-text-1: #0F172A;     /* neutral-900 */
+  --vp-c-text-2: #475569;     /* neutral-600 */
+  --vp-c-text-3: #94A3B8;     /* neutral-400 */
+
+  /* Backgrounds */
+  --vp-c-bg: #FFFFFF;
+  --vp-c-bg-alt: #F8FAFC;     /* neutral-50 */
+  --vp-c-bg-soft: #F1F5F9;    /* neutral-100 */
+  --vp-c-bg-elv: #FFFFFF;
+
+  /* Borders */
+  --vp-c-divider: #E2E8F0;    /* neutral-200 */
+  --vp-c-gutter: #E2E8F0;
+  --vp-c-border: #E2E8F0;
+
+  /* Typography */
+  --vp-font-family-base: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --vp-font-family-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Layout — full width for doc pages on desktop */
+  --vp-layout-max-width: 1440px;
+
+  /* Code blocks — light */
+  --vp-code-block-bg: #F1F5F9;          /* neutral-100 */
+  --vp-code-block-color: #1E293B;        /* neutral-800 */
+  --vp-c-code-link: #0D9488;
+}
+
+/* ============================================================
+   CSS Custom Properties — Dark Mode
+   ============================================================ */
+.dark {
+  --vp-c-brand-1: #2DD4BF;    /* teal-400 */
+  --vp-c-brand-2: #14B8A6;    /* teal-500 */
+  --vp-c-brand-3: #0D9488;    /* teal-600 */
+  --vp-c-brand-soft: rgba(45, 212, 191, 0.14);
+
+  /* Text */
+  --vp-c-text-1: #F1F5F9;     /* neutral-100 */
+  --vp-c-text-2: #94A3B8;     /* neutral-400 */
+  --vp-c-text-3: #64748B;     /* neutral-500 */
+
+  /* Backgrounds */
+  --vp-c-bg: #0F172A;         /* slate-900 / deep-slate */
+  --vp-c-bg-alt: #1E293B;     /* slate-800 */
+  --vp-c-bg-soft: #1E293B;
+  --vp-c-bg-elv: #1E293B;
+
+  /* Borders */
+  --vp-c-divider: #334155;    /* slate-700 */
+  --vp-c-gutter: #334155;
+  --vp-c-border: #334155;
+
+  /* Code blocks — dark */
+  --vp-code-block-bg: #1E293B;           /* slate-800 */
+  --vp-code-block-color: #E2E8F0;        /* neutral-200 */
+}
+
+/* ============================================================
+   Typography
+   ============================================================ */
+
+/* Headings — Space Grotesk */
+h1, h2, h3, h4, h5, h6,
+.VPHero .name,
+.VPHero .text,
+.VPFeature .title {
+  font-family: 'Space Grotesk', var(--vp-font-family-base);
+  letter-spacing: -0.02em;
+}
+
+h1 {
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+h2 {
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+h3 {
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+/* Body */
+p, li, td, th {
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+/* Code */
+code, pre, .vp-code {
+  font-family: 'JetBrains Mono', var(--vp-font-family-mono);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   Prevent layout shift when search modal opens/closes.
+   VitePress adds overflow:hidden to body, removing the scrollbar
+   and shifting content by ~15px. scrollbar-gutter reserves the space.
+   ============================================================ */
+html {
+  scrollbar-gutter: stable;
+}
+
+/* ============================================================
+   Hero
+   ============================================================ */
+.VPHero .name {
+  color: var(--keel-slate) !important;
+  font-size: 48px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  -webkit-text-fill-color: var(--keel-slate) !important;
+}
+
+.dark .VPHero .name {
+  -webkit-text-fill-color: #F1F5F9 !important;
+  color: #F1F5F9 !important;
+}
+
+.VPHero .text {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--keel-slate);
+  white-space: nowrap;
+}
+
+.dark .VPHero .text {
+  color: #F1F5F9;
+}
+
+.VPHero .tagline {
+  font-family: 'IBM Plex Sans', var(--vp-font-family-base);
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--vp-c-text-2);
+}
+
+/* Hero gradient override — no gradients */
+.VPHero .name .clip {
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  -webkit-text-fill-color: var(--keel-slate) !important;
+}
+
+.dark .VPHero .name .clip {
+  -webkit-text-fill-color: #F1F5F9 !important;
+}
+
+/* ============================================================
+   Feature Cards
+   ============================================================ */
+.VPFeature {
+  border-radius: 4px !important;
+  border: 1px solid var(--vp-c-border) !important;
+}
+
+.VPFeature .title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--keel-slate);
+}
+
+.dark .VPFeature .title {
+  color: #F1F5F9;
+}
+
+.VPFeature .details {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--vp-c-text-2);
+}
+
+/* No emoji icons — hide the icon area if empty */
+.VPFeature .icon {
+  display: none;
+}
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+.VPButton.brand {
+  background-color: var(--keel-teal) !important;
+  border-color: var(--keel-teal) !important;
+  border-radius: 4px !important;
+}
+
+.VPButton.brand:hover {
+  background-color: #0F766E !important;
+  border-color: #0F766E !important;
+}
+
+.VPButton.alt {
+  border-radius: 4px !important;
+}
+
+.dark .VPButton.brand {
+  background-color: #2DD4BF !important;
+  border-color: #2DD4BF !important;
+  color: #0F172A !important;
+}
+
+.dark .VPButton.brand:hover {
+  background-color: #14B8A6 !important;
+  border-color: #14B8A6 !important;
+}
+
+/* ============================================================
+   Sidebar
+   ============================================================ */
+.VPSidebar .group .title {
+  font-family: 'Space Grotesk', var(--vp-font-family-base);
+  font-weight: 600;
+}
+
+/* ============================================================
+   Tables
+   ============================================================ */
+table {
+  font-size: 14px;
+}
+
+th {
+  font-weight: 600;
+  color: var(--keel-slate);
+}
+
+.dark th {
+  color: #F1F5F9;
+}
+
+/* ============================================================
+   Constraints
+   ============================================================ */
+
+/* Max border-radius 6px everywhere */
+.VPNav,
+.VPNavBarMenuLink,
+.VPSidebar,
+.vp-doc div[class*="language-"],
+.vp-code-group .tabs label {
+  border-radius: 4px !important;
+}
+
+/* No gradients — override any VitePress defaults */
+.VPHero .image-bg {
+  background: none !important;
+}
+
+/* Links — teal for interactive */
+.vp-doc a {
+  color: var(--keel-teal);
+}
+
+.dark .vp-doc a {
+  color: #2DD4BF;
+}
+
+/* ============================================================
+   Terminal Chat — TUI-style conversation mocks
+   ============================================================ */
+.tui {
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 20px 0;
+  border: 1px solid #334155;
+}
+
+.tui-bar {
+  background: #1E293B;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #94A3B8;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.tui-bar::before {
+  content: '';
+  display: inline-block;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: #EF4444;
+  box-shadow: 16px 0 0 #F59E0B, 32px 0 0 #22C55E;
+  margin-right: 40px;
+}
+
+.tui-body {
+  background: #0F172A;
+  padding: 20px 24px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #E2E8F0;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* User prompt line */
+.tui-body .u {
+  color: #2DD4BF;
+  display: block;
+  margin: 16px 0 4px;
+}
+
+.tui-body .u::before {
+  content: '> ';
+  color: #0D9488;
+  font-weight: 700;
+}
+
+.tui-body .u:first-child {
+  margin-top: 0;
+}
+
+/* Claude response block */
+.tui-body .c {
+  display: block;
+  margin: 4px 0 16px;
+  padding-left: 16px;
+  border-left: 2px solid #334155;
+  color: #CBD5E1;
+}
+
+/* Semantic colors inside TUI */
+.tui-body .ok { color: #059669; }
+.tui-body .warn { color: #D97706; }
+.tui-body .err { color: #DC2626; }
+.tui-body .hi { color: #0D9488; }
+.tui-body .dim { color: #64748B; }
+.tui-body .sel { color: #2DD4BF; }
+.tui-body .stone { color: #A0936D; }
+
+/* Gate block inside TUI */
+.tui-body .gate {
+  display: block;
+  border: 1px solid #DC2626;
+  border-radius: 4px;
+  padding: 12px 16px;
+  margin: 8px 0;
+  background: rgba(220, 38, 38, 0.06);
+  color: #E2E8F0;
+}
+
+/* Aha moment callout */
+.aha {
+  border-left: 3px solid #0D9488;
+  padding: 12px 20px;
+  margin: 20px 0;
+  background: rgba(13, 148, 136, 0.06);
+  font-style: italic;
+  color: var(--vp-c-text-2);
+}
+
+.dark .aha {
+  background: rgba(45, 212, 191, 0.06);
+}

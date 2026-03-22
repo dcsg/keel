@@ -44,20 +44,20 @@ Check if an argument was provided and which subcommand it is.
 3. Output:
    ```
    Installed agents ({n}):
-     principal-architect  — System design, ADRs, trade-off analysis
-     staff-engineer       — Implementation leadership, code review
-     senior-backend       — Backend implementation, business logic, APIs
+     architect  — System design, ADRs, trade-off analysis
+     engineer       — Implementation leadership, code review
+     backend       — Backend implementation, business logic, APIs
      ...
 
    Available (not installed):
-     principal-data       — Data modeling, analytics, pipelines
-     senior-performance   — Performance profiling and optimization
+     data       — Data modeling, analytics, pipelines
+     performance   — Performance profiling and optimization
      ...
 
    Usage:
-     /keel:agents add principal-data
-     /keel:agents show staff-security
-     /keel:agents remove senior-pm
+     /keel:agents add data
+     /keel:agents show security
+     /keel:agents remove pm
      /keel:agents suggest          — recommend agents for this stack
    ```
 
@@ -75,7 +75,7 @@ Check if an argument was provided and which subcommand it is.
 2. If not found, list available agent slugs from `~/.keel/templates/agents/`:
    ```
    Agent "{slug}" not found. Available agents:
-     principal-architect, staff-engineer, senior-backend, ...
+     architect, engineer, backend, ...
    ```
 3. If found:
    - Create `.claude/agents/` if it doesn't exist
@@ -105,13 +105,13 @@ Check if an argument was provided and which subcommand it is.
    Recommended agents for your stack ({stack}):
 
    Already installed:
-     ✅ principal-architect
-     ✅ staff-engineer
-     ✅ senior-backend
+     ✅ architect
+     ✅ engineer
+     ✅ backend
 
    Recommended (not installed):
-     📦 principal-dba    — Database design, query optimization, migration safety
-     📦 staff-qa         — Testing strategy, test writing, coverage analysis
+     📦 dba    — Database design, query optimization, migration safety
+     📦 qa         — Testing strategy, test writing, coverage analysis
 
    Run /keel:agents add {slug} to install, or /keel:init to install all recommended.
    ```

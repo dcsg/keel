@@ -145,9 +145,9 @@ For each confirmed move:
 
 **Important:** COPY, don't move. The user can delete originals after verifying. Never delete files without explicit confirmation.
 
-### 6. Update Soul
+### 6. Update Project Context
 
-If existing docs reveal project context not captured in `soul.md`, offer to update it:
+If existing docs reveal project context not captured in `project-context.md`, offer to update it:
 
 ```
 Found additional context from existing docs:
@@ -155,7 +155,7 @@ Found additional context from existing docs:
 - Architecture: {details from ADRs}
 - Users: {details from product docs}
 
-Update soul.md with this information? (y/n)
+Update project-context.md with this information? (y/n)
 ```
 
 ### 7. Output Summary
@@ -171,7 +171,7 @@ Intake complete!
     {base}/product/prds/  — {count} product requirements
     {base}/reference/     — {count} reference docs
 
-  Soul updated: {yes/no}
+  Project context updated: {yes/no}
 ```
 
 ### 9. Archive Originals
